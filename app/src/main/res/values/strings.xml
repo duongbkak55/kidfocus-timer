@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App name -->
+    <string name="app_name">KidFocus Timer</string>
+
+    <!-- General -->
+    <string name="ok">OK</string>
+    <string name="cancel">Hủy</string>
+    <string name="back">Quay lại</string>
+    <string name="save">Lưu</string>
+    <string name="next">Tiếp theo</string>
+    <string name="skip">Bỏ qua</string>
+    <string name="start">Bắt đầu</string>
+    <string name="stop">Dừng</string>
+    <string name="pause">Tạm dừng</string>
+    <string name="resume">Tiếp tục</string>
+    <string name="yes">Có</string>
+    <string name="no">Không</string>
+    <string name="done">Hoàn thành</string>
+    <string name="confirm">Xác nhận</string>
+    <string name="delete">Xóa</string>
+    <string name="edit">Chỉnh sửa</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_welcome_title">Chào mừng đến với KidFocus!</string>
+    <string name="onboarding_welcome_desc">Ứng dụng giúp con tập trung học tập và nghỉ ngơi đúng cách, vui vẻ mỗi ngày!</string>
+    <string name="onboarding_pomodoro_title">Học theo nhịp Pomodoro</string>
+    <string name="onboarding_pomodoro_desc">Tập trung 25 phút, sau đó nghỉ 5 phút. Phương pháp được chứng minh giúp học hiệu quả hơn!</string>
+    <string name="onboarding_reward_title">Nhận phần thưởng!</string>
+    <string name="onboarding_reward_desc">Sau mỗi phiên tập trung, con sẽ được ăn mừng và xem mình đã học được bao nhiêu!</string>
+    <string name="onboarding_parent_title">Phụ huynh kiểm soát</string>
+    <string name="onboarding_parent_desc">Bố mẹ có thể thiết lập PIN để bảo vệ cài đặt và tùy chỉnh thời gian phù hợp với con.</string>
+    <string name="onboarding_get_started">Bắt đầu ngay!</string>
+
+    <!-- Home screen -->
+    <string name="home_greeting">Xin chào! Sẵn sàng học chưa?</string>
+    <string name="home_start_focus">Bắt đầu tập trung!</string>
+    <string name="home_today_focus_minutes">Phút tập trung</string>
+    <string name="home_today_sessions">Phiên hôm nay</string>
+    <string name="home_daily_goal">Mục tiêu hôm nay</string>
+    <string name="home_theme">Chủ đề</string>
+    <string name="home_parent_settings">Cài đặt phụ huynh</string>
+    <string name="home_focus_format">Tập trung %d phút</string>
+    <string name="home_break_format">Nghỉ %d phút</string>
+
+    <!-- Focus screen -->
+    <string name="focus_title">Thời gian tập trung</string>
+    <string name="focus_motivate">Hãy giữ sự tập trung nhé!</string>
+    <string name="focus_almost_done">Gần xong rồi! Cố lên!</string>
+    <string name="focus_paused">Đang tạm dừng</string>
+
+    <!-- Break screen -->
+    <string name="break_title">Thời gian nghỉ ngơi</string>
+    <string name="break_subtitle">Thư giãn và lấy lại năng lượng nhé!</string>
+    <string name="break_skip">Bỏ qua nghỉ ngơi</string>
+    <string name="break_tip">Bạn có thể làm những điều bạn thích trong thời gian này</string>
+
+    <!-- Celebration screen -->
+    <string name="celebration_title">Tuyệt vời!</string>
+    <string name="celebration_focused_format">Bạn vừa tập trung %d phút!</string>
+    <string name="celebration_praise">Bạn thật giỏi! Hãy tiếp tục phát huy nhé!</string>
+    <string name="celebration_take_break_format">Nghỉ %d phút</string>
+    <string name="celebration_go_home">Về trang chủ</string>
+
+    <!-- Theme screen -->
+    <string name="theme_title">Chọn chủ đề</string>
+    <string name="theme_subtitle">Chọn màu sắc bạn thích nhất</string>
+    <string name="theme_ocean">Đại dương</string>
+    <string name="theme_forest">Rừng xanh</string>
+    <string name="theme_sunset">Hoàng hôn</string>
+
+    <!-- PIN screens -->
+    <string name="pin_create_title">Tạo PIN mới</string>
+    <string name="pin_confirm_title">Nhập lại PIN</string>
+    <string name="pin_verify_title">Nhập PIN phụ huynh</string>
+    <string name="pin_create_subtitle">Tạo mã PIN 4 chữ số để bảo vệ cài đặt</string>
+    <string name="pin_confirm_subtitle">Nhập lại PIN vừa tạo để xác nhận</string>
+    <string name="pin_verify_subtitle">Vui lòng nhập PIN để tiếp tục</string>
+    <string name="pin_error">PIN không đúng</string>
+    <string name="pin_mismatch">PIN không khớp, thử lại</string>
+
+    <!-- Parent settings -->
+    <string name="parent_settings_title">Cài đặt phụ huynh</string>
+    <string name="parent_section_timer">Thời gian hẹn giờ</string>
+    <string name="parent_focus_duration">Thời gian tập trung</string>
+    <string name="parent_break_duration">Thời gian nghỉ ngơi</string>
+    <string name="parent_section_notifications">Thông báo &amp; Âm thanh</string>
+    <string name="parent_sound_title">Âm thanh</string>
+    <string name="parent_sound_subtitle">Phát âm thanh khi kết thúc phiên</string>
+    <string name="parent_vibration_title">Rung</string>
+    <string name="parent_vibration_subtitle">Rung khi kết thúc phiên</string>
+    <string name="parent_section_pin">Khóa phụ huynh</string>
+    <string name="parent_pin_set">PIN đã được thiết lập</string>
+    <string name="parent_pin_not_set">Chưa có PIN</string>
+    <string name="parent_pin_set_subtitle">Cài đặt được bảo vệ</string>
+    <string name="parent_pin_not_set_subtitle">Trẻ có thể thay đổi cài đặt</string>
+    <string name="parent_change_pin">Đổi PIN</string>
+    <string name="parent_create_pin">Tạo PIN</string>
+    <string name="parent_remove_pin">Xóa PIN</string>
+    <string name="parent_minutes_format">%d phút</string>
+
+    <!-- Timer service notifications -->
+    <string name="notification_focus_title">Thời gian tập trung</string>
+    <string name="notification_break_title">Thời gian nghỉ ngơi</string>
+    <string name="notification_pause_action">Tạm dừng</string>
+    <string name="notification_resume_action">Tiếp tục</string>
+    <string name="notification_stop_action">Dừng</string>
+    <string name="notification_channel_timer">Timer Service</string>
+    <string name="notification_channel_timer_desc">Hiển thị đếm ngược khi ứng dụng chạy nền</string>
+    <string name="notification_channel_alert">Thông báo Timer</string>
+    <string name="notification_channel_alert_desc">Thông báo khi kết thúc phiên tập trung hoặc nghỉ ngơi</string>
+
+    <!-- Accessibility content descriptions -->
+    <string name="cd_mascot">Cú mèo mascot</string>
+    <string name="cd_timer_progress">Tiến độ đếm ngược</string>
+    <string name="cd_pause_button">Nút tạm dừng</string>
+    <string name="cd_resume_button">Nút tiếp tục</string>
+    <string name="cd_stop_button">Nút dừng</string>
+    <string name="cd_theme_selected">Đã chọn chủ đề này</string>
+
+    <!-- Error messages -->
+    <string name="error_generic">Có lỗi xảy ra, vui lòng thử lại</string>
+    <string name="error_focus_duration_range">Thời gian tập trung phải từ 5 đến 120 phút</string>
+    <string name="error_break_duration_range">Thời gian nghỉ phải từ 1 đến 30 phút</string>
+</resources>

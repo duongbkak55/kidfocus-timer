@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Semantic colors -->
+    <color name="focus_blue">#2B7FFF</color>
+    <color name="break_green">#22C55E</color>
+    <color name="warning_amber">#F59E0B</color>
+    <color name="error_red">#EF4444</color>
+
+    <!-- Ocean theme -->
+    <color name="ocean_background">#EFF6FF</color>
+    <color name="ocean_primary">#2B7FFF</color>
+    <color name="ocean_secondary">#7DD3FC</color>
+    <color name="ocean_on_background">#1E3A5F</color>
+
+    <!-- Forest theme -->
+    <color name="forest_background">#F0FDF4</color>
+    <color name="forest_primary">#16A34A</color>
+    <color name="forest_secondary">#86EFAC</color>
+    <color name="forest_on_background">#14532D</color>
+
+    <!-- Sunset theme -->
+    <color name="sunset_background">#FFF7ED</color>
+    <color name="sunset_primary">#F97316</color>
+    <color name="sunset_secondary">#FCA5A5</color>
+    <color name="sunset_on_background">#7C2D12</color>
+
+    <!-- Material baseline (required by some system components) -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="transparent">#00000000</color>
+</resources>

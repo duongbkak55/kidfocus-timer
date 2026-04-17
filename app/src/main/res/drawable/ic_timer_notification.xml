@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Notification icon: simple clock/timer outline
+    Dimensions: 24dp x 24dp (standard notification icon size)
+    Must be monochrome (single path, white fill) for Android notification tray
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="?attr/colorControlNormal">
+
+    <!-- Clock circle outline -->
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M12,2C6.477,2 2,6.477 2,12s4.477,10 10,10 10,-4.477 10,-10S17.523,2 12,2zM12,20c-4.418,0 -8,-3.582 -8,-8s3.582,-8 8,-8 8,3.582 8,8 -3.582,8 -8,8z" />
+
+    <!-- Clock hands: 12 o'clock position, hour hand pointing up, minute pointing right -->
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M12.5,7H11v6l5.25,3.15 0.75,-1.23 -4.5,-2.67V7z" />
+</vector>

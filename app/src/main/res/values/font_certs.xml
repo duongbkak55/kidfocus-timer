@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Font certificate configuration for Downloadable Fonts.
+
+    KidFocus Timer currently uses system fonts (FontFamily.Default) to avoid
+    requiring a network connection during first launch. This file is kept as a
+    placeholder so that a custom rounded/playful font (e.g. Nunito or Poppins
+    from Google Fonts) can be added later without restructuring the project.
+
+    To activate:
+    1. Add the desired font family to res/font/ or declare a Downloadable Font XML.
+    2. Register the font provider certificate array below.
+    3. Reference the font in KidFocusTypography (ui/theme/Type.kt).
+-->
+<resources>
+
+    <!-- Google Fonts provider certificate (SHA-256) for future use -->
+    <array name="com_google_android_gms_fonts_certs">
+        <item>@array/com_google_android_gms_fonts_certs_dev</item>
+        <item>@array/com_google_android_gms_fonts_certs_prod</item>
+    </array>
+
+    <string-array name="com_google_android_gms_fonts_certs_dev">
+        <item>
+            MIIEqDCCA5CgAwIBAgIJANWFuGx90071MA0GCSqGSIb3DQEBBAUAMIGUMQswCQYD
+        </item>
+    </string-array>
+
+    <string-array name="com_google_android_gms_fonts_certs_prod">
+        <item>
+            MIIEQzCCAyugAwIBAgIJAMLgh0ZkSjCNMA0GCSqGSIb3DQEBBAUAMHMxCzAJBgNV
+        </item>
+    </string-array>
+
+</resources>

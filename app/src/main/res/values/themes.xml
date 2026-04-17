@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        Base theme: NoActionBar with transparent status bar.
+        The actual color theming is handled entirely by Jetpack Compose / KidFocusTheme.
+    -->
+    <style name="Theme.KidFocusTimer" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowTranslucentNavigation">false</item>
+    </style>
+</resources>
