@@ -149,7 +149,7 @@ class TimerService : Service() {
 
     // ---- Timer logic ----------------------------------------------------------------------------
 
-    private fun startCountdown(phase: TimerPhase, totalSeconds: Int) {
+    private fun startCountdown(phase: TimerPhase, totalSeconds: Int, remainingSeconds: Int = totalSeconds, isResume: Boolean = false) {
         countdownJob?.cancel()
 
         val completedSessions = _timerState.value.completedFocusSessions
@@ -158,7 +158,7 @@ class TimerService : Service() {
             TimerState(
                 phase = phase,
                 totalSeconds = totalSeconds,
-                remainingSeconds = totalSeconds,
+                remainingSeconds = remainingSeconds,
                 isRunning = true,
                 isPaused = false,
                 completedFocusSessions = completedSessions,
@@ -167,10 +167,10 @@ class TimerService : Service() {
 
         startForegroundWithNotification()
 
-        serviceScope.launch { playPhaseStartFeedback() }
+        if (!isResume) serviceScope.launch { playPhaseStartFeedback() }
 
         countdownJob = serviceScope.launch {
-            var remaining = totalSeconds
+            var remaining = remainingSeconds
             while (remaining > 0) {
                 delay(1_000L)
                 remaining--
@@ -191,8 +191,12 @@ class TimerService : Service() {
     private fun resumeTimer() {
         val state = _timerState.value
         if (!state.isPaused) return
-        startCountdown(state.phase, state.remainingSeconds)
-        // Restore completed count explicitly since startCountdown reads it from current state
+        startCountdown(
+            phase = state.phase,
+            totalSeconds = state.totalSeconds,
+            remainingSeconds = state.remainingSeconds,
+            isResume = true,
+        )
     }
 
     private fun stopTimer() {
