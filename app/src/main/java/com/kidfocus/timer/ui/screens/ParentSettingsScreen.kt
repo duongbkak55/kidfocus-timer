@@ -22,6 +22,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -221,25 +223,44 @@ fun ParentSettingsScreen(
 
             // Section: Gemini AI
             SectionHeader(text = "Gemini AI (Cú học)")
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Lấy API key miễn phí tại aistudio.google.com",
-                style = MaterialTheme.typography.bodySmall,
-                color = colors.onBackground.copy(alpha = 0.55f),
-            )
             Spacer(modifier = Modifier.height(12.dp))
 
             var apiKeyInput by remember { mutableStateOf(current.geminiApiKey ?: "") }
             var apiKeySaved by remember { mutableStateOf(false) }
+            val uriHandler = LocalUriHandler.current
+            val clipboard = LocalClipboardManager.current
 
+            // Step 1: open AI Studio
+            Button(
+                onClick = { uriHandler.openUri("https://aistudio.google.com/app/apikey") },
+                modifier = Modifier.fillMaxWidth().height(48.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = colors.primary),
+            ) {
+                Text("🔑  Bước 1: Lấy API key miễn phí", fontWeight = FontWeight.Bold, color = colors.onPrimary)
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Step 2: paste key
             OutlinedTextField(
                 value = apiKeyInput,
                 onValueChange = { apiKeyInput = it; apiKeySaved = false },
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text("Gemini API Key") },
+                label = { Text("Bước 2: Dán API key vào đây") },
                 placeholder = { Text("AIza...") },
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
+                trailingIcon = {
+                    OutlinedButton(
+                        onClick = {
+                            val text = clipboard.getText()?.text ?: ""
+                            if (text.isNotBlank()) { apiKeyInput = text; apiKeySaved = false }
+                        },
+                        modifier = Modifier.padding(end = 4.dp),
+                        shape = RoundedCornerShape(8.dp),
+                    ) { Text("📋 Dán", style = MaterialTheme.typography.labelSmall) }
+                },
             )
             Spacer(modifier = Modifier.height(8.dp))
             Button(
@@ -253,7 +274,7 @@ fun ParentSettingsScreen(
                 enabled = apiKeyInput.isNotBlank(),
             ) {
                 Text(
-                    text = if (apiKeySaved) "✓ Đã lưu" else "Lưu API Key",
+                    text = if (apiKeySaved) "✓ Đã lưu" else "Bước 3: Lưu",
                     fontWeight = FontWeight.Bold,
                     color = colors.onPrimary,
                 )
