@@ -17,7 +17,7 @@ import javax.inject.Singleton
 class GeminiApi @Inject constructor() {
     companion object {
         private const val BASE_URL =
-            "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent"
+            "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent"
 
         private const val SYSTEM_PROMPT = """Bạn là trợ lý học tập thân thiện tên là "Cú học" 🦉, dành cho học sinh tiểu học và trung học cơ sở Việt Nam.
 Hãy giải thích ngắn gọn, dễ hiểu, dùng tiếng Việt đơn giản phù hợp với trẻ em.
