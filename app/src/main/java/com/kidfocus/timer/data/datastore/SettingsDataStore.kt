@@ -12,6 +12,7 @@ import com.kidfocus.timer.domain.model.AppTheme
 import com.kidfocus.timer.domain.model.TimerSettings
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.security.MessageDigest
 import javax.inject.Inject
@@ -36,6 +37,8 @@ class SettingsDataStore @Inject constructor(
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         val SOUND_ENABLED = booleanPreferencesKey("sound_enabled")
         val VIBRATION_ENABLED = booleanPreferencesKey("vibration_enabled")
+        val COMPLETED_FOCUS_SESSIONS = intPreferencesKey("completed_focus_sessions")
+        val DAILY_GOAL_MINUTES = intPreferencesKey("daily_goal_minutes")
     }
 
     /** Emits [TimerSettings] whenever any preference value changes. */
@@ -48,6 +51,7 @@ class SettingsDataStore @Inject constructor(
             onboardingCompleted = prefs[Keys.ONBOARDING_COMPLETED] ?: false,
             soundEnabled = prefs[Keys.SOUND_ENABLED] ?: true,
             vibrationEnabled = prefs[Keys.VIBRATION_ENABLED] ?: true,
+            dailyGoalMinutes = prefs[Keys.DAILY_GOAL_MINUTES] ?: TimerSettings.DEFAULT_DAILY_GOAL_MINUTES,
         )
     }
 
@@ -60,6 +64,7 @@ class SettingsDataStore @Inject constructor(
             prefs[Keys.ONBOARDING_COMPLETED] = settings.onboardingCompleted
             prefs[Keys.SOUND_ENABLED] = settings.soundEnabled
             prefs[Keys.VIBRATION_ENABLED] = settings.vibrationEnabled
+            prefs[Keys.DAILY_GOAL_MINUTES] = settings.dailyGoalMinutes
 
             if (settings.pinHash != null) {
                 prefs[Keys.PIN_HASH] = settings.pinHash
@@ -88,6 +93,19 @@ class SettingsDataStore @Inject constructor(
     suspend fun completeOnboarding() {
         context.dataStore.edit { prefs ->
             prefs[Keys.ONBOARDING_COMPLETED] = true
+        }
+    }
+
+    /** Returns the persisted completed focus session count (0 if never written). */
+    suspend fun getCompletedFocusSessions(): Int =
+        context.dataStore.data.map { prefs ->
+            prefs[Keys.COMPLETED_FOCUS_SESSIONS] ?: 0
+        }.first()
+
+    /** Persists the completed focus session count. */
+    suspend fun saveCompletedFocusSessions(count: Int) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.COMPLETED_FOCUS_SESSIONS] = count
         }
     }
 

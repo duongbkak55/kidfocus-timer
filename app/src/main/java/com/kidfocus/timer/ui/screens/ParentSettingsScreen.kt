@@ -105,6 +105,16 @@ fun ParentSettingsScreen(
                 valueLabel = "${current.breakDurationMinutes} phút",
             )
 
+            Spacer(modifier = Modifier.height(12.dp))
+
+            SettingSliderRow(
+                title = "Mục tiêu hằng ngày",
+                value = current.dailyGoalMinutes.toFloat(),
+                valueRange = TimerSettings.MIN_DAILY_GOAL_MINUTES.toFloat()..TimerSettings.MAX_DAILY_GOAL_MINUTES.toFloat(),
+                onValueChange = { settingsViewModel.updateDailyGoal(it.toInt()) },
+                valueLabel = "${current.dailyGoalMinutes} phút",
+            )
+
             Spacer(modifier = Modifier.height(24.dp))
 
             // Section: Notifications

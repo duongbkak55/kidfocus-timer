@@ -22,6 +22,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -52,11 +53,14 @@ fun BreakScreen(
     val timerState by timerViewModel.timerState.collectAsState()
     val settings by settingsViewModel.settings.collectAsState()
 
-    // Launch break timer when screen first composes
-    LaunchedEffect(Unit) {
+    // Bind service when screen enters composition and unbind when it leaves
+    DisposableEffect(Unit) {
         val seconds = (settings?.breakDurationMinutes ?: 5) * 60
         timerViewModel.startBreak(seconds)
         timerViewModel.bindService()
+        onDispose {
+            timerViewModel.unbindService()
+        }
     }
 
     // Detect natural completion

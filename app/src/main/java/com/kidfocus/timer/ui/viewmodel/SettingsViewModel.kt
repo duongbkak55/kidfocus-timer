@@ -77,6 +77,12 @@ class SettingsViewModel @Inject constructor(
         save(current.copy(vibrationEnabled = enabled))
     }
 
+    /** Updates the daily focus goal and persists immediately. */
+    fun updateDailyGoal(minutes: Int) {
+        val current = settings.value ?: return
+        save(current.copy(dailyGoalMinutes = minutes))
+    }
+
     // ---- PIN management ------------------------------------------------------------------------
 
     /**

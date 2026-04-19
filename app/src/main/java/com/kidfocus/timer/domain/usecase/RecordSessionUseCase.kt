@@ -31,5 +31,7 @@ class RecordSessionUseCase @Inject constructor(
             timestampMillis = timestampMillis,
         )
         sessionRepository.insertSession(entity)
+        val cutoffMillis = System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000
+        sessionRepository.pruneOldSessions(cutoffMillis)
     }
 }

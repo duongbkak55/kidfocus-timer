@@ -10,6 +10,7 @@ package com.kidfocus.timer.domain.model
  * @property onboardingCompleted Whether the user has finished the onboarding flow.
  * @property soundEnabled Whether audio cues are played on phase transitions.
  * @property vibrationEnabled Whether the device vibrates on phase transitions.
+ * @property dailyGoalMinutes Target focus minutes per day (30–240).
  */
 data class TimerSettings(
     val focusDurationMinutes: Int = DEFAULT_FOCUS_MINUTES,
@@ -19,6 +20,7 @@ data class TimerSettings(
     val onboardingCompleted: Boolean = false,
     val soundEnabled: Boolean = true,
     val vibrationEnabled: Boolean = true,
+    val dailyGoalMinutes: Int = DEFAULT_DAILY_GOAL_MINUTES,
 ) {
     /** True if the parent has set a PIN to lock settings. */
     val hasPinSet: Boolean get() = pinHash != null
@@ -36,5 +38,8 @@ data class TimerSettings(
         const val MAX_FOCUS_MINUTES = 120
         const val MIN_BREAK_MINUTES = 1
         const val MAX_BREAK_MINUTES = 30
+        const val DEFAULT_DAILY_GOAL_MINUTES = 120
+        const val MIN_DAILY_GOAL_MINUTES = 30
+        const val MAX_DAILY_GOAL_MINUTES = 240
     }
 }
