@@ -39,6 +39,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kidfocus.timer.domain.model.ScheduledTask
+import com.kidfocus.timer.domain.model.TaskCategory
 import com.kidfocus.timer.domain.model.TaskType
 import com.kidfocus.timer.ui.theme.KidFocusTheme
 import com.kidfocus.timer.ui.viewmodel.ScheduleViewModel
@@ -52,6 +53,7 @@ fun ScheduleScreen(
 ) {
     val colors = KidFocusTheme.colors
     val tasks by viewModel.tasks.collectAsState()
+    val byCategory = TaskType.byCategory()
 
     Box(
         modifier = Modifier
@@ -85,43 +87,33 @@ fun ScheduleScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                // Section: Predefined templates
-                item {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Lịch có sẵn",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = colors.primary,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
+                // Predefined tasks grouped by category
+                byCategory.forEach { (category, types) ->
+                    item {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        CategoryHeader(category)
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                    items(types) { type ->
+                        val existing = tasks.find { !it.isCustom && it.taskType == type }
+                        PredefinedTaskCard(
+                            type = type,
+                            existingTask = existing,
+                            onAdd = { onNewTask(type) },
+                            onEdit = { existing?.let { onEditTask(it) } },
+                            onToggle = { existing?.let { viewModel.toggleEnabled(it) } },
+                        )
+                    }
                 }
 
-                val predefinedTypes = TaskType.entries.filter { it != TaskType.CUSTOM }
-                items(predefinedTypes) { type ->
-                    val existing = tasks.find { !it.isCustom && it.taskType == type }
-                    PredefinedTaskCard(
-                        type = type,
-                        existingTask = existing,
-                        onAdd = { onNewTask(type) },
-                        onEdit = { existing?.let { onEditTask(it) } },
-                        onToggle = { existing?.let { viewModel.toggleEnabled(it) } },
-                    )
-                }
-
-                // Section: Custom tasks
+                // Custom tasks section
                 val customTasks = tasks.filter { it.isCustom }
                 if (customTasks.isNotEmpty()) {
                     item {
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Lịch tùy chỉnh",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = colors.primary,
-                            fontWeight = FontWeight.Bold,
-                        )
+                        CategoryHeader(label = "⭐  Lịch tùy chỉnh")
                         Spacer(modifier = Modifier.height(8.dp))
                     }
                     items(customTasks) { task ->
@@ -137,7 +129,6 @@ fun ScheduleScreen(
             }
         }
 
-        // FAB: add custom task
         FloatingActionButton(
             onClick = { onNewTask(TaskType.CUSTOM) },
             modifier = Modifier
@@ -148,6 +139,18 @@ fun ScheduleScreen(
             Icon(Icons.Default.Add, contentDescription = "Tạo lịch mới", tint = colors.onPrimary)
         }
     }
+}
+
+@Composable
+private fun CategoryHeader(category: TaskCategory? = null, label: String? = null) {
+    val colors = KidFocusTheme.colors
+    val text = label ?: "${category!!.emoji}  ${category.displayName}"
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleSmall,
+        color = colors.primary,
+        fontWeight = FontWeight.Bold,
+    )
 }
 
 @Composable
@@ -163,69 +166,78 @@ private fun PredefinedTaskCard(
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = colors.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            // Emoji
             Box(
                 modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(colors.primary.copy(alpha = 0.12f)),
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(colors.primary.copy(alpha = 0.10f)),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(text = type.emoji, fontSize = 24.sp)
+                Text(text = type.emoji, fontSize = 22.sp)
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(10.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = type.displayName,
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = colors.onBackground,
                     fontWeight = FontWeight.SemiBold,
                 )
                 if (hasTask) {
                     Text(
-                        text = "${existingTask!!.timeFormatted} • ${existingTask.daysLabel}",
+                        text = "${existingTask!!.timeFormatted} • ${existingTask.daysLabel} • ${existingTask.focusDurationMinutes}p",
                         style = MaterialTheme.typography.bodySmall,
-                        color = colors.onBackground.copy(alpha = 0.6f),
+                        color = colors.onBackground.copy(alpha = 0.55f),
                     )
                 } else {
+                    val h = type.defaultHour.toString().padStart(2, '0')
+                    val m = type.defaultMinute.toString().padStart(2, '0')
                     Text(
-                        text = "${type.defaultHour.toString().padStart(2,'0')}:${type.defaultMinute.toString().padStart(2,'0')} • Mặc định",
+                        text = "$h:$m • ${type.defaultFocusMinutes} phút",
                         style = MaterialTheme.typography.bodySmall,
-                        color = colors.onBackground.copy(alpha = 0.4f),
+                        color = colors.onBackground.copy(alpha = 0.35f),
                     )
                 }
             }
 
             if (hasTask) {
-                IconButton(onClick = onEdit) {
-                    Icon(Icons.Default.Edit, contentDescription = "Chỉnh sửa", tint = colors.primary)
+                IconButton(onClick = onEdit, modifier = Modifier.size(36.dp)) {
+                    Icon(Icons.Default.Edit, contentDescription = "Sửa", tint = colors.primary, modifier = Modifier.size(18.dp))
                 }
                 Switch(
                     checked = existingTask!!.enabled,
                     onCheckedChange = { onToggle() },
-                    colors = SwitchDefaults.colors(checkedThumbColor = colors.primary, checkedTrackColor = colors.primary.copy(alpha = 0.4f)),
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = colors.primary,
+                        checkedTrackColor = colors.primary.copy(alpha = 0.4f),
+                    ),
                 )
             } else {
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(20.dp))
-                        .background(colors.primary)
+                        .background(colors.primary.copy(alpha = 0.12f))
                         .clickable { onAdd() }
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                        .padding(horizontal = 14.dp, vertical = 6.dp),
                 ) {
-                    Text(text = "Thêm", color = colors.onPrimary, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "+ Thêm",
+                        color = colors.primary,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
                 }
             }
         }
@@ -241,46 +253,49 @@ private fun ScheduledTaskCard(
     val colors = KidFocusTheme.colors
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = colors.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(
                 modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(colors.primary.copy(alpha = 0.12f)),
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(colors.primary.copy(alpha = 0.10f)),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(text = task.emoji, fontSize = 24.sp)
+                Text(text = task.emoji, fontSize = 22.sp)
             }
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(10.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = task.name,
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = colors.onBackground,
                     fontWeight = FontWeight.SemiBold,
                 )
                 Text(
-                    text = "${task.timeFormatted} • ${task.daysLabel}",
+                    text = "${task.timeFormatted} • ${task.daysLabel} • ${task.focusDurationMinutes}p",
                     style = MaterialTheme.typography.bodySmall,
-                    color = colors.onBackground.copy(alpha = 0.6f),
+                    color = colors.onBackground.copy(alpha = 0.55f),
                 )
             }
-            IconButton(onClick = onEdit) {
-                Icon(Icons.Default.Edit, contentDescription = "Chỉnh sửa", tint = colors.primary)
+            IconButton(onClick = onEdit, modifier = Modifier.size(36.dp)) {
+                Icon(Icons.Default.Edit, contentDescription = "Sửa", tint = colors.primary, modifier = Modifier.size(18.dp))
             }
             Switch(
                 checked = task.enabled,
                 onCheckedChange = { onToggle() },
-                colors = SwitchDefaults.colors(checkedThumbColor = colors.primary, checkedTrackColor = colors.primary.copy(alpha = 0.4f)),
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = colors.primary,
+                    checkedTrackColor = colors.primary.copy(alpha = 0.4f),
+                ),
             )
         }
     }
