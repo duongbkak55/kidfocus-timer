@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.ksp)
 }
@@ -49,6 +48,10 @@ android {
             "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
             "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi"
         )
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
 
     buildFeatures {
