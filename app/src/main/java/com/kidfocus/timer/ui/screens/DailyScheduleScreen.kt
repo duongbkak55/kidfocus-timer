@@ -1,5 +1,6 @@
 package com.kidfocus.timer.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -27,6 +28,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -45,11 +47,45 @@ import com.kidfocus.timer.ui.theme.KidFocusTheme
 import com.kidfocus.timer.ui.viewmodel.ScheduleViewModel
 import java.util.Calendar
 
+private sealed class TimelineItem {
+    data class Task(val task: ScheduledTask) : TimelineItem()
+    data class EmptySlot(val hour: Int, val minute: Int) : TimelineItem()
+}
+
+private fun buildTimeline(tasks: List<ScheduledTask>): List<TimelineItem> {
+    if (tasks.isEmpty()) return emptyList()
+    val result = mutableListOf<TimelineItem>()
+    val DAY_START = 6 * 60   // 06:00
+    val DAY_END   = 22 * 60  // 22:00
+    val GAP_MIN   = 60       // show empty slot if gap >= 60 min
+
+    // Gap before first task
+    val firstStart = tasks.first().hour * 60 + tasks.first().minute
+    if (firstStart - DAY_START >= GAP_MIN) {
+        val slotMin = roundUp30(DAY_START + 30)
+        if (slotMin < firstStart) result += TimelineItem.EmptySlot(slotMin / 60, slotMin % 60)
+    }
+
+    tasks.forEachIndexed { i, task ->
+        result += TimelineItem.Task(task)
+        val taskEnd = task.hour * 60 + task.minute + task.focusDurationMinutes + task.breakDurationMinutes
+        val nextStart = if (i + 1 < tasks.size) tasks[i + 1].hour * 60 + tasks[i + 1].minute else DAY_END
+        if (nextStart - taskEnd >= GAP_MIN) {
+            val slotMin = roundUp30(taskEnd + 15)
+            if (slotMin < nextStart) result += TimelineItem.EmptySlot(slotMin / 60, slotMin % 60)
+        }
+    }
+    return result
+}
+
+private fun roundUp30(minutes: Int) = ((minutes + 29) / 30) * 30
+
 @Composable
 fun DailyScheduleScreen(
     viewModel: ScheduleViewModel,
     onBack: () -> Unit,
     onStartTask: (ScheduledTask) -> Unit,
+    onAddTaskAtTime: (hour: Int, minute: Int) -> Unit = { _, _ -> },
 ) {
     val colors = KidFocusTheme.colors
     val tasks by viewModel.tasks.collectAsState()
@@ -144,24 +180,36 @@ fun DailyScheduleScreen(
                     }
                 }
             } else {
+                val timeline = buildTimeline(tasksForDay)
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(0.dp),
                 ) {
-                    items(tasksForDay) { task ->
-                        val taskMinutes = task.hour * 60 + task.minute
-                        val nowMinutes = nowHour * 60 + nowMin
-                        val isPast = isToday && taskMinutes + task.focusDurationMinutes < nowMinutes
-                        val isCurrent = isToday && taskMinutes <= nowMinutes && nowMinutes < taskMinutes + task.focusDurationMinutes
-
-                        TimelineTaskItem(
-                            task = task,
-                            isPast = isPast,
-                            isCurrent = isCurrent,
-                            onStart = { onStartTask(task) },
-                        )
+                    items(timeline) { item ->
+                        when (item) {
+                            is TimelineItem.Task -> {
+                                val task = item.task
+                                val taskMinutes = task.hour * 60 + task.minute
+                                val nowMinutes = nowHour * 60 + nowMin
+                                val isPast = isToday && taskMinutes + task.focusDurationMinutes < nowMinutes
+                                val isCurrent = isToday && taskMinutes <= nowMinutes && nowMinutes < taskMinutes + task.focusDurationMinutes
+                                TimelineTaskItem(
+                                    task = task,
+                                    isPast = isPast,
+                                    isCurrent = isCurrent,
+                                    onStart = { onStartTask(task) },
+                                )
+                            }
+                            is TimelineItem.EmptySlot -> {
+                                EmptySlotItem(
+                                    hour = item.hour,
+                                    minute = item.minute,
+                                    onAdd = { onAddTaskAtTime(item.hour, item.minute) },
+                                )
+                            }
+                        }
                     }
                     item { Spacer(modifier = Modifier.height(32.dp)) }
                 }
@@ -344,6 +392,76 @@ private fun TimelineTaskItem(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun EmptySlotItem(hour: Int, minute: Int, onAdd: () -> Unit) {
+    val colors = KidFocusTheme.colors
+    val timeStr = "%02d:%02d".format(hour, minute)
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        // Time label
+        Text(
+            text = timeStr,
+            style = MaterialTheme.typography.labelMedium,
+            color = colors.onBackground.copy(alpha = 0.25f),
+            modifier = Modifier.width(48.dp),
+        )
+
+        // Dotted line connector
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(horizontal = 8.dp),
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .clip(CircleShape)
+                    .background(colors.onBackground.copy(alpha = 0.1f)),
+            )
+            Box(
+                modifier = Modifier
+                    .width(2.dp)
+                    .height(40.dp)
+                    .background(colors.onBackground.copy(alpha = 0.06f)),
+            )
+        }
+
+        // Add button card
+        OutlinedCard(
+            modifier = Modifier
+                .weight(1f)
+                .clickable { onAdd() },
+            shape = RoundedCornerShape(12.dp),
+            border = BorderStroke(1.dp, colors.primary.copy(alpha = 0.25f)),
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    text = "+",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = colors.primary.copy(alpha = 0.6f),
+                    fontWeight = FontWeight.Bold,
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "Thêm hoạt động lúc $timeStr",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.primary.copy(alpha = 0.6f),
+                )
             }
         }
     }

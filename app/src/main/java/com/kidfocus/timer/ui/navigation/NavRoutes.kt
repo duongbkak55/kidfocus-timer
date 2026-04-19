@@ -48,9 +48,10 @@ sealed class NavRoutes(val route: String) {
     /** Daily timeline view showing today's (or any day's) tasks. */
     data object DailySchedule : NavRoutes("daily_schedule")
 
-    /** Task edit/create screen. Receives serialized task id (0 = new). */
-    data object TaskEdit : NavRoutes("task_edit/{$ARG_TASK_ID}/{$ARG_TASK_TYPE}") {
-        fun buildRoute(taskId: Long, taskType: String) = "task_edit/$taskId/$taskType"
+    /** Task edit/create screen. Receives task id (0=new), type, and optional pre-filled hour/minute. */
+    data object TaskEdit : NavRoutes("task_edit/{$ARG_TASK_ID}/{$ARG_TASK_TYPE}/{$ARG_HOUR}/{$ARG_MINUTE}") {
+        fun buildRoute(taskId: Long, taskType: String, hour: Int = -1, minute: Int = -1) =
+            "task_edit/$taskId/$taskType/$hour/$minute"
     }
 
     companion object {
@@ -58,5 +59,7 @@ sealed class NavRoutes(val route: String) {
         const val ARG_DESTINATION = "destination"
         const val ARG_TASK_ID = "task_id"
         const val ARG_TASK_TYPE = "task_type"
+        const val ARG_HOUR = "hour"
+        const val ARG_MINUTE = "minute"
     }
 }

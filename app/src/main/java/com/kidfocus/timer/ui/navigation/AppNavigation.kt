@@ -217,6 +217,7 @@ fun AppNavigation(
                 onNewTask = { taskType ->
                     navController.navigate(NavRoutes.TaskEdit.buildRoute(0L, taskType.name))
                 },
+
             )
         }
 
@@ -230,6 +231,9 @@ fun AppNavigation(
                     timerViewModel.startFocus(seconds)
                     navController.navigate(NavRoutes.Focus.route)
                 },
+                onAddTaskAtTime = { hour, minute ->
+                    navController.navigate(NavRoutes.TaskEdit.buildRoute(0L, TaskType.CUSTOM.name, hour, minute))
+                },
             )
         }
 
@@ -239,14 +243,19 @@ fun AppNavigation(
             arguments = listOf(
                 navArgument(NavRoutes.ARG_TASK_ID) { type = NavType.LongType },
                 navArgument(NavRoutes.ARG_TASK_TYPE) { type = NavType.StringType },
+                navArgument(NavRoutes.ARG_HOUR) { type = NavType.IntType; defaultValue = -1 },
+                navArgument(NavRoutes.ARG_MINUTE) { type = NavType.IntType; defaultValue = -1 },
             ),
         ) { backStack ->
             val taskId = backStack.arguments?.getLong(NavRoutes.ARG_TASK_ID) ?: 0L
             val taskTypeName = backStack.arguments?.getString(NavRoutes.ARG_TASK_TYPE) ?: TaskType.CUSTOM.name
+            val preHour = backStack.arguments?.getInt(NavRoutes.ARG_HOUR) ?: -1
+            val preMinute = backStack.arguments?.getInt(NavRoutes.ARG_MINUTE) ?: -1
             val taskType = runCatching { TaskType.valueOf(taskTypeName) }.getOrDefault(TaskType.CUSTOM)
             val tasks by scheduleViewModel.tasks.collectAsState()
             val existing = tasks.find { it.id == taskId }
-            val task = existing ?: scheduleViewModel.taskFromType(taskType)
+            val base = existing ?: scheduleViewModel.taskFromType(taskType)
+            val task = if (preHour >= 0) base.copy(hour = preHour, minute = preMinute.coerceAtLeast(0)) else base
             TaskEditScreen(
                 task = task,
                 viewModel = scheduleViewModel,
