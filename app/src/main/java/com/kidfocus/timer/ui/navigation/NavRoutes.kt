@@ -54,6 +54,9 @@ sealed class NavRoutes(val route: String) {
             "task_edit/$taskId/$taskType/$hour/$minute"
     }
 
+    /** AI homework chat screen. */
+    data object AiChat : NavRoutes("ai_chat")
+
     companion object {
         const val ARG_MINUTES = "minutes"
         const val ARG_DESTINATION = "destination"

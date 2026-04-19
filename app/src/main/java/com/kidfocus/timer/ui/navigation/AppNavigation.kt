@@ -13,6 +13,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.kidfocus.timer.domain.model.TaskType
+import com.kidfocus.timer.ui.screens.AiChatScreen
 import com.kidfocus.timer.ui.screens.BreakScreen
 import com.kidfocus.timer.ui.screens.CelebrationScreen
 import com.kidfocus.timer.ui.screens.FocusScreen
@@ -101,6 +102,7 @@ fun AppNavigation(
                         navController.navigate(NavRoutes.ParentSettings.route)
                     }
                 },
+                onOpenAiChat = { navController.navigate(NavRoutes.AiChat.route) },
             )
         }
 
@@ -235,6 +237,11 @@ fun AppNavigation(
                     navController.navigate(NavRoutes.TaskEdit.buildRoute(0L, TaskType.CUSTOM.name, hour, minute))
                 },
             )
+        }
+
+        // ---- AI Chat -------------------------------------------------------------------------
+        composable(NavRoutes.AiChat.route) {
+            AiChatScreen(onBack = { navController.popBackStack() })
         }
 
         // ---- Task Edit -----------------------------------------------------------------------

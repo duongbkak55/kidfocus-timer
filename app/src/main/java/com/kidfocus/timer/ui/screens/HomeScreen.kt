@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -57,6 +58,7 @@ fun HomeScreen(
     onOpenTheme: () -> Unit,
     onOpenParentSettings: () -> Unit,
     onOpenDailySchedule: () -> Unit = {},
+    onOpenAiChat: () -> Unit = {},
     homeViewModel: HomeViewModel = hiltViewModel(),
 ) {
     val colors = KidFocusTheme.colors
@@ -299,6 +301,43 @@ fun HomeScreen(
                     color = colors.onPrimary,
                     fontWeight = FontWeight.Bold,
                 )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // AI chat button
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = colors.surface,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onOpenAiChat() },
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text("🦉", fontSize = 24.sp)
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Hỏi bài cùng Cú học",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = colors.primary,
+                        )
+                        Text(
+                            text = "AI giải đáp mọi câu hỏi học tập",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.onBackground.copy(alpha = 0.5f),
+                        )
+                    }
+                    Icon(
+                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = colors.primary,
+                    )
+                }
             }
         }
     }

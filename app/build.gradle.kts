@@ -115,6 +115,10 @@ dependencies {
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
 
+    // Google Sign-In + Gemini AI
+    implementation(libs.play.services.auth)
+    implementation(libs.okhttp)
+
     // Testing
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
