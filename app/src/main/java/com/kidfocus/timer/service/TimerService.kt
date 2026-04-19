@@ -237,7 +237,7 @@ class TimerService : Service() {
         startForeground(
             KidFocusApp.TIMER_NOTIFICATION_ID,
             buildNotification(
-                remaining = _timerState.value.remainingSeconds,
+                remainingSeconds = _timerState.value.remainingSeconds,
                 phase = _timerState.value.phase,
             )
         )
