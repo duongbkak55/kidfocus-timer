@@ -33,6 +33,7 @@ Trả lời tối đa 4-5 câu, dùng ví dụ cụ thể khi cần."""
 
     suspend fun chat(history: List<ChatMessage>, apiKey: String): Result<String> =
         withContext(Dispatchers.IO) {
+            android.util.Log.d("GeminiApi", "key=${apiKey.take(8)}... len=${apiKey.length}")
             try {
                 val contentsArray = JSONArray()
                 history.forEach { msg ->
@@ -61,6 +62,7 @@ Trả lời tối đa 4-5 câu, dùng ví dụ cụ thể khi cần."""
                 val responseBody = response.body?.string() ?: ""
 
                 if (!response.isSuccessful) {
+                    android.util.Log.e("GeminiApi", "HTTP ${response.code}: $responseBody")
                     return@withContext Result.failure(Exception("API_ERROR_${response.code}"))
                 }
 
