@@ -78,6 +78,17 @@ android {
         buildConfig = true
     }
 
+    // Inject OpenRouter API key from env var (CI) or local.properties (dev)
+    val localProps = Properties().apply {
+        val f = rootProject.file("local.properties")
+        if (f.exists()) load(f.inputStream())
+    }
+    val openRouterKey = System.getenv("OPENROUTER_API_KEY")
+        ?: localProps.getProperty("OPENROUTER_API_KEY", "")
+    defaultConfig {
+        buildConfigField("String", "OPENROUTER_API_KEY", "\"$openRouterKey\"")
+    }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"

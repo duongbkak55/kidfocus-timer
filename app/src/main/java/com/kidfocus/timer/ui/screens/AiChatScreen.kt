@@ -66,7 +66,6 @@ fun AiChatScreen(
 ) {
     val messages by viewModel.messages.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-    val apiKey by viewModel.apiKey.collectAsState()
     val colors = KidFocusTheme.colors
     val listState = rememberLazyListState()
 
@@ -98,27 +97,23 @@ fun AiChatScreen(
             )
         }
 
-        if (apiKey.isNullOrBlank()) {
-            NoApiKeyPrompt(colors = colors)
-        } else {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier.weight(1f).padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                item { Spacer(modifier = Modifier.height(8.dp)) }
-                items(messages) { msg -> ChatBubble(msg = msg, colors = colors) }
-                if (isLoading) {
-                    item { TypingIndicator(colors = colors) }
-                }
-                item { Spacer(modifier = Modifier.height(8.dp)) }
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.weight(1f).padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            item { Spacer(modifier = Modifier.height(8.dp)) }
+            items(messages) { msg -> ChatBubble(msg = msg, colors = colors) }
+            if (isLoading) {
+                item { TypingIndicator(colors = colors) }
             }
-            ChatInput(
-                isLoading = isLoading,
-                colors = colors,
-                onSend = { viewModel.sendMessage(it) },
-            )
+            item { Spacer(modifier = Modifier.height(8.dp)) }
         }
+        ChatInput(
+            isLoading = isLoading,
+            colors = colors,
+            onSend = { viewModel.sendMessage(it) },
+        )
     }
 }
 

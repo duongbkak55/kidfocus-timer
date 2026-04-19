@@ -1,5 +1,6 @@
 package com.kidfocus.timer.data.remote
 
+import com.kidfocus.timer.BuildConfig
 import com.kidfocus.timer.domain.model.ChatMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -16,9 +17,8 @@ import javax.inject.Singleton
 @Singleton
 class GeminiApi @Inject constructor() {
     companion object {
-        private const val BASE_URL =
-            "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent"
-
+        private const val ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
+        private const val MODEL = "google/gemini-2.0-flash-exp:free"
         private const val SYSTEM_PROMPT = """Bạn là trợ lý học tập thân thiện tên là "Cú học" 🦉, dành cho học sinh tiểu học và trung học cơ sở Việt Nam.
 Hãy giải thích ngắn gọn, dễ hiểu, dùng tiếng Việt đơn giản phù hợp với trẻ em.
 Chỉ trả lời câu hỏi liên quan đến học tập, bài vở, kiến thức phổ thông.
@@ -31,36 +31,30 @@ Trả lời tối đa 4-5 câu, dùng ví dụ cụ thể khi cần."""
         .readTimeout(30, TimeUnit.SECONDS)
         .build()
 
-    suspend fun chat(history: List<ChatMessage>, apiKey: String): Result<String> =
+    suspend fun chat(history: List<ChatMessage>): Result<String> =
         withContext(Dispatchers.IO) {
-            android.util.Log.d("GeminiApi", "key=${apiKey.take(8)}... len=${apiKey.length}")
             try {
-                val contentsArray = JSONArray()
-                // Prepend system prompt as first user/model exchange
-                contentsArray.put(
-                    JSONObject().put("role", "user")
-                        .put("parts", JSONArray().put(JSONObject().put("text", SYSTEM_PROMPT)))
-                )
-                contentsArray.put(
-                    JSONObject().put("role", "model")
-                        .put("parts", JSONArray().put(JSONObject().put("text", "Được rồi! Tôi sẽ hỗ trợ bé học tập nhé 🦉")))
-                )
+                val messages = JSONArray()
+                messages.put(JSONObject().put("role", "system").put("content", SYSTEM_PROMPT))
                 history.forEach { msg ->
-                    contentsArray.put(
+                    messages.put(
                         JSONObject()
-                            .put("role", if (msg.isUser) "user" else "model")
-                            .put("parts", JSONArray().put(JSONObject().put("text", msg.content)))
+                            .put("role", if (msg.isUser) "user" else "assistant")
+                            .put("content", msg.content)
                     )
                 }
 
                 val body = JSONObject()
-                    .put("contents", contentsArray)
-                    .put("generationConfig", JSONObject().put("maxOutputTokens", 600).put("temperature", 0.7))
+                    .put("model", MODEL)
+                    .put("messages", messages)
+                    .put("max_tokens", 600)
                     .toString()
 
                 val request = Request.Builder()
-                    .url("$BASE_URL?key=$apiKey")
+                    .url(ENDPOINT)
                     .post(body.toRequestBody("application/json".toMediaType()))
+                    .header("Authorization", "Bearer ${BuildConfig.OPENROUTER_API_KEY}")
+                    .header("HTTP-Referer", "com.kidfocus.timer")
                     .build()
 
                 val response = client.newCall(request).execute()
@@ -72,15 +66,14 @@ Trả lời tối đa 4-5 câu, dùng ví dụ cụ thể khi cần."""
                 }
 
                 val text = JSONObject(responseBody)
-                    .getJSONArray("candidates")
+                    .getJSONArray("choices")
                     .getJSONObject(0)
-                    .getJSONObject("content")
-                    .getJSONArray("parts")
-                    .getJSONObject(0)
-                    .getString("text")
+                    .getJSONObject("message")
+                    .getString("content")
 
                 Result.success(text.trim())
             } catch (e: Exception) {
+                android.util.Log.e("GeminiApi", "Exception: ${e.message}")
                 Result.failure(e)
             }
         }
