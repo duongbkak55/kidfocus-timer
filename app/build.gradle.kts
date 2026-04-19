@@ -5,6 +5,12 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+// Load keystore.properties if it exists (local dev); CI uses env vars via signingConfig below
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = java.util.Properties().apply {
+    if (keystorePropertiesFile.exists()) load(keystorePropertiesFile.inputStream())
+}
+
 android {
     namespace = "com.kidfocus.timer"
     compileSdk = 34
@@ -22,10 +28,21 @@ android {
         }
     }
 
+    signingConfigs {
+        create("release") {
+            keyAlias     = (keystoreProperties["keyAlias"]     ?: System.getenv("KEY_ALIAS")      ?: "") as String
+            keyPassword  = (keystoreProperties["keyPassword"]  ?: System.getenv("KEY_PASSWORD")   ?: "") as String
+            storePassword = (keystoreProperties["storePassword"] ?: System.getenv("STORE_PASSWORD") ?: "") as String
+            val storePath = (keystoreProperties["storeFile"] ?: System.getenv("KEYSTORE_PATH")) as String?
+            if (!storePath.isNullOrBlank()) storeFile = file(storePath)
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

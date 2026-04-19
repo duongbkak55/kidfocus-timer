@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KidFocus Timer – Đồng Hồ Học Tập Cho Bé</title>
+  <meta name="description" content="Ứng dụng đồng hồ Pomodoro và lịch sinh hoạt dành riêng cho trẻ em 5–12 tuổi. Miễn phí, không quảng cáo, hoạt động offline.">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f9ff; color: #1e293b; }
+
+    /* Hero */
+    .hero { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: white; padding: 80px 24px; text-align: center; }
+    .hero .emoji { font-size: 72px; margin-bottom: 16px; display: block; }
+    .hero h1 { font-size: 36px; font-weight: 800; margin-bottom: 8px; }
+    .hero .sub { font-size: 18px; opacity: 0.9; margin-bottom: 32px; }
+    .btn { display: inline-block; background: white; color: #0284c7; font-weight: 700; font-size: 16px; padding: 14px 32px; border-radius: 50px; text-decoration: none; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,0.2); transition: all 0.2s; }
+    .badges { margin-top: 24px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .badge { background: rgba(255,255,255,0.2); padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+
+    /* Features */
+    .features { max-width: 900px; margin: 0 auto; padding: 64px 24px; }
+    .features h2 { text-align: center; font-size: 28px; color: #0f172a; margin-bottom: 8px; }
+    .features .subtitle { text-align: center; color: #64748b; margin-bottom: 48px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; }
+    .card { background: white; border-radius: 16px; padding: 28px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .card .icon { font-size: 36px; margin-bottom: 12px; }
+    .card h3 { font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
+    .card p { font-size: 14px; color: #64748b; line-height: 1.6; }
+
+    /* Categories */
+    .categories { background: white; padding: 64px 24px; }
+    .categories .inner { max-width: 900px; margin: 0 auto; }
+    .categories h2 { text-align: center; font-size: 28px; margin-bottom: 8px; }
+    .categories .subtitle { text-align: center; color: #64748b; margin-bottom: 40px; }
+    .cat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+    .cat { border-radius: 14px; padding: 20px; text-align: center; }
+    .cat.study       { background: #eff6ff; }
+    .cat.hygiene     { background: #f0fdf4; }
+    .cat.chores      { background: #fefce8; }
+    .cat.entertainment { background: #fdf4ff; }
+    .cat .emoji { font-size: 32px; display: block; margin-bottom: 8px; }
+    .cat h3 { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+    .cat ul { list-style: none; font-size: 13px; color: #64748b; }
+    .cat ul li::before { content: "• "; }
+
+    /* Download */
+    .download { background: linear-gradient(135deg, #0284c7 0%, #7c3aed 100%); color: white; text-align: center; padding: 64px 24px; }
+    .download h2 { font-size: 28px; font-weight: 800; margin-bottom: 12px; }
+    .download p { opacity: 0.9; margin-bottom: 32px; font-size: 16px; }
+
+    footer { text-align: center; padding: 32px 24px; font-size: 13px; color: #94a3b8; }
+    footer a { color: #0284c7; }
+  </style>
+</head>
+<body>
+
+  <section class="hero">
+    <span class="emoji">⏰</span>
+    <h1>KidFocus Timer</h1>
+    <p class="sub">Đồng hồ học tập & lịch sinh hoạt dành riêng cho bé</p>
+    <a href="https://play.google.com/store/apps/details?id=com.kidfocus.timer" class="btn">📲 Tải miễn phí trên Google Play</a>
+    <div class="badges">
+      <span class="badge">✅ Không quảng cáo</span>
+      <span class="badge">✅ Không mua thêm</span>
+      <span class="badge">✅ Hoạt động offline</span>
+      <span class="badge">✅ Dành cho bé 5–12 tuổi</span>
+    </div>
+  </section>
+
+  <section class="features">
+    <h2>Tính năng nổi bật</h2>
+    <p class="subtitle">Mọi thứ bố mẹ cần để giúp con xây dựng thói quen tốt</p>
+    <div class="grid">
+      <div class="card">
+        <div class="icon">⏱️</div>
+        <h3>Đồng hồ Pomodoro</h3>
+        <p>Tùy chỉnh thời gian tập trung 10–120 phút, nghỉ 5–30 phút. Chuông & rung báo hiệu kết thúc phiên.</p>
+      </div>
+      <div class="card">
+        <div class="icon">📅</div>
+        <h3>Lịch sinh hoạt hàng ngày</h3>
+        <p>Timeline theo giờ, điều hướng theo tuần. Thêm nhanh vào khung giờ trống. Xem lịch cả ngày một cái nhìn.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🔒</div>
+        <h3>Khóa PIN phụ huynh</h3>
+        <p>Bảo vệ cài đặt, trẻ không thể tự ý thay đổi. Phụ huynh toàn quyền kiểm soát.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🦉</div>
+        <h3>Linh vật cú mèo dễ thương</h3>
+        <p>Hoạt hình động trong giờ nghỉ, giúp bé thư giãn và hứng khởi quay lại học.</p>
+      </div>
+      <div class="card">
+        <div class="icon">📊</div>
+        <h3>Theo dõi tiến độ</h3>
+        <p>Lịch sử phiên học, thanh tiến trình mục tiêu hàng ngày. Động lực để bé hoàn thành đủ phiên.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🎨</div>
+        <h3>3 giao diện màu sắc</h3>
+        <p>Đại dương · Rừng xanh · Hoàng hôn. Bé tự chọn giao diện yêu thích!</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="categories">
+    <div class="inner">
+      <h2>17 loại nhiệm vụ sắp xếp sẵn</h2>
+      <p class="subtitle">Phụ huynh chỉ cần bật — không cần tự tạo từ đầu</p>
+      <div class="cat-grid">
+        <div class="cat study">
+          <span class="emoji">📚</span>
+          <h3>Học tập</h3>
+          <ul>
+            <li>Học buổi sáng</li>
+            <li>Học buổi chiều</li>
+            <li>Làm bài tập</li>
+            <li>Đọc sách</li>
+            <li>Học cuối tuần</li>
+            <li>Học nhạc</li>
+          </ul>
+        </div>
+        <div class="cat hygiene">
+          <span class="emoji">🧼</span>
+          <h3>Vệ sinh & Sức khỏe</h3>
+          <ul>
+            <li>Tắm rửa</li>
+            <li>Đánh răng</li>
+            <li>Tập thể dục</li>
+            <li>Chuẩn bị ngủ</li>
+          </ul>
+        </div>
+        <div class="cat chores">
+          <span class="emoji">🏠</span>
+          <h3>Sinh hoạt hàng ngày</h3>
+          <ul>
+            <li>Dọn giường</li>
+            <li>Dọn phòng</li>
+            <li>Rửa bát</li>
+          </ul>
+        </div>
+        <div class="cat entertainment">
+          <span class="emoji">🎉</span>
+          <h3>Giải trí (có giới hạn)</h3>
+          <ul>
+            <li>Chơi game</li>
+            <li>Xem TV / YouTube</li>
+            <li>Vui chơi ngoài trời</li>
+            <li>Vẽ & Sáng tạo</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="download">
+    <h2>Tải KidFocus Timer ngay hôm nay</h2>
+    <p>Miễn phí · Không quảng cáo · Không mua thêm · Hoạt động offline</p>
+    <a href="https://play.google.com/store/apps/details?id=com.kidfocus.timer" class="btn">📲 Google Play</a>
+  </section>
+
+  <footer>
+    <p>© 2025 KidFocus Timer &nbsp;·&nbsp; <a href="privacy-policy.html">Chính sách quyền riêng tư</a> &nbsp;·&nbsp; <a href="mailto:duongbkak55.us@gmail.com">Liên hệ</a></p>
+  </footer>
+
+</body>
+</html>

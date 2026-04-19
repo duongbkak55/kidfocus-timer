@@ -1,14 +1,13 @@
-name: Build Release APK
+name: Build & Publish Release AAB
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 jobs:
   build:
-    name: Build and Sign Release APK
+    name: Build and Sign Release AAB
     runs-on: ubuntu-latest
 
     steps:
@@ -36,27 +35,34 @@ jobs:
             ~/.gradle/caches
             ~/.gradle/wrapper
           key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            gradle-${{ runner.os }}-
+          restore-keys: gradle-${{ runner.os }}-
 
-      - name: Build release APK
-        run: ./gradlew assembleRelease
+      - name: Decode keystore and write keystore.properties
+        run: |
+          echo "${{ secrets.SIGNING_KEY_BASE64 }}" | base64 -d > keystore.jks
+          cat > keystore.properties << EOF
+          storeFile=../keystore.jks
+          storePassword=${{ secrets.SIGNING_STORE_PASSWORD }}
+          keyAlias=${{ secrets.SIGNING_KEY_ALIAS }}
+          keyPassword=${{ secrets.SIGNING_KEY_PASSWORD }}
+          EOF
 
-      - name: Sign release APK
-        id: sign_apk
-        uses: r0adkll/sign-android-release@v1
-        with:
-          releaseDirectory: app/build/outputs/apk/release
-          signingKeyBase64: ${{ secrets.SIGNING_KEY_BASE64 }}
-          alias: ${{ secrets.SIGNING_KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.SIGNING_STORE_PASSWORD }}
-          keyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
-        env:
-          BUILD_TOOLS_VERSION: "34.0.0"
+      - name: Build signed release AAB
+        run: ./gradlew bundleRelease
 
-      - name: Upload signed APK
+      - name: Upload AAB artifact
         uses: actions/upload-artifact@v4
         with:
-          name: kidfocus-release
-          path: ${{ steps.sign_apk.outputs.signedReleaseFile }}
+          name: kidfocus-release-aab
+          path: app/build/outputs/bundle/release/app-release.aab
+          retention-days: 30
+
+      - name: Build signed release APK (for direct install / testing)
+        run: ./gradlew assembleRelease
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kidfocus-release-apk
+          path: app/build/outputs/apk/release/app-release.apk
           retention-days: 30
