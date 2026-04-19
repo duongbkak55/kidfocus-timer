@@ -20,6 +20,7 @@ import com.kidfocus.timer.ui.screens.HomeScreen
 import com.kidfocus.timer.ui.screens.OnboardingScreen
 import com.kidfocus.timer.ui.screens.ParentSettingsScreen
 import com.kidfocus.timer.ui.screens.PinEntryScreen
+import com.kidfocus.timer.ui.screens.DailyScheduleScreen
 import com.kidfocus.timer.ui.screens.ScheduleScreen
 import com.kidfocus.timer.ui.screens.TaskEditScreen
 import com.kidfocus.timer.ui.screens.ThemeScreen
@@ -86,8 +87,10 @@ fun AppNavigation(
             HomeScreen(
                 timerViewModel = timerViewModel,
                 settingsViewModel = settingsViewModel,
+                scheduleViewModel = scheduleViewModel,
                 onStartFocus = { navController.navigate(NavRoutes.Focus.route) },
                 onOpenTheme = { navController.navigate(NavRoutes.Theme.route) },
+                onOpenDailySchedule = { navController.navigate(NavRoutes.DailySchedule.route) },
                 onOpenParentSettings = {
                     val current = settingsViewModel.settings.value
                     if (current?.hasPinSet == true) {
@@ -213,6 +216,19 @@ fun AppNavigation(
                 },
                 onNewTask = { taskType ->
                     navController.navigate(NavRoutes.TaskEdit.buildRoute(0L, taskType.name))
+                },
+            )
+        }
+
+        // ---- Daily Schedule ------------------------------------------------------------------
+        composable(NavRoutes.DailySchedule.route) {
+            DailyScheduleScreen(
+                viewModel = scheduleViewModel,
+                onBack = { navController.popBackStack() },
+                onStartTask = { task ->
+                    val seconds = task.focusDurationMinutes * 60
+                    timerViewModel.startFocus(seconds)
+                    navController.navigate(NavRoutes.Focus.route)
                 },
             )
         }

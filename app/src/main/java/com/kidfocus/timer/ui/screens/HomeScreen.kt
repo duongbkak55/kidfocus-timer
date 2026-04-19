@@ -1,6 +1,7 @@
 package com.kidfocus.timer.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
@@ -32,13 +34,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kidfocus.timer.domain.model.TimerPhase
 import com.kidfocus.timer.ui.components.MascotWidget
 import com.kidfocus.timer.ui.theme.KidFocusTheme
 import com.kidfocus.timer.ui.viewmodel.HomeViewModel
+import com.kidfocus.timer.ui.viewmodel.ScheduleViewModel
 import com.kidfocus.timer.ui.viewmodel.SettingsViewModel
 import com.kidfocus.timer.ui.viewmodel.TimerViewModel
+import java.util.Calendar
 
 /**
  * Home screen displaying today's stats, the mascot, and the start focus button.
@@ -47,9 +52,11 @@ import com.kidfocus.timer.ui.viewmodel.TimerViewModel
 fun HomeScreen(
     timerViewModel: TimerViewModel,
     settingsViewModel: SettingsViewModel,
+    scheduleViewModel: ScheduleViewModel,
     onStartFocus: () -> Unit,
     onOpenTheme: () -> Unit,
     onOpenParentSettings: () -> Unit,
+    onOpenDailySchedule: () -> Unit = {},
     homeViewModel: HomeViewModel = hiltViewModel(),
 ) {
     val colors = KidFocusTheme.colors
@@ -57,6 +64,11 @@ fun HomeScreen(
     val focusMinutes by homeViewModel.todayFocusMinutes.collectAsState()
     val focusCount by homeViewModel.todayFocusCount.collectAsState()
     val goalProgress by homeViewModel.dailyGoalProgress.collectAsState()
+    val allTasks by scheduleViewModel.tasks.collectAsState()
+    val todayDow = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
+    val todayTasks = allTasks
+        .filter { it.enabled && todayDow in it.daysOfWeek }
+        .sortedWith(compareBy({ it.hour }, { it.minute }))
 
     Box(
         modifier = Modifier
@@ -181,7 +193,80 @@ fun HomeScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Today's schedule preview
+            if (todayTasks.isNotEmpty()) {
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = colors.surface,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onOpenDailySchedule() },
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = "📅 Lịch hôm nay",
+                                style = MaterialTheme.typography.titleSmall,
+                                color = colors.primary,
+                                fontWeight = FontWeight.Bold,
+                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "${todayTasks.size} hoạt động",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = colors.onBackground.copy(alpha = 0.5f),
+                                )
+                                Icon(
+                                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                    contentDescription = null,
+                                    tint = colors.onBackground.copy(alpha = 0.4f),
+                                    modifier = Modifier.size(16.dp),
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        val nowMin = Calendar.getInstance().let { it.get(Calendar.HOUR_OF_DAY) * 60 + it.get(Calendar.MINUTE) }
+                        val upcoming = todayTasks.filter { it.hour * 60 + it.minute >= nowMin }.take(3)
+                        val preview = upcoming.ifEmpty { todayTasks.take(3) }
+                        preview.forEach { task ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(vertical = 2.dp),
+                            ) {
+                                Text(task.emoji, fontSize = 14.sp)
+                                Spacer(Modifier.size(6.dp))
+                                Text(
+                                    text = task.timeFormatted,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = colors.onBackground.copy(alpha = 0.45f),
+                                )
+                                Spacer(Modifier.size(6.dp))
+                                Text(
+                                    text = task.name,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = colors.onBackground.copy(alpha = 0.8f),
+                                )
+                            }
+                        }
+                        if (todayTasks.size > 3) {
+                            Text(
+                                text = "+${todayTasks.size - 3} hoạt động khác",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = colors.primary.copy(alpha = 0.7f),
+                                modifier = Modifier.padding(top = 4.dp),
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Timer settings summary
             val focus = settings?.focusDurationMinutes ?: 25

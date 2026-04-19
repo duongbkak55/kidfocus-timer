@@ -45,6 +45,9 @@ sealed class NavRoutes(val route: String) {
     /** Schedule management screen (list of scheduled tasks). */
     data object Schedule : NavRoutes("schedule")
 
+    /** Daily timeline view showing today's (or any day's) tasks. */
+    data object DailySchedule : NavRoutes("daily_schedule")
+
     /** Task edit/create screen. Receives serialized task id (0 = new). */
     data object TaskEdit : NavRoutes("task_edit/{$ARG_TASK_ID}/{$ARG_TASK_TYPE}") {
         fun buildRoute(taskId: Long, taskType: String) = "task_edit/$taskId/$taskType"
