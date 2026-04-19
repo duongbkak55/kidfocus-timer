@@ -46,6 +46,7 @@ fun ParentSettingsScreen(
     settingsViewModel: SettingsViewModel,
     onBack: () -> Unit,
     onSetPin: () -> Unit,
+    onOpenSchedule: () -> Unit = {},
 ) {
     val colors = KidFocusTheme.colors
     val settings by settingsViewModel.settings.collectAsState()
@@ -83,6 +84,27 @@ fun ParentSettingsScreen(
                     text = "Cài đặt phụ huynh",
                     style = MaterialTheme.typography.headlineSmall,
                     color = colors.onBackground,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Section: Schedule
+            SectionHeader(text = "Lịch học")
+            Spacer(modifier = Modifier.height(12.dp))
+            Button(
+                onClick = onOpenSchedule,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = colors.primary),
+            ) {
+                Text(
+                    text = "📅  Quản lý lịch học",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = colors.onPrimary,
                     fontWeight = FontWeight.Bold,
                 )
             }

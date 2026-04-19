@@ -12,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.kidfocus.timer.domain.model.TaskType
 import com.kidfocus.timer.ui.screens.BreakScreen
 import com.kidfocus.timer.ui.screens.CelebrationScreen
 import com.kidfocus.timer.ui.screens.FocusScreen
@@ -19,7 +20,10 @@ import com.kidfocus.timer.ui.screens.HomeScreen
 import com.kidfocus.timer.ui.screens.OnboardingScreen
 import com.kidfocus.timer.ui.screens.ParentSettingsScreen
 import com.kidfocus.timer.ui.screens.PinEntryScreen
+import com.kidfocus.timer.ui.screens.ScheduleScreen
+import com.kidfocus.timer.ui.screens.TaskEditScreen
 import com.kidfocus.timer.ui.screens.ThemeScreen
+import com.kidfocus.timer.ui.viewmodel.ScheduleViewModel
 import com.kidfocus.timer.ui.viewmodel.SettingsViewModel
 import com.kidfocus.timer.ui.viewmodel.TimerViewModel
 
@@ -47,6 +51,7 @@ fun AppNavigation(
 
     // Shared TimerViewModel scoped to the nav graph so Focus and Break screens share state
     val timerViewModel: TimerViewModel = hiltViewModel()
+    val scheduleViewModel: ScheduleViewModel = hiltViewModel()
 
     Box(modifier = modifier.fillMaxSize()) {
     NavHost(
@@ -194,6 +199,42 @@ fun AppNavigation(
                     navController.popBackStack()
                 },
                 onSetPin = { navController.navigate(NavRoutes.PinSetup.route) },
+                onOpenSchedule = { navController.navigate(NavRoutes.Schedule.route) },
+            )
+        }
+
+        // ---- Schedule ------------------------------------------------------------------------
+        composable(NavRoutes.Schedule.route) {
+            ScheduleScreen(
+                viewModel = scheduleViewModel,
+                onBack = { navController.popBackStack() },
+                onEditTask = { task ->
+                    navController.navigate(NavRoutes.TaskEdit.buildRoute(task.id, task.taskType.name))
+                },
+                onNewTask = { taskType ->
+                    navController.navigate(NavRoutes.TaskEdit.buildRoute(0L, taskType.name))
+                },
+            )
+        }
+
+        // ---- Task Edit -----------------------------------------------------------------------
+        composable(
+            route = NavRoutes.TaskEdit.route,
+            arguments = listOf(
+                navArgument(NavRoutes.ARG_TASK_ID) { type = NavType.LongType },
+                navArgument(NavRoutes.ARG_TASK_TYPE) { type = NavType.StringType },
+            ),
+        ) { backStack ->
+            val taskId = backStack.arguments?.getLong(NavRoutes.ARG_TASK_ID) ?: 0L
+            val taskTypeName = backStack.arguments?.getString(NavRoutes.ARG_TASK_TYPE) ?: TaskType.CUSTOM.name
+            val taskType = runCatching { TaskType.valueOf(taskTypeName) }.getOrDefault(TaskType.CUSTOM)
+            val tasks by scheduleViewModel.tasks.collectAsState()
+            val existing = tasks.find { it.id == taskId }
+            val task = existing ?: scheduleViewModel.taskFromType(taskType)
+            TaskEditScreen(
+                task = task,
+                viewModel = scheduleViewModel,
+                onBack = { navController.popBackStack() },
             )
         }
     }

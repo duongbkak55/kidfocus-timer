@@ -42,8 +42,18 @@ sealed class NavRoutes(val route: String) {
     /** Parent-only settings screen, accessible after PIN verification. */
     data object ParentSettings : NavRoutes("parent_settings")
 
+    /** Schedule management screen (list of scheduled tasks). */
+    data object Schedule : NavRoutes("schedule")
+
+    /** Task edit/create screen. Receives serialized task id (0 = new). */
+    data object TaskEdit : NavRoutes("task_edit/{$ARG_TASK_ID}/{$ARG_TASK_TYPE}") {
+        fun buildRoute(taskId: Long, taskType: String) = "task_edit/$taskId/$taskType"
+    }
+
     companion object {
         const val ARG_MINUTES = "minutes"
         const val ARG_DESTINATION = "destination"
+        const val ARG_TASK_ID = "task_id"
+        const val ARG_TASK_TYPE = "task_type"
     }
 }
