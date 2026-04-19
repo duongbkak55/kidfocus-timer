@@ -9,6 +9,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -43,8 +45,14 @@ class MainActivity : ComponentActivity() {
             val appTheme = settings?.appTheme ?: AppTheme.OCEAN
 
             KidFocusTheme(appTheme = appTheme) {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    AppNavigation(settingsViewModel = settingsViewModel)
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background,
+                ) {
+                    AppNavigation(
+                        settingsViewModel = settingsViewModel,
+                        modifier = Modifier.safeDrawingPadding(),
+                    )
                 }
             }
         }

@@ -1,8 +1,11 @@
 package com.kidfocus.timer.ui.navigation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -31,6 +34,7 @@ import com.kidfocus.timer.ui.viewmodel.TimerViewModel
 @Composable
 fun AppNavigation(
     settingsViewModel: SettingsViewModel,
+    modifier: Modifier = Modifier,
 ) {
     val navController = rememberNavController()
     val settings by settingsViewModel.settings.collectAsState()
@@ -44,6 +48,7 @@ fun AppNavigation(
     // Shared TimerViewModel scoped to the nav graph so Focus and Break screens share state
     val timerViewModel: TimerViewModel = hiltViewModel()
 
+    Box(modifier = modifier.fillMaxSize()) {
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -192,4 +197,5 @@ fun AppNavigation(
             )
         }
     }
+    } // end Box
 }

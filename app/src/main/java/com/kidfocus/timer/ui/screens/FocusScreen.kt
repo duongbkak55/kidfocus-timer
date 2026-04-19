@@ -23,6 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -55,6 +56,11 @@ fun FocusScreen(
     val colors = KidFocusTheme.colors
     val timerState by timerViewModel.timerState.collectAsState()
     val completedMinutes by timerViewModel.completedSessionMinutes.collectAsState()
+
+    DisposableEffect(Unit) {
+        timerViewModel.bindService()
+        onDispose { timerViewModel.unbindService() }
+    }
 
     // Navigate away when session completes
     LaunchedEffect(completedMinutes) {

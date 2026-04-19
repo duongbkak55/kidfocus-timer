@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kidfocus.timer.domain.model.TimerSettings
+import androidx.compose.material3.CircularProgressIndicator
 import com.kidfocus.timer.ui.components.SettingRow
 import com.kidfocus.timer.ui.components.SettingSliderRow
 import com.kidfocus.timer.ui.components.SettingToggleRow
@@ -48,7 +49,12 @@ fun ParentSettingsScreen(
 ) {
     val colors = KidFocusTheme.colors
     val settings by settingsViewModel.settings.collectAsState()
-    val current = settings ?: return
+    val current = settings ?: run {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(color = KidFocusTheme.colors.primary)
+        }
+        return
+    }
 
     Box(
         modifier = Modifier
