@@ -45,12 +45,19 @@ class AiChatViewModel @Inject constructor(
             geminiApi.chat(updatedHistory, key).onSuccess { reply ->
                 _messages.value = updatedHistory + ChatMessage(content = reply, isUser = false)
             }.onFailure { error ->
+                android.util.Log.e("AiChat", "Error: ${error.message}")
                 val errMsg = when {
                     error.message?.contains("API_ERROR_400") == true ->
                         "API key không hợp lệ. Phụ huynh kiểm tra lại trong Cài đặt nhé!"
+                    error.message?.contains("API_ERROR_401") == true ->
+                        "API key không được phép. Kiểm tra lại key trong Cài đặt nhé!"
+                    error.message?.contains("API_ERROR_403") == true ->
+                        "API key không có quyền. Kiểm tra lại key trong Cài đặt nhé!"
+                    error.message?.contains("API_ERROR_404") == true ->
+                        "Không tìm thấy model AI. Thử lại sau nhé!"
                     error.message?.contains("API_ERROR_429") == true ->
-                        "Hỏi nhiều quá rồi, thử lại sau một chút nhé! 😊"
-                    else -> "Có lỗi xảy ra, thử lại nhé! 😅"
+                        "Đang bận, thử lại sau vài giây nhé! 😊"
+                    else -> "Lỗi: ${error.message} — thử lại nhé! 😅"
                 }
                 _messages.value = updatedHistory + ChatMessage(content = errMsg, isUser = false)
             }
