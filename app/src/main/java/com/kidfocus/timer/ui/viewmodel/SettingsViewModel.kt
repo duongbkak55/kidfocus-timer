@@ -126,6 +126,10 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch { settingsRepository.completeOnboarding() }
     }
 
+    fun saveGeminiApiKey(apiKey: String) {
+        viewModelScope.launch { settingsRepository.saveGeminiApiKey(apiKey) }
+    }
+
     // ---- Private helpers -----------------------------------------------------------------------
 
     private fun save(settings: TimerSettings) {

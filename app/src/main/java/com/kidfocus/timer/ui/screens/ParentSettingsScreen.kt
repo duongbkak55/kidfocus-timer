@@ -21,10 +21,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -211,6 +215,48 @@ fun ParentSettingsScreen(
                         fontWeight = FontWeight.Medium,
                     )
                 }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Section: Gemini AI
+            SectionHeader(text = "Gemini AI (Cú học)")
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Lấy API key miễn phí tại aistudio.google.com",
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.onBackground.copy(alpha = 0.55f),
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+
+            var apiKeyInput by remember { mutableStateOf(current.geminiApiKey ?: "") }
+            var apiKeySaved by remember { mutableStateOf(false) }
+
+            OutlinedTextField(
+                value = apiKeyInput,
+                onValueChange = { apiKeyInput = it; apiKeySaved = false },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Gemini API Key") },
+                placeholder = { Text("AIza...") },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(
+                onClick = {
+                    settingsViewModel.saveGeminiApiKey(apiKeyInput)
+                    apiKeySaved = true
+                },
+                modifier = Modifier.fillMaxWidth().height(48.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = colors.primary),
+                enabled = apiKeyInput.isNotBlank(),
+            ) {
+                Text(
+                    text = if (apiKeySaved) "✓ Đã lưu" else "Lưu API Key",
+                    fontWeight = FontWeight.Bold,
+                    color = colors.onPrimary,
+                )
             }
 
             Spacer(modifier = Modifier.height(32.dp))

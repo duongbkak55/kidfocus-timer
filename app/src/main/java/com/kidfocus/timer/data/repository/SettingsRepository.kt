@@ -38,4 +38,6 @@ class SettingsRepository @Inject constructor(
      */
     fun verifyPin(pin: String, storedHash: String): Boolean =
         settingsDataStore.sha256Hex(pin) == storedHash
+
+    suspend fun saveGeminiApiKey(apiKey: String) = settingsDataStore.saveGeminiApiKey(apiKey)
 }

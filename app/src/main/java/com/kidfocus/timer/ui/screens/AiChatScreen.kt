@@ -1,8 +1,5 @@
 package com.kidfocus.timer.ui.screens
 
-import android.app.Activity
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -32,10 +29,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Logout
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -73,17 +66,9 @@ fun AiChatScreen(
 ) {
     val messages by viewModel.messages.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-    val isSignedIn by viewModel.isSignedIn.collectAsState()
+    val apiKey by viewModel.apiKey.collectAsState()
     val colors = KidFocusTheme.colors
     val listState = rememberLazyListState()
-
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            viewModel.handleSignInResult(result.data)
-        }
-    }
 
     LaunchedEffect(messages.size, isLoading) {
         val targetIndex = if (isLoading) messages.size else (messages.size - 1).coerceAtLeast(0)
@@ -96,7 +81,6 @@ fun AiChatScreen(
             .background(colors.background)
             .imePadding(),
     ) {
-        // Top bar
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -111,26 +95,12 @@ fun AiChatScreen(
                 style = MaterialTheme.typography.titleLarge,
                 color = colors.primary,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f),
             )
-            if (isSignedIn) {
-                IconButton(onClick = { viewModel.signOut() }) {
-                    Icon(
-                        Icons.Default.Logout,
-                        contentDescription = "Đăng xuất",
-                        tint = colors.onBackground.copy(alpha = 0.4f),
-                    )
-                }
-            }
         }
 
-        if (!isSignedIn) {
-            SignInPrompt(
-                onSignIn = { launcher.launch(viewModel.getSignInIntent()) },
-                colors = colors,
-            )
+        if (apiKey.isNullOrBlank()) {
+            NoApiKeyPrompt(colors = colors)
         } else {
-            // Chat area
             LazyColumn(
                 state = listState,
                 modifier = Modifier.weight(1f).padding(horizontal = 16.dp),
@@ -143,8 +113,6 @@ fun AiChatScreen(
                 }
                 item { Spacer(modifier = Modifier.height(8.dp)) }
             }
-
-            // Input row
             ChatInput(
                 isLoading = isLoading,
                 colors = colors,
@@ -155,7 +123,7 @@ fun AiChatScreen(
 }
 
 @Composable
-private fun SignInPrompt(onSignIn: () -> Unit, colors: KidFocusColors) {
+private fun NoApiKeyPrompt(colors: KidFocusColors) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Card(
             modifier = Modifier.padding(32.dp),
@@ -165,36 +133,28 @@ private fun SignInPrompt(onSignIn: () -> Unit, colors: KidFocusColors) {
                 modifier = Modifier.padding(28.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text("🦉", fontSize = 72.sp)
+                Text("🦉", fontSize = 64.sp)
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Xin chào! Tôi là Cú học",
+                    text = "Cú học chưa sẵn sàng",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "Đăng nhập để hỏi tôi bất kỳ câu hỏi bài vở nào!",
+                    text = "Phụ huynh cần cài đặt Gemini API Key trước.\n\nVào: ⚙️ Cài đặt → Gemini AI → nhập API key",
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 22.sp,
                 )
-                Spacer(modifier = Modifier.height(24.dp))
-                Button(
-                    onClick = onSignIn,
-                    colors = ButtonDefaults.buttonColors(containerColor = colors.primary),
-                ) {
-                    Icon(Icons.Default.AccountCircle, contentDescription = null, modifier = Modifier.size(20.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Đăng nhập bằng Google", fontWeight = FontWeight.SemiBold)
-                }
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "Phụ huynh dùng tài khoản Google của mình để đăng nhập nhé",
+                    text = "Lấy API key miễn phí tại aistudio.google.com",
                     style = MaterialTheme.typography.bodySmall,
                     textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    color = colors.primary.copy(alpha = 0.7f),
                 )
             }
         }
@@ -219,7 +179,6 @@ private fun ChatBubble(msg: ChatMessage, colors: KidFocusColors) {
             }
             Spacer(modifier = Modifier.width(8.dp))
         }
-
         Surface(
             shape = RoundedCornerShape(
                 topStart = if (msg.isUser) 16.dp else 4.dp,
@@ -250,7 +209,6 @@ private fun TypingIndicator(colors: KidFocusColors) {
         animationSpec = infiniteRepeatable(tween(600), RepeatMode.Reverse),
         label = "typing_alpha",
     )
-
     Row(verticalAlignment = Alignment.CenterVertically) {
         Box(
             modifier = Modifier
@@ -277,13 +235,8 @@ private fun TypingIndicator(colors: KidFocusColors) {
 }
 
 @Composable
-private fun ChatInput(
-    isLoading: Boolean,
-    colors: KidFocusColors,
-    onSend: (String) -> Unit,
-) {
+private fun ChatInput(isLoading: Boolean, colors: KidFocusColors, onSend: (String) -> Unit) {
     var text by remember { mutableStateOf("") }
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -299,29 +252,19 @@ private fun ChatInput(
             shape = RoundedCornerShape(24.dp),
             maxLines = 3,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-            keyboardActions = KeyboardActions(onSend = {
-                onSend(text)
-                text = ""
-            }),
+            keyboardActions = KeyboardActions(onSend = { onSend(text); text = "" }),
             enabled = !isLoading,
         )
         Spacer(modifier = Modifier.width(8.dp))
         IconButton(
-            onClick = {
-                onSend(text)
-                text = ""
-            },
+            onClick = { onSend(text); text = "" },
             enabled = text.isNotBlank() && !isLoading,
             modifier = Modifier
                 .size(48.dp)
                 .clip(CircleShape)
                 .background(if (text.isNotBlank() && !isLoading) colors.primary else colors.primary.copy(alpha = 0.3f)),
         ) {
-            Icon(
-                Icons.AutoMirrored.Filled.Send,
-                contentDescription = "Gửi",
-                tint = Color.White,
-            )
+            Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Gửi", tint = Color.White)
         }
     }
 }

@@ -21,6 +21,7 @@ data class TimerSettings(
     val soundEnabled: Boolean = true,
     val vibrationEnabled: Boolean = true,
     val dailyGoalMinutes: Int = DEFAULT_DAILY_GOAL_MINUTES,
+    val geminiApiKey: String? = null,
 ) {
     /** True if the parent has set a PIN to lock settings. */
     val hasPinSet: Boolean get() = pinHash != null

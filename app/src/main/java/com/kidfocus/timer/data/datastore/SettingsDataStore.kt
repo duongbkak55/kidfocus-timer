@@ -39,6 +39,7 @@ class SettingsDataStore @Inject constructor(
         val VIBRATION_ENABLED = booleanPreferencesKey("vibration_enabled")
         val COMPLETED_FOCUS_SESSIONS = intPreferencesKey("completed_focus_sessions")
         val DAILY_GOAL_MINUTES = intPreferencesKey("daily_goal_minutes")
+        val GEMINI_API_KEY = stringPreferencesKey("gemini_api_key")
     }
 
     /** Emits [TimerSettings] whenever any preference value changes. */
@@ -52,6 +53,7 @@ class SettingsDataStore @Inject constructor(
             soundEnabled = prefs[Keys.SOUND_ENABLED] ?: true,
             vibrationEnabled = prefs[Keys.VIBRATION_ENABLED] ?: true,
             dailyGoalMinutes = prefs[Keys.DAILY_GOAL_MINUTES] ?: TimerSettings.DEFAULT_DAILY_GOAL_MINUTES,
+            geminiApiKey = prefs[Keys.GEMINI_API_KEY],
         )
     }
 
@@ -71,6 +73,18 @@ class SettingsDataStore @Inject constructor(
             } else {
                 prefs.remove(Keys.PIN_HASH)
             }
+            if (settings.geminiApiKey != null) {
+                prefs[Keys.GEMINI_API_KEY] = settings.geminiApiKey
+            } else {
+                prefs.remove(Keys.GEMINI_API_KEY)
+            }
+        }
+    }
+
+    suspend fun saveGeminiApiKey(apiKey: String) {
+        context.dataStore.edit { prefs ->
+            if (apiKey.isBlank()) prefs.remove(Keys.GEMINI_API_KEY)
+            else prefs[Keys.GEMINI_API_KEY] = apiKey.trim()
         }
     }
 

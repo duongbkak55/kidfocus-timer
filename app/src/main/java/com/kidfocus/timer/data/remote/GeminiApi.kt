@@ -1,6 +1,5 @@
 package com.kidfocus.timer.data.remote
 
-import com.kidfocus.timer.data.auth.GoogleAuthManager
 import com.kidfocus.timer.domain.model.ChatMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -15,17 +14,15 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class GeminiApi @Inject constructor(
-    private val authManager: GoogleAuthManager,
-) {
+class GeminiApi @Inject constructor() {
     companion object {
-        private const val ENDPOINT =
+        private const val BASE_URL =
             "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
 
         private const val SYSTEM_PROMPT = """Bạn là trợ lý học tập thân thiện tên là "Cú học" 🦉, dành cho học sinh tiểu học và trung học cơ sở Việt Nam.
 Hãy giải thích ngắn gọn, dễ hiểu, dùng tiếng Việt đơn giản phù hợp với trẻ em.
 Chỉ trả lời câu hỏi liên quan đến học tập, bài vở, kiến thức phổ thông.
-Nếu câu hỏi không phù hợp hoặc không liên quan đến học tập, nhẹ nhàng từ chối và khuyến khích học bài.
+Nếu câu hỏi không phù hợp, nhẹ nhàng từ chối và khuyến khích học bài.
 Trả lời tối đa 4-5 câu, dùng ví dụ cụ thể khi cần."""
     }
 
@@ -34,11 +31,8 @@ Trả lời tối đa 4-5 câu, dùng ví dụ cụ thể khi cần."""
         .readTimeout(30, TimeUnit.SECONDS)
         .build()
 
-    suspend fun chat(history: List<ChatMessage>): Result<String> {
-        val token = authManager.getAccessToken()
-            ?: return Result.failure(Exception("NOT_SIGNED_IN"))
-
-        return withContext(Dispatchers.IO) {
+    suspend fun chat(history: List<ChatMessage>, apiKey: String): Result<String> =
+        withContext(Dispatchers.IO) {
             try {
                 val contentsArray = JSONArray()
                 history.forEach { msg ->
@@ -55,16 +49,12 @@ Trả lời tối đa 4-5 câu, dùng ví dụ cụ thể khi cần."""
                         JSONObject().put("parts", JSONArray().put(JSONObject().put("text", SYSTEM_PROMPT)))
                     )
                     .put("contents", contentsArray)
-                    .put(
-                        "generationConfig",
-                        JSONObject().put("maxOutputTokens", 600).put("temperature", 0.7)
-                    )
+                    .put("generationConfig", JSONObject().put("maxOutputTokens", 600).put("temperature", 0.7))
                     .toString()
 
                 val request = Request.Builder()
-                    .url(ENDPOINT)
+                    .url("$BASE_URL?key=$apiKey")
                     .post(body.toRequestBody("application/json".toMediaType()))
-                    .header("Authorization", "Bearer $token")
                     .build()
 
                 val response = client.newCall(request).execute()
@@ -87,5 +77,4 @@ Trả lời tối đa 4-5 câu, dùng ví dụ cụ thể khi cần."""
                 Result.failure(e)
             }
         }
-    }
 }
