@@ -17,7 +17,7 @@ import javax.inject.Singleton
 class GeminiApi @Inject constructor() {
     companion object {
         private const val BASE_URL =
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+            "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent"
 
         private const val SYSTEM_PROMPT = """Bạn là trợ lý học tập thân thiện tên là "Cú học" 🦉, dành cho học sinh tiểu học và trung học cơ sở Việt Nam.
 Hãy giải thích ngắn gọn, dễ hiểu, dùng tiếng Việt đơn giản phù hợp với trẻ em.
@@ -36,6 +36,15 @@ Trả lời tối đa 4-5 câu, dùng ví dụ cụ thể khi cần."""
             android.util.Log.d("GeminiApi", "key=${apiKey.take(8)}... len=${apiKey.length}")
             try {
                 val contentsArray = JSONArray()
+                // Prepend system prompt as first user/model exchange
+                contentsArray.put(
+                    JSONObject().put("role", "user")
+                        .put("parts", JSONArray().put(JSONObject().put("text", SYSTEM_PROMPT)))
+                )
+                contentsArray.put(
+                    JSONObject().put("role", "model")
+                        .put("parts", JSONArray().put(JSONObject().put("text", "Được rồi! Tôi sẽ hỗ trợ bé học tập nhé 🦉")))
+                )
                 history.forEach { msg ->
                     contentsArray.put(
                         JSONObject()
@@ -45,10 +54,6 @@ Trả lời tối đa 4-5 câu, dùng ví dụ cụ thể khi cần."""
                 }
 
                 val body = JSONObject()
-                    .put(
-                        "system_instruction",
-                        JSONObject().put("parts", JSONArray().put(JSONObject().put("text", SYSTEM_PROMPT)))
-                    )
                     .put("contents", contentsArray)
                     .put("generationConfig", JSONObject().put("maxOutputTokens", 600).put("temperature", 0.7))
                     .toString()
