@@ -83,6 +83,12 @@ class SettingsViewModel @Inject constructor(
         save(current.copy(dailyGoalMinutes = minutes))
     }
 
+    /** Persists the visual-only mode that hides numeric countdowns. */
+    fun setCalmModeEnabled(enabled: Boolean) {
+        val current = settings.value ?: return
+        save(current.copy(calmModeEnabled = enabled))
+    }
+
     // ---- PIN management ------------------------------------------------------------------------
 
     /**

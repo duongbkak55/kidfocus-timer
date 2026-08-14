@@ -28,8 +28,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.kidfocus.timer.R
 import com.kidfocus.timer.domain.model.TimerPhase
 import com.kidfocus.timer.ui.components.CircularTimer
 import com.kidfocus.timer.ui.components.MascotWidget
@@ -85,14 +87,14 @@ fun BreakScreen(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Spacer(modifier = Modifier.height(48.dp))
                 Text(
-                    text = "Thời gian nghỉ ngơi",
+                    text = stringResource(R.string.break_title),
                     style = MaterialTheme.typography.headlineSmall,
                     color = colors.onBackground,
                     fontWeight = FontWeight.Bold,
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Thư giãn và lấy lại năng lượng nhé!",
+                    text = stringResource(R.string.break_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
                     color = colors.onBackground.copy(alpha = 0.6f),
                 )
@@ -119,7 +121,7 @@ fun BreakScreen(
                 modifier = Modifier.padding(bottom = 48.dp),
             ) {
                 Text(
-                    text = "Bạn có thể làm những điều bạn thích trong thời gian này",
+                    text = stringResource(R.string.break_tip),
                     style = MaterialTheme.typography.bodySmall,
                     color = colors.onBackground.copy(alpha = 0.5f),
                 )
@@ -135,7 +137,7 @@ fun BreakScreen(
                         modifier = Modifier.size(20.dp),
                     )
                     Spacer(modifier = Modifier.size(8.dp))
-                    Text(text = "Bỏ qua nghỉ ngơi")
+                    Text(text = stringResource(R.string.break_skip))
                 }
             }
         }

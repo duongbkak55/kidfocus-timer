@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -35,13 +36,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kidfocus.timer.R
 import com.kidfocus.timer.domain.model.ScheduledTask
 import com.kidfocus.timer.domain.model.TaskCategory
 import com.kidfocus.timer.domain.model.TaskType
 import com.kidfocus.timer.ui.theme.KidFocusTheme
+import com.kidfocus.timer.ui.components.scheduleDaysLabel
+import com.kidfocus.timer.ui.components.taskCategoryLabel
+import com.kidfocus.timer.ui.components.taskTypeLabel
+import com.kidfocus.timer.ui.components.TaskVisual
 import com.kidfocus.timer.ui.viewmodel.ScheduleViewModel
 
 @Composable
@@ -71,12 +78,12 @@ fun ScheduleScreen(
                 IconButton(onClick = onBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Quay lại",
+                        contentDescription = stringResource(R.string.back),
                         tint = colors.onBackground,
                     )
                 }
                 Text(
-                    text = "Lịch học",
+                    text = stringResource(R.string.schedule_title),
                     style = MaterialTheme.typography.headlineSmall,
                     color = colors.onBackground,
                     fontWeight = FontWeight.Bold,
@@ -113,7 +120,7 @@ fun ScheduleScreen(
                 if (customTasks.isNotEmpty()) {
                     item {
                         Spacer(modifier = Modifier.height(8.dp))
-                        CategoryHeader(label = "⭐  Lịch tùy chỉnh")
+                        CategoryHeader(label = stringResource(R.string.schedule_custom_header))
                         Spacer(modifier = Modifier.height(8.dp))
                     }
                     items(customTasks) { task ->
@@ -136,7 +143,11 @@ fun ScheduleScreen(
                 .padding(24.dp),
             containerColor = colors.primary,
         ) {
-            Icon(Icons.Default.Add, contentDescription = "Tạo lịch mới", tint = colors.onPrimary)
+            Icon(
+                Icons.Default.Add,
+                contentDescription = stringResource(R.string.schedule_create_description),
+                tint = colors.onPrimary,
+            )
         }
     }
 }
@@ -144,7 +155,12 @@ fun ScheduleScreen(
 @Composable
 private fun CategoryHeader(category: TaskCategory? = null, label: String? = null) {
     val colors = KidFocusTheme.colors
-    val text = label ?: "${category!!.emoji}  ${category.displayName}"
+    val text = if (label != null) {
+        label
+    } else {
+        val currentCategory = requireNotNull(category)
+        "${currentCategory.emoji}  ${taskCategoryLabel(currentCategory)}"
+    }
     Text(
         text = text,
         style = MaterialTheme.typography.titleSmall,
@@ -163,6 +179,7 @@ private fun PredefinedTaskCard(
 ) {
     val colors = KidFocusTheme.colors
     val hasTask = existingTask != null
+    val typeLabel = taskTypeLabel(type)
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -190,14 +207,19 @@ private fun PredefinedTaskCard(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = type.displayName,
+                    text = typeLabel,
                     style = MaterialTheme.typography.bodyMedium,
                     color = colors.onBackground,
                     fontWeight = FontWeight.SemiBold,
                 )
                 if (hasTask) {
                     Text(
-                        text = "${existingTask!!.timeFormatted} • ${existingTask.daysLabel} • ${existingTask.focusDurationMinutes}p",
+                        text = stringResource(
+                            R.string.schedule_summary,
+                            existingTask!!.timeFormatted,
+                            scheduleDaysLabel(existingTask.daysOfWeek),
+                            existingTask.focusDurationMinutes,
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = colors.onBackground.copy(alpha = 0.55f),
                     )
@@ -205,7 +227,7 @@ private fun PredefinedTaskCard(
                     val h = type.defaultHour.toString().padStart(2, '0')
                     val m = type.defaultMinute.toString().padStart(2, '0')
                     Text(
-                        text = "$h:$m • ${type.defaultFocusMinutes} phút",
+                        text = "$h:$m • ${stringResource(R.string.schedule_minutes_short, type.defaultFocusMinutes)}",
                         style = MaterialTheme.typography.bodySmall,
                         color = colors.onBackground.copy(alpha = 0.35f),
                     )
@@ -214,7 +236,12 @@ private fun PredefinedTaskCard(
 
             if (hasTask) {
                 IconButton(onClick = onEdit, modifier = Modifier.size(36.dp)) {
-                    Icon(Icons.Default.Edit, contentDescription = "Sửa", tint = colors.primary, modifier = Modifier.size(18.dp))
+                    Icon(
+                        Icons.Default.Edit,
+                        contentDescription = stringResource(R.string.schedule_edit_description, typeLabel),
+                        tint = colors.primary,
+                        modifier = Modifier.size(18.dp),
+                    )
                 }
                 Switch(
                     checked = existingTask!!.enabled,
@@ -230,10 +257,12 @@ private fun PredefinedTaskCard(
                         .clip(RoundedCornerShape(20.dp))
                         .background(colors.primary.copy(alpha = 0.12f))
                         .clickable { onAdd() }
+                        .heightIn(min = 48.dp)
                         .padding(horizontal = 14.dp, vertical = 6.dp),
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        text = "+ Thêm",
+                        text = stringResource(R.string.schedule_add),
                         color = colors.primary,
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
@@ -263,15 +292,12 @@ private fun ScheduledTaskCard(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(colors.primary.copy(alpha = 0.10f)),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(text = task.emoji, fontSize = 22.sp)
-            }
+            TaskVisual(
+                photoUri = task.photoUri,
+                emoji = task.emoji,
+                modifier = Modifier.size(44.dp),
+                emojiSize = 22.sp,
+            )
             Spacer(modifier = Modifier.width(10.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -281,13 +307,23 @@ private fun ScheduledTaskCard(
                     fontWeight = FontWeight.SemiBold,
                 )
                 Text(
-                    text = "${task.timeFormatted} • ${task.daysLabel} • ${task.focusDurationMinutes}p",
+                    text = stringResource(
+                        R.string.schedule_summary,
+                        task.timeFormatted,
+                        scheduleDaysLabel(task.daysOfWeek),
+                        task.focusDurationMinutes,
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     color = colors.onBackground.copy(alpha = 0.55f),
                 )
             }
             IconButton(onClick = onEdit, modifier = Modifier.size(36.dp)) {
-                Icon(Icons.Default.Edit, contentDescription = "Sửa", tint = colors.primary, modifier = Modifier.size(18.dp))
+                Icon(
+                    Icons.Default.Edit,
+                    contentDescription = stringResource(R.string.schedule_edit_description, task.name),
+                    tint = colors.primary,
+                    modifier = Modifier.size(18.dp),
+                )
             }
             Switch(
                 checked = task.enabled,

@@ -6,6 +6,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -29,8 +31,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -51,10 +55,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kidfocus.timer.domain.model.ChatMessage
+import com.kidfocus.timer.R
+import com.kidfocus.timer.data.remote.AiConfig
 import com.kidfocus.timer.ui.theme.KidFocusColors
 import com.kidfocus.timer.ui.theme.KidFocusTheme
 import com.kidfocus.timer.ui.viewmodel.AiChatViewModel
@@ -62,10 +69,13 @@ import com.kidfocus.timer.ui.viewmodel.AiChatViewModel
 @Composable
 fun AiChatScreen(
     onBack: () -> Unit,
+    onOpenPremium: () -> Unit = {},
     viewModel: AiChatViewModel = hiltViewModel(),
 ) {
     val messages by viewModel.messages.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val config by viewModel.config.collectAsState()
+    val selectedModelId by viewModel.selectedModelId.collectAsState()
     val colors = KidFocusTheme.colors
     val listState = rememberLazyListState()
 
@@ -97,6 +107,13 @@ fun AiChatScreen(
             )
         }
 
+        AiAccessBar(
+            config = config,
+            selectedModelId = selectedModelId,
+            onSelectModel = viewModel::selectModel,
+            onOpenPremium = onOpenPremium,
+        )
+
         LazyColumn(
             state = listState,
             modifier = Modifier.weight(1f).padding(horizontal = 16.dp),
@@ -111,9 +128,63 @@ fun AiChatScreen(
         }
         ChatInput(
             isLoading = isLoading,
+            enabled = config.enabled && config.usage.remainingQuestions > 0,
             colors = colors,
             onSend = { viewModel.sendMessage(it) },
         )
+    }
+}
+
+@Composable
+private fun AiAccessBar(
+    config: AiConfig,
+    selectedModelId: String,
+    onSelectModel: (String) -> Unit,
+    onOpenPremium: () -> Unit,
+) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
+        Text(
+            if (config.usage.premium) {
+                stringResource(R.string.ai_credits_remaining, config.usage.remainingCredits)
+            } else {
+                stringResource(R.string.ai_questions_remaining, config.usage.remainingQuestions)
+            },
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.Bold,
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            config.models.forEach { model ->
+                val locked = model.premiumOnly && !config.usage.premium
+                val localizedLabel = when (model.id) {
+                    "openrouter/free" -> stringResource(R.string.ai_model_free)
+                    "google/gemini-2.5-flash-lite" -> stringResource(R.string.ai_model_fast)
+                    "openai/gpt-5-mini" -> stringResource(R.string.ai_model_smart)
+                    "google/gemini-3.6-flash" -> stringResource(R.string.ai_model_deep)
+                    else -> model.label
+                }
+                FilterChip(
+                    selected = model.id == selectedModelId,
+                    onClick = { if (locked) onOpenPremium() else onSelectModel(model.id) },
+                    label = {
+                        Text(if (locked) "$localizedLabel • Premium" else localizedLabel)
+                    },
+                    leadingIcon = if (locked) {
+                        { Icon(Icons.Default.Lock, contentDescription = null, modifier = Modifier.size(16.dp)) }
+                    } else null,
+                )
+            }
+        }
+        if (!config.enabled) {
+            Text(
+                stringResource(R.string.ai_temporarily_disabled),
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
     }
 }
 
@@ -230,7 +301,12 @@ private fun TypingIndicator(colors: KidFocusColors) {
 }
 
 @Composable
-private fun ChatInput(isLoading: Boolean, colors: KidFocusColors, onSend: (String) -> Unit) {
+private fun ChatInput(
+    isLoading: Boolean,
+    enabled: Boolean,
+    colors: KidFocusColors,
+    onSend: (String) -> Unit,
+) {
     var text by remember { mutableStateOf("") }
     Row(
         modifier = Modifier
@@ -248,16 +324,16 @@ private fun ChatInput(isLoading: Boolean, colors: KidFocusColors, onSend: (Strin
             maxLines = 3,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
             keyboardActions = KeyboardActions(onSend = { onSend(text); text = "" }),
-            enabled = !isLoading,
+            enabled = enabled && !isLoading,
         )
         Spacer(modifier = Modifier.width(8.dp))
         IconButton(
             onClick = { onSend(text); text = "" },
-            enabled = text.isNotBlank() && !isLoading,
+            enabled = enabled && text.isNotBlank() && !isLoading,
             modifier = Modifier
                 .size(48.dp)
                 .clip(CircleShape)
-                .background(if (text.isNotBlank() && !isLoading) colors.primary else colors.primary.copy(alpha = 0.3f)),
+                .background(if (enabled && text.isNotBlank() && !isLoading) colors.primary else colors.primary.copy(alpha = 0.3f)),
         ) {
             Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Gửi", tint = Color.White)
         }

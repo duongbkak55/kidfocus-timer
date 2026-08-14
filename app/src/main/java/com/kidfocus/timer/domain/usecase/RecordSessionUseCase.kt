@@ -2,6 +2,7 @@ package com.kidfocus.timer.domain.usecase
 
 import com.kidfocus.timer.data.database.SessionEntity
 import com.kidfocus.timer.data.repository.SessionRepository
+import com.kidfocus.timer.data.repository.ChildProfileRepository
 import javax.inject.Inject
 
 /**
@@ -11,6 +12,7 @@ import javax.inject.Inject
  */
 class RecordSessionUseCase @Inject constructor(
     private val sessionRepository: SessionRepository,
+    private val childProfileRepository: ChildProfileRepository? = null,
 ) {
     /**
      * Persists a completed session.
@@ -29,6 +31,7 @@ class RecordSessionUseCase @Inject constructor(
             durationSeconds = durationSeconds,
             isFocus = isFocus,
             timestampMillis = timestampMillis,
+            childProfileId = childProfileRepository?.currentProfileId() ?: "default",
         )
         sessionRepository.insertSession(entity)
         val cutoffMillis = System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000

@@ -10,6 +10,9 @@ import androidx.lifecycle.viewModelScope
 import com.kidfocus.timer.domain.model.TimerPhase
 import com.kidfocus.timer.domain.model.TimerState
 import com.kidfocus.timer.domain.usecase.RecordSessionUseCase
+import com.kidfocus.timer.data.repository.RoutineRepository
+import com.kidfocus.timer.service.RoutineAlarmScheduler
+import com.kidfocus.timer.service.RoutineNotificationManager
 import com.kidfocus.timer.service.TimerService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -20,6 +23,8 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.ZoneId
 import javax.inject.Inject
 
 /**
@@ -32,6 +37,9 @@ import javax.inject.Inject
 class TimerViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val recordSessionUseCase: RecordSessionUseCase,
+    private val routineRepository: RoutineRepository,
+    private val routineScheduler: RoutineAlarmScheduler,
+    private val routineNotifications: RoutineNotificationManager,
 ) : ViewModel() {
 
     // ---- Public state ---------------------------------------------------------------------------
@@ -51,6 +59,9 @@ class TimerViewModel @Inject constructor(
 
     private var timerBinder: TimerService.TimerBinder? = null
     private var lastRecordedTotalSeconds: Int = -1
+    private var isBound = false
+    private var linkedRoutineId: Long? = null
+    private var linkedOccurrenceDate: LocalDate? = null
 
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -65,6 +76,10 @@ class TimerViewModel @Inject constructor(
         override fun onServiceDisconnected(name: ComponentName?) {
             timerBinder = null
         }
+    }
+
+    init {
+        bindService()
     }
 
     // ---- Internal helpers ----------------------------------------------------------------------
@@ -82,6 +97,7 @@ class TimerViewModel @Inject constructor(
                 )
                 if (state.phase.isFocus) {
                     _completedSessionMinutes.update { state.totalSeconds / 60 }
+                    completeLinkedRoutineIfNeeded()
                 }
             }
         }
@@ -91,20 +107,35 @@ class TimerViewModel @Inject constructor(
 
     /** Binds to [TimerService]. Call from the composable's [LaunchedEffect]. */
     fun bindService() {
+        if (isBound) return
         val intent = Intent(context, TimerService::class.java)
-        context.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+        isBound = context.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
     }
 
     /** Unbinds from [TimerService]. Call from [ViewModel.onCleared] or composable disposal. */
     fun unbindService() {
         runCatching { context.unbindService(serviceConnection) }
         timerBinder = null
+        isBound = false
     }
 
     // ---- Timer control -------------------------------------------------------------------------
 
     /** Starts a focus countdown of [totalSeconds] seconds. */
     fun startFocus(totalSeconds: Int) {
+        linkedRoutineId = null
+        linkedOccurrenceDate = null
+        startFocusInternal(totalSeconds)
+    }
+
+    /** Starts a focus timer that completes the linked routine only after the timer finishes. */
+    fun startFocusForRoutine(routineId: Long, occurrenceDate: LocalDate, totalSeconds: Int) {
+        linkedRoutineId = routineId
+        linkedOccurrenceDate = occurrenceDate
+        startFocusInternal(totalSeconds)
+    }
+
+    private fun startFocusInternal(totalSeconds: Int) {
         lastRecordedTotalSeconds = -1
         ensureServiceStarted()
         timerBinder?.startFocus(totalSeconds) ?: startServiceWithAction(
@@ -162,6 +193,19 @@ class TimerViewModel @Inject constructor(
     private fun sendServiceAction(action: String) {
         val intent = Intent(context, TimerService::class.java).apply { this.action = action }
         context.startService(intent)
+    }
+
+    private suspend fun completeLinkedRoutineIfNeeded() {
+        val routineId = linkedRoutineId ?: return
+        val occurrenceDate = linkedOccurrenceDate ?: return
+        linkedRoutineId = null
+        linkedOccurrenceDate = null
+        val routine = routineRepository.getById(routineId) ?: return
+        routineRepository.complete(routine, occurrenceDate)
+        routineNotifications.cancel(routineId)
+        val tomorrow = LocalDate.now().plusDays(1)
+            .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        routineScheduler.schedule(routine, tomorrow)
     }
 
     override fun onCleared() {

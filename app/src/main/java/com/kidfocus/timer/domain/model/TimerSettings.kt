@@ -22,6 +22,9 @@ data class TimerSettings(
     val vibrationEnabled: Boolean = true,
     val dailyGoalMinutes: Int = DEFAULT_DAILY_GOAL_MINUTES,
     val geminiApiKey: String? = null,
+    val learningAgeBand: String = DEFAULT_LEARNING_AGE_BAND,
+    val calmModeEnabled: Boolean = false,
+    val activeChildProfileId: String = DEFAULT_CHILD_PROFILE_ID,
 ) {
     /** True if the parent has set a PIN to lock settings. */
     val hasPinSet: Boolean get() = pinHash != null
@@ -42,5 +45,7 @@ data class TimerSettings(
         const val DEFAULT_DAILY_GOAL_MINUTES = 120
         const val MIN_DAILY_GOAL_MINUTES = 30
         const val MAX_DAILY_GOAL_MINUTES = 240
+        const val DEFAULT_LEARNING_AGE_BAND = "4-5"
+        const val DEFAULT_CHILD_PROFILE_ID = "default"
     }
 }

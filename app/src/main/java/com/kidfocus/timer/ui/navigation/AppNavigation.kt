@@ -13,21 +13,35 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.kidfocus.timer.domain.model.TaskType
+import com.kidfocus.timer.BuildConfig
 import com.kidfocus.timer.ui.screens.AiChatScreen
 import com.kidfocus.timer.ui.screens.BreakScreen
 import com.kidfocus.timer.ui.screens.CelebrationScreen
+import com.kidfocus.timer.ui.screens.CloudSyncScreen
 import com.kidfocus.timer.ui.screens.FocusScreen
 import com.kidfocus.timer.ui.screens.HomeScreen
+import com.kidfocus.timer.ui.screens.LearningHubScreen
+import com.kidfocus.timer.ui.screens.LearningProgressScreen
 import com.kidfocus.timer.ui.screens.OnboardingScreen
 import com.kidfocus.timer.ui.screens.ParentSettingsScreen
 import com.kidfocus.timer.ui.screens.PinEntryScreen
 import com.kidfocus.timer.ui.screens.DailyScheduleScreen
 import com.kidfocus.timer.ui.screens.ScheduleScreen
 import com.kidfocus.timer.ui.screens.TaskEditScreen
+import com.kidfocus.timer.ui.screens.SubscriptionScreen
 import com.kidfocus.timer.ui.screens.ThemeScreen
+import com.kidfocus.timer.ui.screens.RoutineEditorScreen
+import com.kidfocus.timer.ui.screens.RoutineSettingsScreen
+import com.kidfocus.timer.ui.screens.RoutineProgressScreen
+import com.kidfocus.timer.ui.screens.RoutineRunnerScreen
+import com.kidfocus.timer.ui.viewmodel.RoutineViewModel
+import com.kidfocus.timer.ui.viewmodel.CloudSyncViewModel
 import com.kidfocus.timer.ui.viewmodel.ScheduleViewModel
 import com.kidfocus.timer.ui.viewmodel.SettingsViewModel
 import com.kidfocus.timer.ui.viewmodel.TimerViewModel
+import com.kidfocus.timer.ui.viewmodel.ChildProfileViewModel
+import com.kidfocus.timer.ui.screens.ChildProfilePickerScreen
+import com.kidfocus.timer.ui.screens.ChildProfileSettingsScreen
 
 /**
  * Root navigation graph for KidFocus Timer.
@@ -54,6 +68,12 @@ fun AppNavigation(
     // Shared TimerViewModel scoped to the nav graph so Focus and Break screens share state
     val timerViewModel: TimerViewModel = hiltViewModel()
     val scheduleViewModel: ScheduleViewModel = hiltViewModel()
+    val routineViewModel: RoutineViewModel = hiltViewModel()
+    val cloudSyncViewModel: CloudSyncViewModel = hiltViewModel()
+    val cloudAccount by cloudSyncViewModel.account.collectAsState()
+    val cloudSyncStatus by cloudSyncViewModel.syncStatus.collectAsState()
+    val childProfileViewModel: ChildProfileViewModel = hiltViewModel()
+    val activeChildProfile by childProfileViewModel.activeProfile.collectAsState()
 
     Box(modifier = modifier.fillMaxSize()) {
     NavHost(
@@ -89,6 +109,7 @@ fun AppNavigation(
                 timerViewModel = timerViewModel,
                 settingsViewModel = settingsViewModel,
                 scheduleViewModel = scheduleViewModel,
+                routineViewModel = routineViewModel,
                 onStartFocus = { navController.navigate(NavRoutes.Focus.route) },
                 onOpenTheme = { navController.navigate(NavRoutes.Theme.route) },
                 onOpenDailySchedule = { navController.navigate(NavRoutes.DailySchedule.route) },
@@ -102,7 +123,22 @@ fun AppNavigation(
                         navController.navigate(NavRoutes.ParentSettings.route)
                     }
                 },
-                onOpenAiChat = { navController.navigate(NavRoutes.AiChat.route) },
+                onOpenAiChat = {
+                    val current = settingsViewModel.settings.value
+                    if (current?.hasPinSet == true) {
+                        navController.navigate(NavRoutes.PinEntry.buildRoute(NavRoutes.AiChat.route))
+                    } else {
+                        navController.navigate(NavRoutes.PinSetup.route)
+                    }
+                },
+                onOpenLearning = { navController.navigate(NavRoutes.LearningHub.route) },
+                onOpenCloudSync = { navController.navigate(NavRoutes.CloudSync.route) },
+                onStartRoutine = { navController.navigate(NavRoutes.RoutineRunner.route) },
+                onOpenRoutineProgress = { navController.navigate(NavRoutes.RoutineProgress.route) },
+                cloudAccount = cloudAccount,
+                cloudSyncStatus = cloudSyncStatus,
+                childProfile = activeChildProfile,
+                onOpenProfilePicker = { navController.navigate(NavRoutes.ChildProfilePicker.route) },
             )
         }
 
@@ -205,6 +241,26 @@ fun AppNavigation(
                 },
                 onSetPin = { navController.navigate(NavRoutes.PinSetup.route) },
                 onOpenSchedule = { navController.navigate(NavRoutes.Schedule.route) },
+                onOpenRoutineSettings = { navController.navigate(NavRoutes.RoutineSettings.route) },
+                onOpenCloudSync = { navController.navigate(NavRoutes.CloudSync.route) },
+                onOpenSubscription = { navController.navigate(NavRoutes.Subscription.route) },
+                onOpenChildProfiles = { navController.navigate(NavRoutes.ChildProfileSettings.route) },
+                cloudAccount = cloudAccount,
+                cloudSyncStatus = cloudSyncStatus,
+            )
+        }
+
+        composable(NavRoutes.CloudSync.route) {
+            CloudSyncScreen(
+                viewModel = cloudSyncViewModel,
+                onBack = { navController.popBackStack() },
+            )
+        }
+
+        composable(NavRoutes.Subscription.route) {
+            SubscriptionScreen(
+                onBack = { navController.popBackStack() },
+                onOpenLogin = { navController.navigate(NavRoutes.CloudSync.route) },
             )
         }
 
@@ -219,7 +275,6 @@ fun AppNavigation(
                 onNewTask = { taskType ->
                     navController.navigate(NavRoutes.TaskEdit.buildRoute(0L, taskType.name))
                 },
-
             )
         }
 
@@ -229,9 +284,13 @@ fun AppNavigation(
                 viewModel = scheduleViewModel,
                 onBack = { navController.popBackStack() },
                 onStartTask = { task ->
-                    val seconds = task.focusDurationMinutes * 60
-                    timerViewModel.startFocus(seconds)
-                    navController.navigate(NavRoutes.Focus.route)
+                    if (task.taskType == TaskType.LEARNING_GAMES) {
+                        navController.navigate(NavRoutes.LearningHub.route)
+                    } else {
+                        val seconds = task.focusDurationMinutes * 60
+                        timerViewModel.startFocus(seconds)
+                        navController.navigate(NavRoutes.Focus.route)
+                    }
                 },
                 onAddTaskAtTime = { hour, minute ->
                     navController.navigate(NavRoutes.TaskEdit.buildRoute(0L, TaskType.CUSTOM.name, hour, minute))
@@ -240,8 +299,25 @@ fun AppNavigation(
         }
 
         // ---- AI Chat -------------------------------------------------------------------------
-        composable(NavRoutes.AiChat.route) {
-            AiChatScreen(onBack = { navController.popBackStack() })
+        if (BuildConfig.ENABLE_AI_CHAT) {
+            composable(NavRoutes.AiChat.route) {
+                AiChatScreen(
+                    onBack = { navController.popBackStack() },
+                    onOpenPremium = { navController.navigate(NavRoutes.Subscription.route) },
+                )
+            }
+        }
+
+        // ---- Learning ------------------------------------------------------------------------
+        composable(NavRoutes.LearningHub.route) {
+            LearningHubScreen(
+                onBack = { navController.popBackStack() },
+                onOpenProgress = { navController.navigate(NavRoutes.LearningProgress.route) },
+            )
+        }
+
+        composable(NavRoutes.LearningProgress.route) {
+            LearningProgressScreen(onBack = { navController.popBackStack() })
         }
 
         // ---- Task Edit -----------------------------------------------------------------------
@@ -266,6 +342,71 @@ fun AppNavigation(
             TaskEditScreen(
                 task = task,
                 viewModel = scheduleViewModel,
+                onBack = { navController.popBackStack() },
+            )
+        }
+
+        // ---- Routines -------------------------------------------------------------------------
+        composable(NavRoutes.RoutineSettings.route) {
+            RoutineSettingsScreen(
+                viewModel = routineViewModel,
+                onBack = { navController.popBackStack() },
+                onAdd = { navController.navigate(NavRoutes.RoutineEditor.buildRoute(null)) },
+                onEdit = { navController.navigate(NavRoutes.RoutineEditor.buildRoute(it)) },
+            )
+        }
+
+        composable(
+            route = NavRoutes.RoutineEditor.route,
+            arguments = listOf(
+                navArgument(NavRoutes.ARG_ROUTINE_ID) { type = NavType.LongType }
+            ),
+        ) { backStack ->
+            val id = backStack.arguments?.getLong(NavRoutes.ARG_ROUTINE_ID)?.takeIf { it > 0L }
+            RoutineEditorScreen(
+                routineId = id,
+                viewModel = routineViewModel,
+                onBack = { navController.popBackStack() },
+            )
+        }
+
+        composable(NavRoutes.RoutineRunner.route) {
+            RoutineRunnerScreen(
+                viewModel = routineViewModel,
+                settingsViewModel = settingsViewModel,
+                onBack = { navController.popBackStack() },
+                onStartTimer = { todayRoutine ->
+                    todayRoutine.routine.linkedTimerMinutes?.let { minutes ->
+                        timerViewModel.startFocusForRoutine(
+                            routineId = todayRoutine.routine.id,
+                            occurrenceDate = todayRoutine.occurrenceDate,
+                            totalSeconds = minutes * 60,
+                        )
+                        navController.navigate(NavRoutes.Focus.route)
+                    }
+                },
+                onOpenProgress = { navController.navigate(NavRoutes.RoutineProgress.route) },
+            )
+        }
+
+        composable(NavRoutes.RoutineProgress.route) {
+            RoutineProgressScreen(
+                viewModel = routineViewModel,
+                onBack = { navController.popBackStack() },
+            )
+        }
+
+
+        composable(NavRoutes.ChildProfilePicker.route) {
+            ChildProfilePickerScreen(
+                viewModel = childProfileViewModel,
+                onBack = { navController.popBackStack() },
+            )
+        }
+
+        composable(NavRoutes.ChildProfileSettings.route) {
+            ChildProfileSettingsScreen(
+                viewModel = childProfileViewModel,
                 onBack = { navController.popBackStack() },
             )
         }

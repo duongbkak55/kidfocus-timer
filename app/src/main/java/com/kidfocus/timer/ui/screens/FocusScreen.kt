@@ -21,6 +21,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -32,6 +33,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.kidfocus.timer.R
 import com.kidfocus.timer.domain.model.TimerPhase
 import com.kidfocus.timer.ui.components.CircularTimer
 import com.kidfocus.timer.ui.components.MascotWidget
@@ -56,6 +59,8 @@ fun FocusScreen(
     val colors = KidFocusTheme.colors
     val timerState by timerViewModel.timerState.collectAsState()
     val completedMinutes by timerViewModel.completedSessionMinutes.collectAsState()
+    val settings by settingsViewModel.settings.collectAsState()
+    val calmMode = settings?.calmModeEnabled ?: false
 
     DisposableEffect(Unit) {
         timerViewModel.bindService()
@@ -86,24 +91,46 @@ fun FocusScreen(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Spacer(modifier = Modifier.height(32.dp))
                 Text(
-                    text = "Thời gian tập trung",
+                    text = stringResource(R.string.focus_title),
                     style = MaterialTheme.typography.headlineSmall,
                     color = colors.onBackground,
                     fontWeight = FontWeight.Bold,
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = if (timerState.isWarning) "Gần xong rồi! Cố lên!" else "Hãy giữ sự tập trung nhé!",
+                    text = if (calmMode) {
+                        stringResource(R.string.calm_mode_encouragement)
+                    } else if (timerState.isWarning) {
+                        stringResource(R.string.focus_almost_done)
+                    } else {
+                        stringResource(R.string.focus_encouragement)
+                    },
                     style = MaterialTheme.typography.bodyMedium,
                     color = colors.onBackground.copy(alpha = 0.6f),
                 )
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(
+                        stringResource(R.string.calm_mode_hide_time),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = colors.onBackground,
+                    )
+                    Switch(
+                        checked = calmMode,
+                        onCheckedChange = settingsViewModel::setCalmModeEnabled,
+                    )
+                }
             }
 
             // Timer + Mascot
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 CircularTimer(
                     progress = timerState.progress,
-                    timeText = timerState.timeFormatted,
+                    timeText = if (calmMode) stringResource(R.string.calm_mode_timer_text)
+                    else timerState.timeFormatted,
                     arcColor = colors.focusArc,
                     isWarning = timerState.isWarning,
                     size = 280.dp,
@@ -135,7 +162,7 @@ fun FocusScreen(
                         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                             Icon(
                                 imageVector = Icons.Default.Stop,
-                                contentDescription = "Dừng",
+                                contentDescription = stringResource(R.string.stop),
                                 tint = colors.onBackground,
                                 modifier = Modifier.size(28.dp),
                             )
@@ -155,7 +182,11 @@ fun FocusScreen(
                         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                             Icon(
                                 imageVector = if (timerState.isRunning) Icons.Default.Pause else Icons.Default.PlayArrow,
-                                contentDescription = if (timerState.isRunning) "Tạm dừng" else "Tiếp tục",
+                                contentDescription = if (timerState.isRunning) {
+                                    stringResource(R.string.pause)
+                                } else {
+                                    stringResource(R.string.resume)
+                                },
                                 tint = colors.onPrimary,
                                 modifier = Modifier.size(36.dp),
                             )
@@ -166,7 +197,7 @@ fun FocusScreen(
                 if (timerState.isPaused) {
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "Đang tạm dừng",
+                        text = stringResource(R.string.focus_paused),
                         style = MaterialTheme.typography.bodyMedium,
                         color = colors.onBackground.copy(alpha = 0.5f),
                     )

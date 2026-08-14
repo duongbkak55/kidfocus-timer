@@ -23,6 +23,10 @@ build/
 # Generated
 app/build/
 app/release/
+functions/node_modules/
+.firebase/
+firebase-debug.log
+functions/.secret.local
 *.apk
 *.aab
 

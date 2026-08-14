@@ -18,6 +18,8 @@ data class ScheduledTaskEntity(
     val breakDurationMinutes: Int,
     val enabled: Boolean,
     val isCustom: Boolean,
+    val childProfileId: String = ChildProfileEntity.DEFAULT_ID,
+    val photoUri: String? = null,
 ) {
     fun toDomain() = ScheduledTask(
         id = id,
@@ -31,6 +33,8 @@ data class ScheduledTaskEntity(
         breakDurationMinutes = breakDurationMinutes,
         enabled = enabled,
         isCustom = isCustom,
+        childProfileId = childProfileId,
+        photoUri = photoUri,
     )
 
     companion object {
@@ -46,6 +50,8 @@ data class ScheduledTaskEntity(
             breakDurationMinutes = task.breakDurationMinutes,
             enabled = task.enabled,
             isCustom = task.isCustom,
+            childProfileId = task.childProfileId,
+            photoUri = task.photoUri,
         )
     }
 }

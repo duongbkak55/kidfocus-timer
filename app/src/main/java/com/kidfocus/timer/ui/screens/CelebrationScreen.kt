@@ -21,10 +21,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kidfocus.timer.R
 import com.kidfocus.timer.ui.components.CelebrationOverlay
 import com.kidfocus.timer.ui.theme.KidFocusTheme
 import com.kidfocus.timer.ui.viewmodel.SettingsViewModel
@@ -66,7 +68,7 @@ fun CelebrationScreen(
             verticalArrangement = Arrangement.Center,
         ) {
             Text(
-                text = "Tuyệt vời!",
+                text = stringResource(R.string.celebration_title),
                 style = MaterialTheme.typography.displaySmall.copy(fontSize = 48.sp),
                 color = colors.primary,
                 fontWeight = FontWeight.Bold,
@@ -82,7 +84,7 @@ fun CelebrationScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Bạn vừa tập trung $focusMinutes phút!",
+                text = stringResource(R.string.celebration_focused_format, focusMinutes),
                 style = MaterialTheme.typography.titleLarge,
                 color = colors.onBackground,
                 fontWeight = FontWeight.SemiBold,
@@ -92,7 +94,7 @@ fun CelebrationScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Bạn thật giỏi! Hãy tiếp tục phát huy nhé!",
+                text = stringResource(R.string.celebration_praise),
                 style = MaterialTheme.typography.bodyLarge,
                 color = colors.onBackground.copy(alpha = 0.65f),
                 textAlign = TextAlign.Center,
@@ -112,7 +114,7 @@ fun CelebrationScreen(
                 colors = ButtonDefaults.buttonColors(containerColor = colors.breakArc),
             ) {
                 Text(
-                    text = "Nghỉ $breakMinutes phút",
+                    text = stringResource(R.string.celebration_take_break_format, breakMinutes),
                     style = MaterialTheme.typography.titleMedium,
                     color = androidx.compose.ui.graphics.Color.White,
                     fontWeight = FontWeight.Bold,
@@ -129,7 +131,7 @@ fun CelebrationScreen(
                 shape = RoundedCornerShape(18.dp),
             ) {
                 Text(
-                    text = "Về trang chủ",
+                    text = stringResource(R.string.celebration_go_home),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium,
                 )

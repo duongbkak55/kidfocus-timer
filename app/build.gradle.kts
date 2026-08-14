@@ -13,6 +13,19 @@ val keystoreProperties = Properties().apply {
     if (keystorePropertiesFile.exists()) load(keystorePropertiesFile.inputStream())
 }
 
+val localProps = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) load(file.inputStream())
+}
+
+fun configValue(name: String): String = (System.getenv(name)
+    ?: localProps.getProperty(name, ""))
+    .replace("\\", "\\\\")
+    .replace("\"", "\\\"")
+
+val revenueCatDebugKey = configValue("REVENUECAT_TEST_API_KEY")
+    .ifBlank { configValue("REVENUECAT_ANDROID_API_KEY") }
+
 android {
     namespace = "com.kidfocus.timer"
     compileSdk = 34
@@ -23,6 +36,7 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0.0"
+        resourceConfigurations += listOf("vi", "en")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -45,6 +59,8 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             signingConfig = signingConfigs.getByName("release")
+            buildConfigField("String", "REVENUECAT_ANDROID_API_KEY", "\"${configValue("REVENUECAT_ANDROID_API_KEY")}\"")
+            buildConfigField("boolean", "ENABLE_AI_CHAT", "false")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -53,6 +69,8 @@ android {
         debug {
             isDebuggable = true
             applicationIdSuffix = ".debug"
+            buildConfigField("String", "REVENUECAT_ANDROID_API_KEY", "\"$revenueCatDebugKey\"")
+            buildConfigField("boolean", "ENABLE_AI_CHAT", "true")
         }
     }
 
@@ -78,15 +96,21 @@ android {
         buildConfig = true
     }
 
-    // Inject OpenRouter API key from env var (CI) or local.properties (dev)
-    val localProps = Properties().apply {
-        val f = rootProject.file("local.properties")
-        if (f.exists()) load(f.inputStream())
+    androidResources {
+        generateLocaleConfig = true
     }
-    val openRouterKey = System.getenv("OPENROUTER_API_KEY")
-        ?: localProps.getProperty("OPENROUTER_API_KEY", "")
+
+    sourceSets {
+        getByName("main").assets.srcDir(rootProject.file("shared/learning/www"))
+        getByName("androidTest").assets.srcDir("$projectDir/schemas")
+    }
+
+    // Firebase values are safe client identifiers. OpenRouter secrets live only in Cloud Functions.
     defaultConfig {
-        buildConfigField("String", "OPENROUTER_API_KEY", "\"$openRouterKey\"")
+        buildConfigField("String", "FIREBASE_API_KEY", "\"${configValue("FIREBASE_API_KEY")}\"")
+        buildConfigField("String", "FIREBASE_APP_ID", "\"${configValue("FIREBASE_APP_ID")}\"")
+        buildConfigField("String", "FIREBASE_PROJECT_ID", "\"${configValue("FIREBASE_PROJECT_ID")}\"")
+        buildConfigField("String", "FIREBASE_WEB_CLIENT_ID", "\"${configValue("FIREBASE_WEB_CLIENT_ID")}\"")
     }
 
     packaging {
@@ -94,6 +118,10 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+}
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 dependencies {
@@ -130,6 +158,21 @@ dependencies {
     implementation(libs.play.services.auth)
     implementation(libs.okhttp)
 
+    // Optional cloud sync. Firebase is initialized only when local config is present.
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.functions)
+    implementation(libs.firebase.appcheck.playintegrity)
+    debugImplementation(libs.firebase.appcheck.debug)
+    implementation(libs.kotlinx.coroutines.play.services)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
+    implementation(libs.coil.compose)
+    implementation(libs.revenuecat.purchases)
+    implementation(libs.androidx.webkit)
+
     // Testing
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
@@ -138,6 +181,7 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
+    androidTestImplementation(libs.androidx.room.testing)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }

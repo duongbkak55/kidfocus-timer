@@ -68,6 +68,14 @@ enum class TaskType(
         defaultFocusMinutes = 30, defaultBreakMinutes = 5,
         defaultDays = setOf(Calendar.TUESDAY, Calendar.THURSDAY),
     ),
+    LEARNING_GAMES(
+        displayName = "Bé học và luyện tập",
+        emoji = "🎓",
+        category = TaskCategory.STUDY,
+        defaultHour = 19, defaultMinute = 0,
+        defaultFocusMinutes = 15, defaultBreakMinutes = 5,
+        defaultDays = _ALL_DAYS,
+    ),
 
     // ---- Vệ sinh & Sức khỏe ------------------------------------------------------------------
 
@@ -129,6 +137,30 @@ enum class TaskType(
         defaultHour = 18, defaultMinute = 30,
         defaultFocusMinutes = 15, defaultBreakMinutes = 5,
         defaultDays = _WEEKDAYS,
+    ),
+    BREAKFAST(
+        displayName = "Ăn sáng",
+        emoji = "🥣",
+        category = TaskCategory.CHORES,
+        defaultHour = 7, defaultMinute = 0,
+        defaultFocusMinutes = 20, defaultBreakMinutes = 5,
+        defaultDays = _ALL_DAYS,
+    ),
+    LUNCH(
+        displayName = "Ăn trưa",
+        emoji = "🍱",
+        category = TaskCategory.CHORES,
+        defaultHour = 12, defaultMinute = 0,
+        defaultFocusMinutes = 30, defaultBreakMinutes = 5,
+        defaultDays = _ALL_DAYS,
+    ),
+    DINNER(
+        displayName = "Ăn tối",
+        emoji = "🍲",
+        category = TaskCategory.CHORES,
+        defaultHour = 19, defaultMinute = 30,
+        defaultFocusMinutes = 30, defaultBreakMinutes = 5,
+        defaultDays = _ALL_DAYS,
     ),
 
     // ---- Giải trí ----------------------------------------------------------------------------

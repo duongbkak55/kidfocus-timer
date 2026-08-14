@@ -12,6 +12,8 @@ data class ScheduledTask(
     val breakDurationMinutes: Int,
     val enabled: Boolean = true,
     val isCustom: Boolean = false,
+    val childProfileId: String = "default",
+    val photoUri: String? = null,
 ) {
     val timeFormatted: String get() = "%02d:%02d".format(hour, minute)
 

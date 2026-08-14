@@ -2,6 +2,7 @@ package com.kidfocus.timer.domain
 
 import com.kidfocus.timer.data.database.SessionEntity
 import com.kidfocus.timer.data.repository.SessionRepository
+import com.kidfocus.timer.data.repository.ChildProfileRepository
 import com.kidfocus.timer.domain.usecase.RecordSessionUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -165,6 +166,21 @@ class RecordSessionUseCaseTest {
         )
 
         assertEquals(fixedTime, slot.captured.timestampMillis)
+    }
+
+    @Test
+    fun `session is assigned to the active child profile`() = runTest {
+        val childProfiles = mockk<ChildProfileRepository>()
+        val slot = slot<SessionEntity>()
+        coEvery { childProfiles.currentProfileId() } returns "child-linh"
+        coEvery { sessionRepository.insertSession(capture(slot)) } returns Unit
+
+        RecordSessionUseCase(sessionRepository, childProfiles)(
+            durationSeconds = 1500,
+            isFocus = true,
+        )
+
+        assertEquals("child-linh", slot.captured.childProfileId)
     }
 
     // ---- Guard clause: invalid durations ----------------------------------------------------
