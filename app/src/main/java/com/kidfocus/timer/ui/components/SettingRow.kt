@@ -1,5 +1,6 @@
 package com.kidfocus.timer.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -158,6 +159,7 @@ fun SettingRow(
     title: String,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
+    onClick: (() -> Unit)? = null,
     trailingContent: @Composable (() -> Unit)? = null,
 ) {
     val colors = KidFocusTheme.colors
@@ -165,7 +167,9 @@ fun SettingRow(
         shape = RoundedCornerShape(16.dp),
         color = colors.surface,
         tonalElevation = 1.dp,
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
     ) {
         Row(
             modifier = Modifier

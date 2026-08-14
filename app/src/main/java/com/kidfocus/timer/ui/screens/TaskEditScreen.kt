@@ -1,5 +1,10 @@
 package com.kidfocus.timer.ui.screens
 
+import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -35,19 +40,34 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kidfocus.timer.R
 import com.kidfocus.timer.domain.model.ScheduledTask
 import com.kidfocus.timer.domain.model.TaskType
+import com.kidfocus.timer.ui.components.RepeatPreset
+import com.kidfocus.timer.ui.components.RepeatPresetSelector
+import com.kidfocus.timer.ui.components.taskTypeLabel
 import com.kidfocus.timer.ui.components.SettingSliderRow
+import com.kidfocus.timer.ui.components.TaskTemplatePicker
 import com.kidfocus.timer.ui.theme.KidFocusTheme
 import com.kidfocus.timer.ui.viewmodel.ScheduleViewModel
 import java.util.Calendar
+import coil.compose.AsyncImage
 
 @Composable
 fun TaskEditScreen(
@@ -56,14 +76,40 @@ fun TaskEditScreen(
     onBack: () -> Unit,
 ) {
     val colors = KidFocusTheme.colors
+    val context = LocalContext.current
+    val isNew = task.id == 0L
+    val localizedDefaultName = taskTypeLabel(task.taskType)
+    val localizedCustomName = taskTypeLabel(TaskType.CUSTOM)
+    val savedTasks by viewModel.tasks.collectAsState()
 
-    var name by remember { mutableStateOf(task.name) }
+    var selectedType by remember(task.id, task.taskType) { mutableStateOf(task.taskType) }
+    var selectedDefaultName by remember(task.id, task.taskType) { mutableStateOf(localizedDefaultName) }
+    var emoji by remember(task.id, task.emoji) { mutableStateOf(task.emoji) }
+    var name by remember(task.id, task.taskType) {
+        mutableStateOf(
+            if (isNew && task.name == task.taskType.displayName) localizedDefaultName else task.name
+        )
+    }
     var hour by remember { mutableIntStateOf(task.hour) }
     var minute by remember { mutableIntStateOf(task.minute) }
     var daysOfWeek by remember { mutableStateOf(task.daysOfWeek) }
     var focusMinutes by remember { mutableIntStateOf(task.focusDurationMinutes) }
     var breakMinutes by remember { mutableIntStateOf(task.breakDurationMinutes) }
-    val isNew = task.id == 0L
+    var showTemplatePicker by remember { mutableStateOf(false) }
+    var photoUri by remember(task.id, task.photoUri) { mutableStateOf(task.photoUri) }
+    val photoPicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+    ) { uri ->
+        if (uri != null) {
+            runCatching {
+                context.contentResolver.takePersistableUriPermission(
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION,
+                )
+            }
+            photoUri = uri.toString()
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -79,10 +125,14 @@ fun TaskEditScreen(
             // Top bar
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 IconButton(onClick = onBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Quay lại", tint = colors.onBackground)
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.back),
+                        tint = colors.onBackground,
+                    )
                 }
                 Text(
-                    text = if (isNew) "Tạo lịch mới" else "Chỉnh sửa lịch",
+                    text = stringResource(if (isNew) R.string.schedule_create_title else R.string.schedule_edit_title),
                     style = MaterialTheme.typography.headlineSmall,
                     color = colors.onBackground,
                     fontWeight = FontWeight.Bold,
@@ -90,6 +140,16 @@ fun TaskEditScreen(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+
+            OutlinedButton(
+                onClick = { showTemplatePicker = true },
+                modifier = Modifier.fillMaxWidth().height(48.dp),
+                shape = RoundedCornerShape(14.dp),
+            ) {
+                Text(stringResource(R.string.task_choose_suggestion), fontWeight = FontWeight.Medium)
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Emoji + Name
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -100,13 +160,13 @@ fun TaskEditScreen(
                         .background(colors.primary.copy(alpha = 0.12f)),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(text = task.emoji, fontSize = 28.sp)
+                    Text(text = emoji, fontSize = 28.sp)
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Tên hoạt động") },
+                    label = { Text(stringResource(R.string.schedule_activity_name)) },
                     modifier = Modifier.weight(1f),
                     singleLine = true,
                 )
@@ -114,8 +174,49 @@ fun TaskEditScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            SectionLabel(stringResource(R.string.task_photo_title))
+            Spacer(modifier = Modifier.height(8.dp))
+            photoUri?.let { uri ->
+                AsyncImage(
+                    model = uri,
+                    contentDescription = stringResource(R.string.task_photo_description, name),
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(160.dp)
+                        .clip(RoundedCornerShape(16.dp)),
+                )
+                Spacer(Modifier.height(8.dp))
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(
+                    onClick = {
+                        photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                    },
+                    modifier = Modifier.weight(1f).height(48.dp),
+                ) {
+                    Text(stringResource(if (photoUri == null) R.string.task_photo_choose else R.string.task_photo_change))
+                }
+                if (photoUri != null) {
+                    OutlinedButton(
+                        onClick = { photoUri = null },
+                        modifier = Modifier.weight(1f).height(48.dp),
+                    ) {
+                        Text(stringResource(R.string.task_photo_remove))
+                    }
+                }
+            }
+            Text(
+                text = stringResource(R.string.task_photo_local_only),
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.onBackground.copy(alpha = 0.6f),
+                modifier = Modifier.padding(top = 6.dp),
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
             // Time picker
-            SectionLabel("Giờ bắt đầu")
+            SectionLabel(stringResource(R.string.schedule_start_time))
             Spacer(modifier = Modifier.height(8.dp))
             TimePickerRow(
                 hour = hour,
@@ -127,8 +228,30 @@ fun TaskEditScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // Day selector
-            SectionLabel("Ngày trong tuần")
+            SectionLabel(stringResource(R.string.schedule_days_of_week))
             Spacer(modifier = Modifier.height(8.dp))
+            RepeatPresetSelector(
+                selected = when (daysOfWeek) {
+                    TaskType.ALL_DAYS -> RepeatPreset.EVERY_DAY
+                    TaskType.WEEKDAYS -> RepeatPreset.WEEKDAYS
+                    TaskType.WEEKEND -> RepeatPreset.WEEKEND
+                    else -> null
+                },
+                onSelect = { preset ->
+                    daysOfWeek = when (preset) {
+                        RepeatPreset.EVERY_DAY -> TaskType.ALL_DAYS
+                        RepeatPreset.WEEKDAYS -> TaskType.WEEKDAYS
+                        RepeatPreset.WEEKEND -> TaskType.WEEKEND
+                    }
+                },
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = stringResource(R.string.repeat_custom_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.onBackground.copy(alpha = 0.6f),
+            )
+            Spacer(modifier = Modifier.height(6.dp))
             DaySelector(
                 selectedDays = daysOfWeek,
                 onDaysChange = { daysOfWeek = it },
@@ -137,22 +260,22 @@ fun TaskEditScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // Duration sliders
-            SectionLabel("Thời lượng")
+            SectionLabel(stringResource(R.string.schedule_duration))
             Spacer(modifier = Modifier.height(8.dp))
             SettingSliderRow(
-                title = "Tập trung",
+                title = stringResource(R.string.schedule_focus),
                 value = focusMinutes.toFloat(),
                 valueRange = 10f..120f,
                 onValueChange = { focusMinutes = it.toInt() },
-                valueLabel = "$focusMinutes phút",
+                valueLabel = stringResource(R.string.parent_minutes_format, focusMinutes),
             )
             Spacer(modifier = Modifier.height(12.dp))
             SettingSliderRow(
-                title = "Nghỉ giải lao",
+                title = stringResource(R.string.schedule_break),
                 value = breakMinutes.toFloat(),
                 valueRange = 5f..30f,
                 onValueChange = { breakMinutes = it.toInt() },
-                valueLabel = "$breakMinutes phút",
+                valueLabel = stringResource(R.string.parent_minutes_format, breakMinutes),
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -162,13 +285,17 @@ fun TaskEditScreen(
                 onClick = {
                     viewModel.saveTask(
                         task.copy(
-                            name = name.ifBlank { task.taskType.displayName },
+                            taskType = selectedType,
+                            name = name.ifBlank { selectedDefaultName },
+                            emoji = emoji,
                             hour = hour,
                             minute = minute,
                             daysOfWeek = daysOfWeek.ifEmpty { TaskType.WEEKDAYS },
                             focusDurationMinutes = focusMinutes,
                             breakDurationMinutes = breakMinutes,
                             enabled = true,
+                            isCustom = selectedType == TaskType.CUSTOM,
+                            photoUri = photoUri,
                         )
                     )
                     onBack()
@@ -177,7 +304,7 @@ fun TaskEditScreen(
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = colors.primary),
             ) {
-                Text("Lưu lịch", fontWeight = FontWeight.Bold, color = colors.onPrimary)
+                Text(stringResource(R.string.schedule_save), fontWeight = FontWeight.Bold, color = colors.onPrimary)
             }
 
             if (!isNew) {
@@ -189,12 +316,37 @@ fun TaskEditScreen(
                 ) {
                     Icon(Icons.Default.Delete, contentDescription = null, tint = Color(0xFFEF4444))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Xóa lịch", color = Color(0xFFEF4444), fontWeight = FontWeight.Medium)
+                    Text(stringResource(R.string.schedule_delete), color = Color(0xFFEF4444), fontWeight = FontWeight.Medium)
                 }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
         }
+    }
+
+    if (showTemplatePicker) {
+        TaskTemplatePicker(
+            recentTypes = savedTasks.asReversed().map { it.taskType },
+            onDismiss = { showTemplatePicker = false },
+            onManual = {
+                selectedType = TaskType.CUSTOM
+                selectedDefaultName = localizedCustomName
+                emoji = TaskType.CUSTOM.emoji
+                showTemplatePicker = false
+            },
+            onSelect = { type, localizedName ->
+                selectedType = type
+                selectedDefaultName = localizedName
+                emoji = type.emoji
+                name = localizedName
+                hour = type.defaultHour
+                minute = type.defaultMinute
+                daysOfWeek = type.defaultDays
+                focusMinutes = type.defaultFocusMinutes
+                breakMinutes = type.defaultBreakMinutes
+                showTemplatePicker = false
+            },
+        )
     }
 }
 
@@ -225,7 +377,12 @@ private fun TimePickerRow(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        TimeSpinner(value = hour, range = 0..23, onValueChange = onHourChange, label = "Giờ")
+        TimeSpinner(
+            value = hour,
+            range = 0..23,
+            onValueChange = onHourChange,
+            label = stringResource(R.string.schedule_hour),
+        )
         Text(
             text = ":",
             style = MaterialTheme.typography.headlineMedium,
@@ -233,13 +390,21 @@ private fun TimePickerRow(
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(horizontal = 12.dp),
         )
-        TimeSpinner(value = minute, range = 0..59, step = 5, onValueChange = onMinuteChange, label = "Phút")
+        TimeSpinner(
+            value = minute,
+            range = 0..59,
+            step = 5,
+            onValueChange = onMinuteChange,
+            label = stringResource(R.string.schedule_minute),
+        )
     }
 }
 
 @Composable
 private fun TimeSpinner(value: Int, range: IntRange, step: Int = 1, onValueChange: (Int) -> Unit, label: String) {
     val colors = KidFocusTheme.colors
+    val decreaseDescription = stringResource(R.string.schedule_decrease, label)
+    val increaseDescription = stringResource(R.string.schedule_increase, label)
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text = label, style = MaterialTheme.typography.labelSmall, color = colors.onBackground.copy(alpha = 0.5f))
         Spacer(modifier = Modifier.height(4.dp))
@@ -247,6 +412,10 @@ private fun TimeSpinner(value: Int, range: IntRange, step: Int = 1, onValueChang
             Box(
                 modifier = Modifier
                     .size(36.dp)
+                    .semantics {
+                        contentDescription = decreaseDescription
+                        role = Role.Button
+                    }
                     .clip(CircleShape)
                     .background(colors.primary.copy(alpha = 0.12f))
                     .clickable {
@@ -266,6 +435,10 @@ private fun TimeSpinner(value: Int, range: IntRange, step: Int = 1, onValueChang
             Box(
                 modifier = Modifier
                     .size(36.dp)
+                    .semantics {
+                        contentDescription = increaseDescription
+                        role = Role.Button
+                    }
                     .clip(CircleShape)
                     .background(colors.primary.copy(alpha = 0.12f))
                     .clickable {
@@ -282,28 +455,35 @@ private fun TimeSpinner(value: Int, range: IntRange, step: Int = 1, onValueChang
 private fun DaySelector(selectedDays: Set<Int>, onDaysChange: (Set<Int>) -> Unit) {
     val colors = KidFocusTheme.colors
     val days = listOf(
-        Calendar.MONDAY to "T2",
-        Calendar.TUESDAY to "T3",
-        Calendar.WEDNESDAY to "T4",
-        Calendar.THURSDAY to "T5",
-        Calendar.FRIDAY to "T6",
-        Calendar.SATURDAY to "T7",
-        Calendar.SUNDAY to "CN",
+        Triple(Calendar.MONDAY, R.string.weekday_monday_short, R.string.weekday_monday),
+        Triple(Calendar.TUESDAY, R.string.weekday_tuesday_short, R.string.weekday_tuesday),
+        Triple(Calendar.WEDNESDAY, R.string.weekday_wednesday_short, R.string.weekday_wednesday),
+        Triple(Calendar.THURSDAY, R.string.weekday_thursday_short, R.string.weekday_thursday),
+        Triple(Calendar.FRIDAY, R.string.weekday_friday_short, R.string.weekday_friday),
+        Triple(Calendar.SATURDAY, R.string.weekday_saturday_short, R.string.weekday_saturday),
+        Triple(Calendar.SUNDAY, R.string.weekday_sunday_short, R.string.weekday_sunday),
     )
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        days.forEach { (day, label) ->
+        days.forEach { (day, labelRes, fullLabelRes) ->
             val selected = day in selectedDays
+            val label = stringResource(labelRes)
+            val fullLabel = stringResource(fullLabelRes)
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .height(40.dp)
+                    .height(48.dp)
                     .clip(RoundedCornerShape(10.dp))
                     .background(if (selected) colors.primary else colors.surface)
                     .border(1.dp, if (selected) colors.primary else colors.onBackground.copy(alpha = 0.15f), RoundedCornerShape(10.dp))
-                    .clickable {
+                    .semantics {
+                        contentDescription = fullLabel
+                        this.selected = selected
+                        role = Role.Checkbox
+                    }
+                    .clickable(role = Role.Checkbox) {
                         onDaysChange(if (selected) selectedDays - day else selectedDays + day)
                     },
                 contentAlignment = Alignment.Center,

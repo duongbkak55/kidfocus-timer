@@ -40,6 +40,9 @@ class SettingsDataStore @Inject constructor(
         val COMPLETED_FOCUS_SESSIONS = intPreferencesKey("completed_focus_sessions")
         val DAILY_GOAL_MINUTES = intPreferencesKey("daily_goal_minutes")
         val GEMINI_API_KEY = stringPreferencesKey("gemini_api_key")
+        val LEARNING_AGE_BAND = stringPreferencesKey("learning_age_band")
+        val CALM_MODE_ENABLED = booleanPreferencesKey("calm_mode_enabled")
+        val ACTIVE_CHILD_PROFILE_ID = stringPreferencesKey("active_child_profile_id")
     }
 
     /** Emits [TimerSettings] whenever any preference value changes. */
@@ -54,6 +57,11 @@ class SettingsDataStore @Inject constructor(
             vibrationEnabled = prefs[Keys.VIBRATION_ENABLED] ?: true,
             dailyGoalMinutes = prefs[Keys.DAILY_GOAL_MINUTES] ?: TimerSettings.DEFAULT_DAILY_GOAL_MINUTES,
             geminiApiKey = prefs[Keys.GEMINI_API_KEY],
+            learningAgeBand = prefs[Keys.LEARNING_AGE_BAND]
+                ?: TimerSettings.DEFAULT_LEARNING_AGE_BAND,
+            calmModeEnabled = prefs[Keys.CALM_MODE_ENABLED] ?: false,
+            activeChildProfileId = prefs[Keys.ACTIVE_CHILD_PROFILE_ID]
+                ?: TimerSettings.DEFAULT_CHILD_PROFILE_ID,
         )
     }
 
@@ -67,6 +75,9 @@ class SettingsDataStore @Inject constructor(
             prefs[Keys.SOUND_ENABLED] = settings.soundEnabled
             prefs[Keys.VIBRATION_ENABLED] = settings.vibrationEnabled
             prefs[Keys.DAILY_GOAL_MINUTES] = settings.dailyGoalMinutes
+            prefs[Keys.LEARNING_AGE_BAND] = settings.learningAgeBand
+            prefs[Keys.CALM_MODE_ENABLED] = settings.calmModeEnabled
+            prefs[Keys.ACTIVE_CHILD_PROFILE_ID] = settings.activeChildProfileId
 
             if (settings.pinHash != null) {
                 prefs[Keys.PIN_HASH] = settings.pinHash
@@ -85,6 +96,18 @@ class SettingsDataStore @Inject constructor(
         context.dataStore.edit { prefs ->
             if (apiKey.isBlank()) prefs.remove(Keys.GEMINI_API_KEY)
             else prefs[Keys.GEMINI_API_KEY] = apiKey.trim()
+        }
+    }
+
+    suspend fun saveLearningAgeBand(ageBand: String) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.LEARNING_AGE_BAND] = ageBand
+        }
+    }
+
+    suspend fun saveActiveChildProfileId(profileId: String) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.ACTIVE_CHILD_PROFILE_ID] = profileId
         }
     }
 

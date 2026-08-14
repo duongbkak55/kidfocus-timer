@@ -26,6 +26,9 @@ data class SessionEntity(
 
     @ColumnInfo(name = "timestamp_millis")
     val timestampMillis: Long,
+
+    @ColumnInfo(name = "child_profile_id")
+    val childProfileId: String = ChildProfileEntity.DEFAULT_ID,
 ) {
     /** Duration expressed as whole minutes, rounded down. */
     val durationMinutes: Int get() = durationSeconds / 60

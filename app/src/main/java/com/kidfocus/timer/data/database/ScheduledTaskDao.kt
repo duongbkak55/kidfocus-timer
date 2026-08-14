@@ -13,11 +13,17 @@ interface ScheduledTaskDao {
     @Query("SELECT * FROM scheduled_tasks ORDER BY hour ASC, minute ASC")
     fun getAllFlow(): Flow<List<ScheduledTaskEntity>>
 
+    @Query("SELECT * FROM scheduled_tasks ORDER BY id ASC")
+    suspend fun getAllForSync(): List<ScheduledTaskEntity>
+
     @Query("SELECT * FROM scheduled_tasks WHERE enabled = 1")
     suspend fun getAllEnabled(): List<ScheduledTaskEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(entity: ScheduledTaskEntity): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(entities: List<ScheduledTaskEntity>)
 
     @Update
     suspend fun update(entity: ScheduledTaskEntity)
@@ -27,4 +33,7 @@ interface ScheduledTaskDao {
 
     @Query("DELETE FROM scheduled_tasks WHERE id = :id")
     suspend fun deleteById(id: Long)
+
+    @Query("DELETE FROM scheduled_tasks")
+    suspend fun deleteAll()
 }

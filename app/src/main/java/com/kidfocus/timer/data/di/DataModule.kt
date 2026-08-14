@@ -5,6 +5,9 @@ import androidx.room.Room
 import com.kidfocus.timer.data.database.ScheduledTaskDao
 import com.kidfocus.timer.data.database.SessionDao
 import com.kidfocus.timer.data.database.SessionDatabase
+import com.kidfocus.timer.data.database.RoutineDao
+import com.kidfocus.timer.data.database.LearningAttemptDao
+import com.kidfocus.timer.data.database.ChildProfileDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -25,7 +28,12 @@ object DataModule {
         SessionDatabase::class.java,
         SessionDatabase.DATABASE_NAME,
     )
-        .addMigrations(SessionDatabase.MIGRATION_1_2)
+        .addMigrations(
+            SessionDatabase.MIGRATION_1_2,
+            SessionDatabase.MIGRATION_2_3,
+            SessionDatabase.MIGRATION_3_4,
+            SessionDatabase.MIGRATION_4_5,
+        )
         .build()
 
     @Provides
@@ -37,4 +45,19 @@ object DataModule {
     @Singleton
     fun provideScheduledTaskDao(database: SessionDatabase): ScheduledTaskDao =
         database.scheduledTaskDao()
+
+    @Provides
+    @Singleton
+    fun provideRoutineDao(database: SessionDatabase): RoutineDao =
+        database.routineDao()
+
+    @Provides
+    @Singleton
+    fun provideLearningAttemptDao(database: SessionDatabase): LearningAttemptDao =
+        database.learningAttemptDao()
+
+    @Provides
+    @Singleton
+    fun provideChildProfileDao(database: SessionDatabase): ChildProfileDao =
+        database.childProfileDao()
 }

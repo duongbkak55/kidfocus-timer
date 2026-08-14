@@ -18,6 +18,15 @@ interface SessionDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertSession(session: SessionEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSessions(sessions: List<SessionEntity>)
+
+    @Query("SELECT * FROM sessions ORDER BY timestamp_millis DESC LIMIT :limit")
+    suspend fun getAllForSync(limit: Int = 2000): List<SessionEntity>
+
+    @Query("SELECT * FROM sessions ORDER BY timestamp_millis DESC LIMIT 2000")
+    fun observeAllForSync(): Flow<List<SessionEntity>>
+
     /**
      * Returns all sessions with [timestampMillis] >= [sinceMillis], ordered newest first.
      * Emits a new list whenever the underlying table changes.

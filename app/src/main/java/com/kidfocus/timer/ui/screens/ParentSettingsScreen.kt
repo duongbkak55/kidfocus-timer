@@ -29,10 +29,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kidfocus.timer.domain.model.TimerSettings
+import com.kidfocus.timer.data.cloud.CloudAccount
+import com.kidfocus.timer.data.cloud.CloudSyncStatus
 import androidx.compose.material3.CircularProgressIndicator
+import com.kidfocus.timer.R
 import com.kidfocus.timer.ui.components.SettingRow
 import com.kidfocus.timer.ui.components.SettingSliderRow
 import com.kidfocus.timer.ui.components.SettingToggleRow
@@ -48,6 +52,12 @@ fun ParentSettingsScreen(
     onBack: () -> Unit,
     onSetPin: () -> Unit,
     onOpenSchedule: () -> Unit = {},
+    onOpenRoutineSettings: () -> Unit = {},
+    onOpenCloudSync: () -> Unit = {},
+    onOpenSubscription: () -> Unit = {},
+    onOpenChildProfiles: () -> Unit = {},
+    cloudAccount: CloudAccount = CloudAccount(configured = false),
+    cloudSyncStatus: CloudSyncStatus = CloudSyncStatus.LocalOnly,
 ) {
     val colors = KidFocusTheme.colors
     val settings by settingsViewModel.settings.collectAsState()
@@ -77,12 +87,12 @@ fun ParentSettingsScreen(
                 IconButton(onClick = onBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Quay lại",
+                        contentDescription = stringResource(R.string.back),
                         tint = colors.onBackground,
                     )
                 }
                 Text(
-                    text = "Cài đặt phụ huynh",
+                    text = stringResource(R.string.parent_settings_title),
                     style = MaterialTheme.typography.headlineSmall,
                     color = colors.onBackground,
                     fontWeight = FontWeight.Bold,
@@ -91,8 +101,20 @@ fun ParentSettingsScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            SectionHeader(text = stringResource(R.string.parent_section_children))
+            Spacer(modifier = Modifier.height(12.dp))
+            SettingRow(
+                icon = "🧒",
+                title = stringResource(R.string.parent_manage_children),
+                subtitle = stringResource(R.string.parent_manage_children_subtitle),
+                onClick = onOpenChildProfiles,
+                trailingContent = { Text("›", style = MaterialTheme.typography.headlineSmall) },
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
             // Section: Schedule
-            SectionHeader(text = "Lịch học")
+            SectionHeader(text = stringResource(R.string.parent_section_study_schedule))
             Spacer(modifier = Modifier.height(12.dp))
             Button(
                 onClick = onOpenSchedule,
@@ -103,7 +125,7 @@ fun ParentSettingsScreen(
                 colors = ButtonDefaults.buttonColors(containerColor = colors.primary),
             ) {
                 Text(
-                    text = "📅  Quản lý lịch học",
+                    text = stringResource(R.string.parent_manage_study_schedule),
                     style = MaterialTheme.typography.titleSmall,
                     color = colors.onPrimary,
                     fontWeight = FontWeight.Bold,
@@ -113,46 +135,93 @@ fun ParentSettingsScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // Section: Timer durations
-            SectionHeader(text = "Thời gian hẹn giờ")
+            SectionHeader(text = stringResource(R.string.parent_section_timer))
             Spacer(modifier = Modifier.height(12.dp))
 
             SettingSliderRow(
-                title = "Thời gian tập trung",
+                title = stringResource(R.string.parent_focus_duration),
                 value = current.focusDurationMinutes.toFloat(),
                 valueRange = TimerSettings.MIN_FOCUS_MINUTES.toFloat()..TimerSettings.MAX_FOCUS_MINUTES.toFloat(),
                 onValueChange = { settingsViewModel.setFocusDuration(it.toInt()) },
-                valueLabel = "${current.focusDurationMinutes} phút",
+                valueLabel = stringResource(R.string.parent_minutes_format, current.focusDurationMinutes),
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             SettingSliderRow(
-                title = "Thời gian nghỉ ngơi",
+                title = stringResource(R.string.parent_break_duration),
                 value = current.breakDurationMinutes.toFloat(),
                 valueRange = TimerSettings.MIN_BREAK_MINUTES.toFloat()..TimerSettings.MAX_BREAK_MINUTES.toFloat(),
                 onValueChange = { settingsViewModel.setBreakDuration(it.toInt()) },
-                valueLabel = "${current.breakDurationMinutes} phút",
+                valueLabel = stringResource(R.string.parent_minutes_format, current.breakDurationMinutes),
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             SettingSliderRow(
-                title = "Mục tiêu hằng ngày",
+                title = stringResource(R.string.parent_daily_goal),
                 value = current.dailyGoalMinutes.toFloat(),
                 valueRange = TimerSettings.MIN_DAILY_GOAL_MINUTES.toFloat()..TimerSettings.MAX_DAILY_GOAL_MINUTES.toFloat(),
                 onValueChange = { settingsViewModel.updateDailyGoal(it.toInt()) },
-                valueLabel = "${current.dailyGoalMinutes} phút",
+                valueLabel = stringResource(R.string.parent_minutes_format, current.dailyGoalMinutes),
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            SectionHeader(text = stringResource(R.string.parent_section_routines))
+            Spacer(modifier = Modifier.height(12.dp))
+            SettingRow(
+                icon = "📅",
+                title = stringResource(R.string.parent_manage_routines),
+                subtitle = stringResource(R.string.parent_manage_routines_subtitle),
+                onClick = onOpenRoutineSettings,
+                trailingContent = { Text("›", style = MaterialTheme.typography.headlineSmall) },
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            SectionHeader(text = stringResource(R.string.parent_section_account))
+            Spacer(modifier = Modifier.height(12.dp))
+            SettingRow(
+                icon = if (cloudAccount.isSignedIn) "✅" else "☁️",
+                title = if (cloudAccount.isSignedIn) {
+                    cloudAccount.displayName ?: stringResource(R.string.parent_signed_in)
+                } else {
+                    stringResource(R.string.parent_multi_device_sync)
+                },
+                subtitle = if (cloudAccount.isSignedIn) {
+                    val syncLabel = when (cloudSyncStatus) {
+                        CloudSyncStatus.Syncing -> stringResource(R.string.sync_state_syncing)
+                        is CloudSyncStatus.Synced -> stringResource(R.string.sync_state_synced)
+                        is CloudSyncStatus.Error -> stringResource(R.string.sync_state_retry)
+                        else -> stringResource(R.string.sync_state_signed_in)
+                    }
+                    listOfNotNull(cloudAccount.email, syncLabel).joinToString(" • ")
+                } else {
+                    stringResource(R.string.parent_cloud_signed_out_subtitle)
+                },
+                onClick = onOpenCloudSync,
+                trailingContent = { Text("›", style = MaterialTheme.typography.headlineSmall) },
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+            SettingRow(
+                icon = "🌟",
+                title = stringResource(R.string.parent_premium_title),
+                subtitle = stringResource(R.string.parent_premium_subtitle),
+                onClick = onOpenSubscription,
+                trailingContent = { Text("›", style = MaterialTheme.typography.headlineSmall) },
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
             // Section: Notifications
-            SectionHeader(text = "Thông báo & Âm thanh")
+            SectionHeader(text = stringResource(R.string.parent_section_notifications))
             Spacer(modifier = Modifier.height(12.dp))
 
             SettingToggleRow(
-                title = "Âm thanh",
-                subtitle = "Phát âm thanh khi kết thúc phiên",
+                title = stringResource(R.string.parent_sound_title),
+                subtitle = stringResource(R.string.parent_sound_subtitle),
                 checked = current.soundEnabled,
                 onCheckedChange = { settingsViewModel.setSoundEnabled(it) },
             )
@@ -160,8 +229,8 @@ fun ParentSettingsScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             SettingToggleRow(
-                title = "Rung",
-                subtitle = "Rung khi kết thúc phiên",
+                title = stringResource(R.string.parent_vibration_title),
+                subtitle = stringResource(R.string.parent_vibration_subtitle),
                 checked = current.vibrationEnabled,
                 onCheckedChange = { settingsViewModel.setVibrationEnabled(it) },
             )
@@ -169,13 +238,15 @@ fun ParentSettingsScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // Section: PIN / Parental lock
-            SectionHeader(text = "Khóa phụ huynh")
+            SectionHeader(text = stringResource(R.string.parent_section_pin))
             Spacer(modifier = Modifier.height(12.dp))
 
             SettingRow(
                 icon = if (current.hasPinSet) "\uD83D\uDD12" else "\uD83D\uDD13",
-                title = if (current.hasPinSet) "PIN đã được thiết lập" else "Chưa có PIN",
-                subtitle = if (current.hasPinSet) "Cài đặt được bảo vệ" else "Trẻ có thể thay đổi cài đặt",
+                title = stringResource(if (current.hasPinSet) R.string.parent_pin_set else R.string.parent_pin_not_set),
+                subtitle = stringResource(
+                    if (current.hasPinSet) R.string.parent_pin_set_subtitle else R.string.parent_pin_not_set_subtitle
+                ),
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -189,7 +260,7 @@ fun ParentSettingsScreen(
                 colors = ButtonDefaults.buttonColors(containerColor = colors.primary),
             ) {
                 Text(
-                    text = if (current.hasPinSet) "Đổi PIN" else "Tạo PIN",
+                    text = stringResource(if (current.hasPinSet) R.string.parent_change_pin else R.string.parent_create_pin),
                     style = MaterialTheme.typography.titleSmall,
                     color = colors.onPrimary,
                     fontWeight = FontWeight.Bold,
@@ -206,7 +277,7 @@ fun ParentSettingsScreen(
                     shape = RoundedCornerShape(16.dp),
                 ) {
                     Text(
-                        text = "Xóa PIN",
+                        text = stringResource(R.string.parent_remove_pin),
                         style = MaterialTheme.typography.titleSmall,
                         color = Color(0xFFEF4444),
                         fontWeight = FontWeight.Medium,

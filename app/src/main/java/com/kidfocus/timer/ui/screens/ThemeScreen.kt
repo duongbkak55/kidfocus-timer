@@ -30,8 +30,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.kidfocus.timer.R
 import com.kidfocus.timer.domain.model.AppTheme
 import com.kidfocus.timer.ui.theme.ForestBackground
 import com.kidfocus.timer.ui.theme.ForestPrimary
@@ -88,12 +90,12 @@ fun ThemeScreen(
                 IconButton(onClick = onBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Quay lại",
+                        contentDescription = stringResource(R.string.back),
                         tint = colors.onBackground,
                     )
                 }
                 Text(
-                    text = "Chọn chủ đề",
+                    text = stringResource(R.string.theme_title),
                     style = MaterialTheme.typography.headlineSmall,
                     color = colors.onBackground,
                     fontWeight = FontWeight.Bold,
@@ -103,7 +105,7 @@ fun ThemeScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "Chọn màu sắc bạn thích nhất",
+                text = stringResource(R.string.theme_subtitle),
                 style = MaterialTheme.typography.bodyLarge,
                 color = colors.onBackground.copy(alpha = 0.6f),
             )
@@ -164,15 +166,16 @@ private fun ThemeCard(
 
                 Column {
                     Text(
-                        text = preview.theme.emoji + " " + preview.theme.displayName,
+                        text = preview.theme.emoji + " " + stringResource(
+                            when (preview.theme) {
+                                AppTheme.OCEAN -> R.string.theme_ocean
+                                AppTheme.FOREST -> R.string.theme_forest
+                                AppTheme.SUNSET -> R.string.theme_sunset
+                            }
+                        ),
                         style = MaterialTheme.typography.titleMedium,
                         color = preview.primary,
                         fontWeight = FontWeight.Bold,
-                    )
-                    Text(
-                        text = preview.theme.name.lowercase().replaceFirstChar { it.uppercase() },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = preview.primary.copy(alpha = 0.6f),
                     )
                 }
             }
@@ -187,7 +190,7 @@ private fun ThemeCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
-                        contentDescription = "Đã chọn",
+                        contentDescription = stringResource(R.string.theme_selected),
                         tint = Color.White,
                         modifier = Modifier.size(18.dp),
                     )

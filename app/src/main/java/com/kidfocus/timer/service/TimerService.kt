@@ -1,19 +1,23 @@
 package com.kidfocus.timer.service
 
+import android.Manifest
 import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.media.ToneGenerator
 import android.os.Binder
+import android.os.Build
 import android.os.IBinder
 import android.os.VibrationEffect
 import android.os.Vibrator
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.kidfocus.timer.KidFocusApp
 import com.kidfocus.timer.MainActivity
 import com.kidfocus.timer.R
@@ -358,7 +362,14 @@ class TimerService : Service() {
             .setContentIntent(contentIntent)
             .build()
 
-        NotificationManagerCompat.from(this).notify(ALERT_NOTIFICATION_ID, notification)
+        val canPostNotification = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS,
+            ) == PackageManager.PERMISSION_GRANTED
+        if (canPostNotification) {
+            NotificationManagerCompat.from(this).notify(ALERT_NOTIFICATION_ID, notification)
+        }
     }
 
     // ---- Constants ------------------------------------------------------------------------------

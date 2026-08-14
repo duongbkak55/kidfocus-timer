@@ -6,6 +6,7 @@ import com.kidfocus.timer.data.database.SessionEntity
 import com.kidfocus.timer.domain.model.TimerSettings
 import com.kidfocus.timer.domain.usecase.GetTimerSettingsUseCase
 import com.kidfocus.timer.domain.usecase.GetTodaySessionsUseCase
+import com.kidfocus.timer.data.repository.ChildProfileRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -23,9 +24,15 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     getTodaySessionsUseCase: GetTodaySessionsUseCase,
     getTimerSettingsUseCase: GetTimerSettingsUseCase,
+    childProfileRepository: ChildProfileRepository,
 ) : ViewModel() {
 
-    private val todaySessions: StateFlow<List<SessionEntity>> = getTodaySessionsUseCase()
+    private val todaySessions: StateFlow<List<SessionEntity>> = combine(
+        getTodaySessionsUseCase(),
+        childProfileRepository.activeProfileId,
+    ) { sessions, profileId ->
+        sessions.filter { it.childProfileId == profileId }
+    }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),

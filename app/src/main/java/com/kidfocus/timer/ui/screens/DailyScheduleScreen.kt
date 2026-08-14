@@ -39,11 +39,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kidfocus.timer.R
 import com.kidfocus.timer.domain.model.ScheduledTask
 import com.kidfocus.timer.ui.theme.KidFocusTheme
+import com.kidfocus.timer.ui.components.TaskVisual
 import com.kidfocus.timer.ui.viewmodel.ScheduleViewModel
 import java.util.Calendar
 
@@ -119,10 +122,10 @@ fun DailyScheduleScreen(
                     .padding(horizontal = 8.dp, vertical = 8.dp),
             ) {
                 IconButton(onClick = onBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, "Quay lại", tint = colors.onBackground)
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back), tint = colors.onBackground)
                 }
                 Text(
-                    text = "Lịch trong ngày",
+                    text = stringResource(R.string.daily_schedule_title),
                     style = MaterialTheme.typography.headlineSmall,
                     color = colors.onBackground,
                     fontWeight = FontWeight.Bold,
@@ -145,11 +148,14 @@ fun DailyScheduleScreen(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 IconButton(onClick = { dayOffset-- }) {
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, "Ngày trước", tint = colors.primary)
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, stringResource(R.string.daily_previous_day), tint = colors.primary)
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = if (isToday) "Hôm nay" else if (dayOffset == 1) "Ngày mai" else if (dayOffset == -1) "Hôm qua" else dowVietnamese(displayDow),
+                        text = if (isToday) stringResource(R.string.daily_today)
+                        else if (dayOffset == 1) stringResource(R.string.daily_tomorrow)
+                        else if (dayOffset == -1) stringResource(R.string.daily_yesterday)
+                        else dowLabel(displayDow),
                         style = MaterialTheme.typography.titleMedium,
                         color = colors.primary,
                         fontWeight = FontWeight.Bold,
@@ -161,7 +167,7 @@ fun DailyScheduleScreen(
                     )
                 }
                 IconButton(onClick = { dayOffset++ }) {
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, "Ngày sau", tint = colors.primary)
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, stringResource(R.string.daily_next_day), tint = colors.primary)
                 }
             }
 
@@ -173,7 +179,7 @@ fun DailyScheduleScreen(
                         Text("🎉", fontSize = 48.sp)
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Không có lịch hôm nay!",
+                            text = stringResource(R.string.daily_empty),
                             style = MaterialTheme.typography.bodyLarge,
                             color = colors.onBackground.copy(alpha = 0.5f),
                         )
@@ -348,7 +354,13 @@ private fun TimelineTaskItem(
                 .padding(12.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = task.emoji, fontSize = 22.sp, modifier = Modifier.padding(end = 8.dp))
+                TaskVisual(
+                    photoUri = task.photoUri,
+                    emoji = task.emoji,
+                    modifier = Modifier.size(40.dp),
+                    emojiSize = 22.sp,
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
@@ -365,12 +377,16 @@ private fun TimelineTaskItem(
                                     .background(colors.primary)
                                     .padding(horizontal = 6.dp, vertical = 2.dp),
                             ) {
-                                Text("Đang diễn ra", style = MaterialTheme.typography.labelSmall, color = colors.onPrimary, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.daily_current), style = MaterialTheme.typography.labelSmall, color = colors.onPrimary, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
                     Text(
-                        text = "${task.focusDurationMinutes} phút tập trung · ${task.breakDurationMinutes} phút nghỉ",
+                        text = stringResource(
+                            R.string.daily_task_duration,
+                            task.focusDurationMinutes,
+                            task.breakDurationMinutes,
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = colors.onBackground.copy(alpha = 0.5f * alpha),
                     )
@@ -386,7 +402,7 @@ private fun TimelineTaskItem(
                     ) {
                         Icon(
                             Icons.Default.PlayArrow,
-                            contentDescription = "Bắt đầu",
+                            contentDescription = stringResource(R.string.daily_start),
                             tint = if (isCurrent) colors.onPrimary else colors.primary,
                             modifier = Modifier.size(20.dp),
                         )
@@ -458,7 +474,7 @@ private fun EmptySlotItem(hour: Int, minute: Int, onAdd: () -> Unit) {
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "Thêm hoạt động lúc $timeStr",
+                    text = stringResource(R.string.daily_add_at, timeStr),
                     style = MaterialTheme.typography.bodySmall,
                     color = colors.primary.copy(alpha = 0.6f),
                 )
@@ -467,24 +483,8 @@ private fun EmptySlotItem(hour: Int, minute: Int, onAdd: () -> Unit) {
     }
 }
 
-private fun dowVietnamese(dow: Int) = when (dow) {
-    Calendar.MONDAY -> "Thứ Hai"
-    Calendar.TUESDAY -> "Thứ Ba"
-    Calendar.WEDNESDAY -> "Thứ Tư"
-    Calendar.THURSDAY -> "Thứ Năm"
-    Calendar.FRIDAY -> "Thứ Sáu"
-    Calendar.SATURDAY -> "Thứ Bảy"
-    Calendar.SUNDAY -> "Chủ Nhật"
-    else -> ""
-}
+private fun dowLabel(dow: Int) = java.text.DateFormatSymbols.getInstance().weekdays
+    .getOrElse(dow) { "" }
 
-private fun dowShort(dow: Int) = when (dow) {
-    Calendar.MONDAY -> "T2"
-    Calendar.TUESDAY -> "T3"
-    Calendar.WEDNESDAY -> "T4"
-    Calendar.THURSDAY -> "T5"
-    Calendar.FRIDAY -> "T6"
-    Calendar.SATURDAY -> "T7"
-    Calendar.SUNDAY -> "CN"
-    else -> ""
-}
+private fun dowShort(dow: Int) = java.text.DateFormatSymbols.getInstance().shortWeekdays
+    .getOrElse(dow) { "" }
