@@ -25,6 +25,9 @@ fun configValue(name: String): String = (System.getenv(name)
 
 val revenueCatDebugKey = configValue("REVENUECAT_TEST_API_KEY")
     .ifBlank { configValue("REVENUECAT_ANDROID_API_KEY") }
+val firebaseReleaseAppId = configValue("FIREBASE_APP_ID")
+val firebaseDebugAppId = configValue("FIREBASE_DEBUG_APP_ID")
+    .ifBlank { firebaseReleaseAppId }
 
 android {
     namespace = "com.kidfocus.timer"
@@ -60,6 +63,7 @@ android {
             isShrinkResources = true
             signingConfig = signingConfigs.getByName("release")
             buildConfigField("String", "REVENUECAT_ANDROID_API_KEY", "\"${configValue("REVENUECAT_ANDROID_API_KEY")}\"")
+            buildConfigField("String", "FIREBASE_APP_ID", "\"$firebaseReleaseAppId\"")
             buildConfigField("boolean", "ENABLE_AI_CHAT", "false")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -70,6 +74,7 @@ android {
             isDebuggable = true
             applicationIdSuffix = ".debug"
             buildConfigField("String", "REVENUECAT_ANDROID_API_KEY", "\"$revenueCatDebugKey\"")
+            buildConfigField("String", "FIREBASE_APP_ID", "\"$firebaseDebugAppId\"")
             buildConfigField("boolean", "ENABLE_AI_CHAT", "true")
         }
     }
@@ -108,7 +113,6 @@ android {
     // Firebase values are safe client identifiers. OpenRouter secrets live only in Cloud Functions.
     defaultConfig {
         buildConfigField("String", "FIREBASE_API_KEY", "\"${configValue("FIREBASE_API_KEY")}\"")
-        buildConfigField("String", "FIREBASE_APP_ID", "\"${configValue("FIREBASE_APP_ID")}\"")
         buildConfigField("String", "FIREBASE_PROJECT_ID", "\"${configValue("FIREBASE_PROJECT_ID")}\"")
         buildConfigField("String", "FIREBASE_WEB_CLIENT_ID", "\"${configValue("FIREBASE_WEB_CLIENT_ID")}\"")
     }

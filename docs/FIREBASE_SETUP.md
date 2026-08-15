@@ -7,11 +7,14 @@ cross-device sync, create one Firebase project and use its free Spark plan.
 
 1. Create a Firebase project.
 2. Add an Android app for the build you are installing:
-   - Debug on the Pixel: `com.kidfocus.timer.debug`
-   - Release: `com.kidfocus.timer`
-3. In **Authentication > Sign-in method**, enable **Email/Password**.
-4. Create a **Cloud Firestore Standard** database.
-5. Publish the rules from the repository's `firestore.rules` file. They restrict every backup to
+   - Debug on the Pixel: `com.kidfocusstudio.timer.debug`
+   - Release/Google Play: `com.kidfocusstudio.timer`
+3. Add the SHA-1 and SHA-256 certificate fingerprints for every signing source you use. For the
+   Google Play build, use the fingerprints under **Play Console > App signing > App signing key**;
+   the upload-key fingerprint alone is not sufficient.
+4. In **Authentication > Sign-in method**, enable **Email/Password** and **Google**.
+5. Create a **Cloud Firestore Standard** database.
+6. Publish the rules from the repository's `firestore.rules` file. They restrict every backup to
    the matching authenticated user ID.
 
 ## Local development
@@ -21,7 +24,10 @@ this file):
 
 ```properties
 FIREBASE_API_KEY=...
+# Firebase app for com.kidfocusstudio.timer
 FIREBASE_APP_ID=1:...:android:...
+# Firebase app for com.kidfocusstudio.timer.debug (optional)
+FIREBASE_DEBUG_APP_ID=1:...:android:...
 FIREBASE_PROJECT_ID=...
 FIREBASE_WEB_CLIENT_ID=...apps.googleusercontent.com
 ```
