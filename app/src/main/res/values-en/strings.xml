@@ -285,6 +285,10 @@
     <string name="routine_status_missed">Past %1$s</string>
     <string name="routine_completed_description">Completed</string>
     <string name="routine_mark_done">Done</string>
+    <string name="routine_mark_done_description">Mark %1$s done</string>
+    <string name="routine_not_completed_description">Not completed</string>
+    <string name="routine_completed_item_description">%1$s completed</string>
+    <string name="routine_start_timer_description">Start a %1$d minute timer for %2$s</string>
     <string name="routine_runner_title">Let’s do it step by step</string>
     <string name="routine_runner_empty">There are no steps today. A parent can add routines in settings.</string>
     <string name="routine_progress_format">%1$d of %2$d steps done</string>

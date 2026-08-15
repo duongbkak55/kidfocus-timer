@@ -311,6 +311,10 @@
     <string name="routine_status_missed">Đã quá %1$s</string>
     <string name="routine_completed_description">Đã hoàn thành</string>
     <string name="routine_mark_done">Đã xong</string>
+    <string name="routine_mark_done_description">Đánh dấu %1$s đã xong</string>
+    <string name="routine_not_completed_description">Chưa hoàn thành</string>
+    <string name="routine_completed_item_description">%1$s đã hoàn thành</string>
+    <string name="routine_start_timer_description">Bắt đầu timer %1$d phút cho %2$s</string>
     <string name="routine_runner_title">Cùng làm từng bước</string>
     <string name="routine_runner_empty">Hôm nay chưa có bước nào. Phụ huynh có thể thêm lịch sinh hoạt trong phần cài đặt.</string>
     <string name="routine_progress_format">Đã xong %1$d/%2$d bước</string>
