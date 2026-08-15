@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- App name -->
-    <string name="app_name">KidFocus Timer</string>
+    <string name="app_name">KidFocus</string>
 
     <!-- General -->
     <string name="ok">OK</string>
@@ -34,6 +34,11 @@
 
     <!-- Home screen -->
     <string name="home_greeting">Xin chào! Sẵn sàng học chưa?</string>
+    <string name="home_greeting_signed_in">Xin chào, %1$s! Sẵn sàng học chưa?</string>
+    <string name="home_syncing">☁️ Đang đồng bộ dữ liệu…</string>
+    <string name="home_sync_synced">☁️ Đã đăng nhập • Dữ liệu được đồng bộ</string>
+    <string name="home_sync_error">⚠️ Đã đăng nhập • Chờ đồng bộ lại</string>
+    <string name="home_signed_in">☁️ Đã đăng nhập</string>
     <string name="home_start_focus">Bắt đầu tập trung!</string>
     <string name="home_today_focus_minutes">Phút tập trung</string>
     <string name="home_today_sessions">Phiên hôm nay</string>
@@ -220,6 +225,7 @@
     <!-- Learning hub -->
     <string name="learning_title">Khu học tập</string>
     <string name="learning_home_subtitle">Toán, tiếng Việt, tiếng Anh và trò chơi tư duy</string>
+    <string name="learning_home_action">Học ngay</string>
     <string name="learning_open_progress">Xem tiến độ học tập</string>
     <string name="learning_web_content_description">Danh sách bài học và trò chơi tương tác</string>
     <string name="learning_completed_count">Đã hoàn thành %1$d lượt</string>

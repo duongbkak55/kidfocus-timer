@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">KidFocus Timer</string>
+    <string name="app_name">KidFocus</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="back">Back</string>
@@ -29,6 +29,11 @@
     <string name="onboarding_get_started">Get started!</string>
 
     <string name="home_greeting">Hi! Ready to learn?</string>
+    <string name="home_greeting_signed_in">Hi, %1$s! Ready to learn?</string>
+    <string name="home_syncing">☁️ Syncing data…</string>
+    <string name="home_sync_synced">☁️ Signed in • Data is synced</string>
+    <string name="home_sync_error">⚠️ Signed in • Waiting to sync again</string>
+    <string name="home_signed_in">☁️ Signed in</string>
     <string name="home_start_focus">Start focusing!</string>
     <string name="home_today_focus_minutes">Focus minutes</string>
     <string name="home_today_sessions">Sessions today</string>
@@ -196,6 +201,7 @@
 
     <string name="learning_title">Learning Hub</string>
     <string name="learning_home_subtitle">Math, Vietnamese, English, and thinking games</string>
+    <string name="learning_home_action">Learn now</string>
     <string name="learning_open_progress">View learning progress</string>
     <string name="learning_web_content_description">Interactive lessons and learning games</string>
     <string name="learning_completed_count">%1$d activities completed</string>

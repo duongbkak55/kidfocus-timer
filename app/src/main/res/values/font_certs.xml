@@ -2,7 +2,7 @@
 <!--
     Font certificate configuration for Downloadable Fonts.
 
-    KidFocus Timer currently uses system fonts (FontFamily.Default) to avoid
+    KidFocus currently uses system fonts (FontFamily.Default) to avoid
     requiring a network connection during first launch. This file is kept as a
     placeholder so that a custom rounded/playful font (e.g. Nunito or Poppins
     from Google Fonts) can be added later without restructuring the project.

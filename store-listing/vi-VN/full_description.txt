@@ -1,83 +1,37 @@
-⏰ CON BẠN CÓ HAY QUÊN GIỜ KHI HỌC? CHÚNG TÔI CÓ GIẢI PHÁP.
+KidFocus giúp bé vừa học, vừa xây dựng thói quen tốt và tập trung mỗi ngày trong một ứng dụng thân thiện với gia đình.
 
-Bạn đã bao giờ nhắc con học mà con cứ mải chơi? Hay con ngồi vào bàn học nhưng không biết học bao lâu thì đủ? KidFocus Timer được tạo ra đúng để giải quyết nỗi đau đó — một ứng dụng đồng hồ học tập thông minh, được thiết kế riêng cho trẻ em từ 5 đến 12 tuổi.
+🎓 KHU HỌC TẬP THEO ĐỘ TUỔI
 
-───────────────────────────────
+• Nội dung phù hợp từ 2–3 tuổi, 4–5 tuổi đến lớp 1, lớp 2 và lớp 3
+• Luyện toán, tiếng Việt, tiếng Anh và tư duy qua các trò chơi tương tác
+• Chủ đề gồm đếm số, cộng trừ, so sánh, quy luật, hình khối, chữ cái, đọc, giờ, tiền và nhiều nội dung khác
+• Điều chỉnh phạm vi số, số câu và mức độ theo nhóm tuổi/lớp
+• Ghi lại lượt học, độ chính xác và kết quả tốt nhất
 
-🎯 VẤN ĐỀ CỦA MỌI PHỤ HUYNH
+✅ LỊCH SINH HOẠT DỄ THỰC HIỆN
 
-Trẻ em thiếu khả năng tự quản lý thời gian — đó là điều hoàn toàn bình thường ở độ tuổi 5–12. Nhưng nếu không có công cụ hỗ trợ, thói quen học tập kém sẽ kéo theo kết quả học tập đi xuống, xung đột gia đình mỗi buổi tối, và trẻ lớn lên không có kỷ luật bản thân.
+• Tạo lịch đi ngủ, ăn tối, làm bài tập, đọc sách, vệ sinh và vui chơi
+• Chọn nhanh ngày làm việc, cuối tuần, hàng tuần hoặc tùy chọn từng ngày
+• Dùng nhiệm vụ gợi ý hoặc tự nhập hoạt động của gia đình
+• Nhắc đúng giờ và đánh dấu hoàn thành từng bước
+• Liên kết hoạt động với đồng hồ tập trung khi cần
 
-───────────────────────────────
+⏱️ ĐỒNG HỒ TẬP TRUNG CHO BÉ
 
-✅ KIDFOCUS TIMER — GIA SƯ THỜI GIAN CHO BÉ
+• Tùy chỉnh thời gian tập trung và nghỉ giải lao
+• Giao diện trực quan với linh vật thân thiện
+• Chuông và rung khi kết thúc phiên
+• Theo dõi số phút và số phiên hoàn thành trong ngày
 
-KidFocus Timer áp dụng phương pháp Pomodoro đã được chứng minh khoa học — chia nhỏ thời gian học thành các phiên tập trung, xen kẽ nghỉ giải lao — giúp não trẻ tiếp thu tốt hơn mà không bị kiệt sức.
+👨‍👩‍👧 DÀNH CHO PHỤ HUYNH
 
-───────────────────────────────
+• PIN bảo vệ khu vực cài đặt phụ huynh
+• Hồ sơ riêng cho từng bé
+• Đổi màu giao diện phù hợp sở thích
+• Không quảng cáo và không bán dữ liệu cá nhân
 
-⭐ TÍNH NĂNG NỔI BẬT
+☁️ DÙNG OFFLINE HOẶC ĐỒNG BỘ
 
-⏱️ Đồng hồ Pomodoro thông minh
-• Tùy chỉnh thời gian học từ 10 đến 120 phút
-• Thời gian nghỉ linh hoạt từ 5 đến 30 phút
-• Chuông & rung báo hiệu khi kết thúc phiên học
-• Giao diện trực quan, bé tự dùng được ngay
+KidFocus vẫn hoạt động offline mà không cần tài khoản. Khi phụ huynh đăng nhập bằng Google, lịch, cài đặt, phiên tập trung và tiến độ học có thể đồng bộ giữa các thiết bị.
 
-🦉 Linh vật cú mèo dễ thương trong giờ nghỉ
-• Hiệu ứng hoạt hình sinh động giúp bé thư giãn
-• Khuyến khích bé quay lại học sau khi nghỉ đúng giờ
-
-📅 Lịch sinh hoạt hàng ngày & hàng tuần
-• 17 loại nhiệm vụ được phân loại sẵn trong 4 nhóm:
-
-   📚 Học tập: Học buổi sáng · Học buổi chiều · Làm bài tập
-               Đọc sách · Học cuối tuần · Học nhạc
-
-   🧼 Vệ sinh & Sức khỏe: Tắm rửa · Đánh răng
-                           Tập thể dục · Chuẩn bị ngủ
-
-   🏠 Sinh hoạt: Dọn giường · Dọn phòng · Rửa bát
-
-   🎉 Giải trí (có kiểm soát giờ): Chơi game · Xem TV
-                                    Vui chơi ngoài trời · Vẽ & Sáng tạo
-
-• Xem toàn bộ lịch trong ngày theo trình tự thời gian
-• Điều hướng theo tuần, thêm nhanh vào khung giờ trống
-
-🔒 Khóa PIN phụ huynh
-• Bảo vệ cài đặt ứng dụng, trẻ không thể tự ý thay đổi
-• Phụ huynh toàn quyền kiểm soát cấu hình
-
-📊 Theo dõi tiến độ mỗi ngày
-• Lịch sử các phiên học đã hoàn thành
-• Thanh tiến trình mục tiêu học tập hàng ngày
-• Động lực để bé cố gắng hoàn thành đủ phiên
-
-🎨 3 giao diện màu sắc
-• Đại dương · Rừng xanh · Hoàng hôn
-• Bé tự chọn giao diện yêu thích để thêm hứng học
-
-───────────────────────────────
-
-💡 TẠI SAO PHỤ HUYNH VIỆT NAM TIN DÙNG KIDFOCUS?
-
-✔ Không quảng cáo — trẻ học không bị gián đoạn
-✔ Không mua thêm — tải về dùng trọn vẹn 100%
-✔ Hoạt động offline — không cần internet
-✔ Thiết kế dành riêng cho trẻ em Việt Nam
-✔ Phụ huynh kiểm soát hoàn toàn thông qua PIN
-
-───────────────────────────────
-
-👨‍👩‍👧 DÀNH CHO GIA ĐÌNH BẬN RỘN
-
-Dù bạn là phụ huynh đi làm cả ngày hay ở nhà trông con, KidFocus Timer giúp con bạn tự lập kế hoạch học tập mà không cần bạn nhắc nhở liên tục. Một lần cài đặt — cả tuần an tâm.
-
-───────────────────────────────
-
-📲 TẢI KIDFOCUS TIMER NGAY HÔM NAY
-
-Hàng nghìn gia đình Việt đang giúp con xây dựng thói quen học tập tốt từ nhỏ. Đừng để con bạn bỏ lỡ nền tảng quan trọng nhất của cuộc đời.
-
-👉 Nhấn CÀI ĐẶT ngay — miễn phí, không quảng cáo, dùng được ngay!
+KidFocus được thiết kế để phụ huynh dễ thiết lập và bé dễ bắt đầu: chọn một bài học, hoàn thành một việc nhỏ hoặc tập trung trong một khoảng thời gian phù hợp.

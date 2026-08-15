@@ -1,6 +1,6 @@
 # Firebase sync setup
 
-KidFocus Timer keeps working with Room/DataStore when Firebase is not configured. To enable
+KidFocus keeps working with Room/DataStore when Firebase is not configured. To enable
 cross-device sync, create one Firebase project and use its free Spark plan.
 
 ## Firebase Console

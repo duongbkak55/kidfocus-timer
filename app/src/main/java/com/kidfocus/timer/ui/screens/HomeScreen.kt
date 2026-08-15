@@ -176,42 +176,106 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Mascot
-            MascotWidget(
-                phase = TimerPhase.Idle,
-                isRunning = false,
-                size = 140.dp,
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = cloudAccount.displayName
-                    ?.substringBefore(' ')
-                    ?.takeIf { cloudAccount.isSignedIn }
-                    ?.let { "Xin chào, $it! Sẵn sàng học chưa?" }
-                    ?: "Xin chào! Sẵn sàng học chưa?",
-                style = MaterialTheme.typography.titleMedium,
-                color = colors.onBackground.copy(alpha = 0.7f),
-            )
-
-            if (cloudAccount.isSignedIn) {
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = when (cloudSyncStatus) {
-                        CloudSyncStatus.Syncing -> "☁️ Đang đồng bộ dữ liệu…"
-                        is CloudSyncStatus.Synced -> "☁️ Đã đăng nhập • Dữ liệu được đồng bộ"
-                        is CloudSyncStatus.Error -> "⚠️ Đã đăng nhập • Chờ đồng bộ lại"
-                        else -> "☁️ Đã đăng nhập"
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = colors.primary,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier.clickable(onClick = onOpenCloudSync),
+            // Keep the welcome compact so the child's main choices stay above the fold.
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                MascotWidget(
+                    phase = TimerPhase.Idle,
+                    isRunning = false,
+                    size = 88.dp,
                 )
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = cloudAccount.displayName
+                            ?.substringBefore(' ')
+                            ?.takeIf { cloudAccount.isSignedIn }
+                            ?.let { stringResource(R.string.home_greeting_signed_in, it) }
+                            ?: stringResource(R.string.home_greeting),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = colors.onBackground.copy(alpha = 0.78f),
+                        fontWeight = FontWeight.SemiBold,
+                    )
+
+                    if (cloudAccount.isSignedIn) {
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = when (cloudSyncStatus) {
+                                CloudSyncStatus.Syncing -> stringResource(R.string.home_syncing)
+                                is CloudSyncStatus.Synced -> stringResource(R.string.home_sync_synced)
+                                is CloudSyncStatus.Error -> stringResource(R.string.home_sync_error)
+                                else -> stringResource(R.string.home_signed_in)
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.primary,
+                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier.clickable(onClick = onOpenCloudSync),
+                        )
+                    }
+                }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Learning is the primary child-facing destination, not a secondary footer card.
+            Surface(
+                shape = RoundedCornerShape(24.dp),
+                color = colors.primary.copy(alpha = 0.14f),
+                tonalElevation = 1.dp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onOpenLearning),
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 18.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.learning_title),
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = colors.primary,
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(R.string.learning_home_subtitle),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = colors.onBackground.copy(alpha = 0.7f),
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Surface(
+                            shape = RoundedCornerShape(50),
+                            color = colors.primary,
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.learning_home_action),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = colors.onPrimary,
+                                )
+                                Spacer(modifier = Modifier.width(2.dp))
+                                Icon(
+                                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                    contentDescription = null,
+                                    tint = colors.onPrimary,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text("🎓", fontSize = 48.sp)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
 
             // Stats cards
             Row(
@@ -405,42 +469,6 @@ fun HomeScreen(
                     color = colors.onPrimary,
                     fontWeight = FontWeight.Bold,
                 )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = colors.primary.copy(alpha = 0.12f),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = onOpenLearning),
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text("🎓", fontSize = 28.sp)
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = stringResource(R.string.learning_title),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = colors.primary,
-                        )
-                        Text(
-                            text = stringResource(R.string.learning_home_subtitle),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = colors.onBackground.copy(alpha = 0.65f),
-                        )
-                    }
-                    Icon(
-                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                        contentDescription = null,
-                        tint = colors.primary,
-                    )
-                }
             }
 
             if (BuildConfig.ENABLE_AI_CHAT) {
