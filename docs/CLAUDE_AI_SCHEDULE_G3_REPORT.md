@@ -93,3 +93,52 @@ Các lần USB/initial wireless bị chặn trước đây giữ ở [00](g3/00-
 Trạng thái debug app cuối phiên: hai hồ sơ Child/Grade 1 và 3-B/Ages 4–5; active Child; Homework đã lưu 21:00/45 phút; Reading 22:20 chỉ là draft chưa lưu; PIN thử 2468; quyền thông báo đã cấp qua UI, exact alarm giữ nguyên. Không tạo school/sleep anchors, không chạy AI/login/mua.
 
 Commit lần tiếp tục chỉ cập nhật báo cáo này và thêm bằng chứng mới trong docs/g3/. Không stage code, APK, task/review chưa tracked hoặc .omc. Kiểm tra 19 hash code/config intentional từ trước: không đổi; không reset/stash/push/merge/deploy/reboot. Các ảnh H được ghi rõ là chuyển cảnh, không làm bằng chứng nghiệm thu layout.
+
+
+## Fixes G3
+
+Ngày: 2026-09-28 · Yêu cầu Claude: `CLAUDE_AI_SCHEDULE_G3_FIXES.md` · Branch: `feature/smart-schedule-w4` · Base trước sửa: `62b61d0`.
+
+### F-G3-1 — Phiên phụ huynh và cổng lịch
+
+- Thêm `parentUnlocked: StateFlow<Boolean>` riêng trong `SettingsViewModel`. PIN đúng mở phiên; `PinEntryScreen` vẫn tiêu thụ/reset `pinVerified` như trước, nhưng không xóa phiên. PIN sai không mở phiên; không có PIN không mở phiên lịch.
+- Hai route SmartSchedule/QuickSchedule dùng `parentUnlocked && hasPinSet`, chờ settings tải xong rồi mới quyết định cổng. Route PIN vẫn dùng màn `PinEntryScreen` thật và cùng thao tác navigate/pop như trước. Tách các route này vào `ParentScheduleNavigation.kt` để app và test chạy chính cùng phần điều hướng.
+- Khóa phiên khi bấm Back hoặc Back hệ thống ở ParentSettings, khi `ProcessLifecycleOwner` nhận ON_STOP, hoặc sau **5 phút không hoạt động**. Hằng số chỉ ở `SettingsViewModel.PARENT_INACTIVITY_TIMEOUT_MILLIS`; thao tác chạm/phím qua `MainActivity.onUserInteraction` gia hạn bộ đếm. Phiên chỉ ở bộ nhớ, không lưu qua khởi động lại.
+- Giữ logic vào ParentSettings/Cloud/AI của HEAD trong commit. Working tree có thay đổi các callback này từ trước; chúng không được đưa vào commit sửa G3. HEAD gọi `parentGateRoute` ở DailySchedule nhưng thiếu định nghĩa; chỉ đưa định nghĩa helper có sẵn vào commit và dùng lại cho hai cổng lịch, tránh nhân đôi logic và tránh phụ thuộc vào hunk chưa commit.
+
+### F-G3-2 — Chuỗi theo locale vi/en
+
+`PinEntryScreen` đã dùng resource cho tiêu đề tạo/xác nhận/xác minh, lời hướng dẫn, PIN sai/không khớp và nút Back. Onboarding cũng có chuỗi hard-code nên đã đổi toàn bộ tiêu đề, mô tả, Next/Skip/Get started sang resource. Các key và bản dịch **đã có đầy đủ trong HEAD** ở `values/strings.xml` (vi) và `values-en/strings.xml`; dùng lại chúng là phương án ít thay đổi nhất. Không sửa/stage hai file resource đang có thay đổi khác từ trước.
+
+### Kiểm tra tự động
+
+| Kiểm tra | Kết quả |
+|---|---|
+| `ParentSessionTest` | **6/6 PASS** — tiêu thụ PIN giữ phiên, PIN sai, thiếu PIN, rời khu phụ huynh, lifecycle stop, hết hạn/gia hạn 5 phút bằng thời gian giả |
+| `ParentScheduleNavigationTest` | **9/9 PASS** — PIN đúng/sai và đưa Activity vào nền rồi mở lại cho cả Smart/Quick; kiểm màn lịch thật hiển thị, route đích và không quay lại PIN; thêm kiểm locale PIN vi/en và onboarding vi/en |
+| `testDebugUnitTest` | **245/245 PASS**, 37 suite, 0 failed/errors/skipped |
+| `assembleDebug` | **PASS**, APK debug mới đã build; chưa cài lại lên Pixel |
+| `lintDebug` | **PASS**, 0 lỗi, 189 cảnh báo. Dependency lifecycle-process dùng cùng version 2.8.4 với lifecycle hiện có; cảnh báo phiên bản mới và version catalog không làm mở rộng phạm vi nâng cấp dependency |
+| `git diff --check` | **PASS**; kiểm tra lại cả phần stage trước commit |
+
+Test điều hướng dùng Robolectric API 28, Compose UI test và `TestNavHostController`, **SettingsViewModel thật**, `PinEntryScreen`, `SmartScheduleScreen` và `QuickScheduleScreen` thật. Chỉ repository/dữ liệu lịch/access ViewModel được mock; không gọi OpenRouter/Firebase/Google login/mua. Test ON_STOP khởi tạo Startup provider thật từ merged manifest, cô lập singleton AndroidX giữa các Application test, dùng `ActivityScenario` chuyển RESUMED → CREATED → RESUMED và đợi trễ process lifecycle. Không giả kết quả bằng việc gọi trực tiếp `vm.onStop` trong test điều hướng.
+
+Lệnh kiểm tra đã chạy với JDK 17 và cấu hình dịch vụ rỗng:
+
+```sh
+env JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home \
+  FIREBASE_API_KEY= FIREBASE_APP_ID= FIREBASE_DEBUG_APP_ID= \
+  FIREBASE_PROJECT_ID= FIREBASE_WEB_CLIENT_ID= \
+  REVENUECAT_TEST_API_KEY= REVENUECAT_ANDROID_API_KEY= REQUIRE_RELEASE_SERVICES=false \
+  ./gradlew testDebugUnitTest assembleDebug lintDebug
+git diff --check
+git diff --cached --check
+```
+
+[Log kiểm tra và tổng số test](g3/27-g3-fixes-checks.txt). Build tổng hợp **BUILD SUCCESSFUL in 1m**, 65 task (22 executed / 43 up-to-date). Generated BuildConfig xác nhận các key Firebase/RevenueCat rỗng. APK `app/build/outputs/apk/debug/app-debug.apk` SHA-256: `b8fefac42dd448dd24275b3d33717d48fdf7647011e534615142b3b9ba6f205f`.
+
+### Phạm vi và bước nghiệm thu tiếp
+
+- Không thêm permission, không đổi manifest/Room (**v5**), không thêm WorkManager/service nền. Không reset/stash/sửa `.omc`, push/merge/deploy/reboot.
+- Các lệnh build/test chạy trên shared working tree, có **19 file tracked thay đổi từ trước** như phiên G3 gốc, không phải checkout sạch. Hash của 16 file ngoài ba file chồng phạm vi vẫn nguyên; ba file `app/build.gradle.kts`, `MainActivity.kt`, `AppNavigation.kt` được stage theo từng hunk G3. Giữ các thay đổi release/Learning/permission/callback Home khác ở working tree, ngoài commit. Các task/review và test Learning chưa tracked không được stage.
+- **Chưa chạy lại G3 máy thật và chưa chuyển bảng A–I cũ thành PASS.** Theo yêu cầu, chờ Duong báo Pixel đã mở khóa và bật giữ màn hình sáng; sau đó cài APK bằng `adb install -r` giữ dữ liệu, chạy lại B, C, D (anchors), E, F (anchors/góp ý), G, H, I và thu ảnh/logcat mới. A giữ kết quả PASS cũ.

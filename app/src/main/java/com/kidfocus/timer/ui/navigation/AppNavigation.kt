@@ -1,5 +1,6 @@
 package com.kidfocus.timer.ui.navigation
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -45,6 +46,13 @@ import com.kidfocus.timer.ui.screens.ChildProfilePickerScreen
 import com.kidfocus.timer.ui.screens.ChildProfileSettingsScreen
 
 /**
+ * Returns the route that must be opened before entering a parent-only destination.
+ * A configured PIN is always verified; a device without a PIN must create one first.
+ */
+internal fun parentGateRoute(hasPinSet: Boolean, destination: String): String =
+    if (hasPinSet) NavRoutes.PinEntry.buildRoute(destination) else NavRoutes.PinSetup.route
+
+/**
  * Root navigation graph for KidFocus Timer.
  *
  * [settingsViewModel] is hoisted from [MainActivity] so the app theme is already applied
@@ -57,6 +65,7 @@ fun AppNavigation(
     settingsViewModel: SettingsViewModel,
     modifier: Modifier = Modifier,
 ) {
+    ParentSessionLifecycle(settingsViewModel)
     val navController = rememberNavController()
     val settings by settingsViewModel.settings.collectAsState()
 
@@ -214,32 +223,18 @@ fun AppNavigation(
         }
 
         // ---- PIN Entry (gate) ----------------------------------------------------------------
-        composable(
-            route = NavRoutes.PinEntry.route,
-            arguments = listOf(
-                navArgument(NavRoutes.ARG_DESTINATION) { type = NavType.StringType }
-            ),
-        ) { backStack ->
-            val destination = backStack.arguments?.getString(NavRoutes.ARG_DESTINATION)
-                ?: NavRoutes.ParentSettings.route
-            PinEntryScreen(
-                isSetupMode = false,
-                settingsViewModel = settingsViewModel,
-                onSuccess = {
-                    navController.navigate(destination) {
-                        popUpTo(NavRoutes.PinEntry.route) { inclusive = true }
-                    }
-                },
-                onCancel = { navController.popBackStack() },
-            )
-        }
+        parentPinEntry(navController, settingsViewModel)
 
         // ---- Parent Settings -----------------------------------------------------------------
         composable(NavRoutes.ParentSettings.route) {
+            BackHandler {
+                settingsViewModel.lockParentSession()
+                navController.popBackStack()
+            }
             ParentSettingsScreen(
                 settingsViewModel = settingsViewModel,
                 onBack = {
-                    settingsViewModel.resetPinVerification()
+                    settingsViewModel.lockParentSession()
                     navController.popBackStack()
                 },
                 onSetPin = { navController.navigate(NavRoutes.PinSetup.route) },
@@ -268,32 +263,17 @@ fun AppNavigation(
             )
         }
 
-        composable(NavRoutes.SmartSchedule.route) {
-            val pinVerified by settingsViewModel.pinVerified.collectAsState()
-            if (pinVerified && settings?.hasPinSet == true) {
+        parentScheduleDestinations(
+            navController = navController,
+            settingsViewModel = settingsViewModel,
+            smartScreen = {
                 SmartScheduleScreen(onBack = { navController.popBackStack() },
                     onQuickEntry = { navController.navigate(NavRoutes.QuickSchedule.route) }, access = scheduleAccess)
-            } else {
-                androidx.compose.runtime.LaunchedEffect(Unit) {
-                    navController.navigate(smartScheduleGateRoute(settings?.hasPinSet == true)) {
-                        popUpTo(NavRoutes.SmartSchedule.route) { inclusive = true }
-                    }
-                }
-            }
-        }
-
-        composable(NavRoutes.QuickSchedule.route) {
-            val pinVerified by settingsViewModel.pinVerified.collectAsState()
-            if (pinVerified && settings?.hasPinSet == true) {
+            },
+            quickScreen = {
                 com.kidfocus.timer.ui.screens.QuickScheduleScreen(onBack = { navController.popBackStack() }, access = scheduleAccess)
-            } else {
-                androidx.compose.runtime.LaunchedEffect(Unit) {
-                    navController.navigate(parentGateRoute(settings?.hasPinSet == true, NavRoutes.QuickSchedule.route)) {
-                        popUpTo(NavRoutes.QuickSchedule.route) { inclusive = true }
-                    }
-                }
-            }
-        }
+            },
+        )
 
         // ---- Schedule ------------------------------------------------------------------------
         composable(NavRoutes.Schedule.route) {
