@@ -1,0 +1,91 @@
+  * com.kidfocusstudio.timer.debug: 21 items
+    #0: PendingIntentRecord{9be7e9c com.kidfocusstudio.timer.debug startActivity (allowlist: bcd4bab:+30s0ms/0/NOTIFICATION_SERVICE/NotificationManagerService)}
+      uid=10029 packageName=com.kidfocusstudio.timer.debug featureId=null type=startActivity flags=0x4000000
+      requestCode=3 requestResolvedType=null
+      requestIntent=xflg=0x4 cmp=com.kidfocusstudio.timer.debug/com.kidfocus.timer.MainActivity
+      allowlistDuration=bcd4bab:+30s0ms/0/NOTIFICATION_SERVICE/NotificationManagerService
+    #1: PendingIntentRecord{d68efb4 com.kidfocusstudio.timer.debug broadcastIntent}
+      uid=10029 packageName=com.kidfocusstudio.timer.debug featureId=null type=broadcastIntent flags=0x4000000
+      requestCode=407309420 requestResolvedType=null
+      requestIntent=dat=kidfocus://task/1790608779858144/1 xflg=0x4 cmp=com.kidfocusstudio.timer.debug/com.kidfocus.timer.alarm.TaskAlarmReceiver (has extras)
+    #2: PendingIntentRecord{66a9ae9 com.kidfocusstudio.timer.debug startActivity (allowlist: bcd4bab:+30s0ms/0/NOTIFICATION_SERVICE/NotificationManagerService)}
+      uid=10029 packageName=com.kidfocusstudio.timer.debug featureId=null type=startActivity flags=0x4000000
+      requestCode=4 requestResolvedType=null
+      requestIntent=xflg=0x4 cmp=com.kidfocusstudio.timer.debug/com.kidfocus.timer.MainActivity
+      allowlistDuration=bcd4bab:+30s0ms/0/NOTIFICATION_SERVICE/NotificationManagerService
+    #3: PendingIntentRecord{5a36366 com.kidfocusstudio.timer.debug broadcastIntent}
+      uid=10029 packageName=com.kidfocusstudio.timer.debug featureId=null type=broadcastIntent flags=0x4000000
+      requestCode=407309420 requestResolvedType=null
+      requestIntent=dat=kidfocus://task/1790608779858144/4 xflg=0x4 cmp=com.kidfocusstudio.timer.debug/com.kidfocus.timer.alarm.TaskAlarmReceiver (has extras)
+    #4: PendingIntentRecord{f099460 com.kidfocusstudio.timer.debug broadcastIntent (allowlist: bcd4bab:+30s0ms/0/NOTIFICATION_SERVICE/NotificationManagerService)}
+      uid=10029 packageName=com.kidfocusstudio.timer.debug featureId=null type=broadcastIntent flags=0x4000000
+      requestCode=2 requestResolvedType=null
+      requestIntent=act=com.kidfocus.timer.ACTION_COMPLETE_ROUTINE xflg=0x4 cmp=com.kidfocusstudio.timer.debug/com.kidfocus.timer.service.RoutineCompleteReceiver (has extras)
+      allowlistDuration=bcd4bab:+30s0ms/0/NOTIFICATION_SERVICE/NotificationManagerService
+    #5: PendingIntentRecord{e72e445 com.kidfocusstudio.timer.debug broadcastIntent}
+      uid=10029 packageName=com.kidfocusstudio.timer.debug featureId=null type=broadcastIntent flags=0x4000000
+      requestCode=1886309539 requestResolvedType=null
+      requestIntent=dat=kidfocus://task/1790608111341615/4 xflg=0x4 cmp=com.kidfocusstudio.timer.debug/com.kidfocus.timer.alarm.TaskAlarmReceiver (has extras)
+    #6: PendingIntentRecord{994ce0f com.kidfocusstudio.timer.debug broadcastIntent (allowlist: bcd4bab:+30s0ms/0/NOTIFICATION_SERVICE/NotificationManagerService)}
+      uid=10029 packageName=com.kidfocusstudio.timer.debug featureId=null type=broadcastIntent flags=0x4000000
+      requestCode=3 requestResolvedType=null
+      requestIntent=act=com.kidfocus.timer.ACTION_COMPLETE_ROUTINE xflg=0x4 cmp=com.kidfocusstudio.timer.debug/com.kidfocus.timer.service.RoutineCompleteReceiver (has extras)
+      allowlistDuration=bcd4bab:+30s0ms/0/NOTIFICATION_SERVICE/NotificationManagerService
+    #7: PendingIntentRecord{1b2fc95 com.kidfocusstudio.timer.debug startActivity (allowlist: bcd4bab:+30s0ms/0/NOTIFICATION_SERVICE/NotificationManagerService)}
+      uid=10029 packageName=com.kidfocusstudio.timer.debug featureId=null type=startActivity flags=0x4000000
+      requestCode=1 requestResolvedType=null
+      requestIntent=xflg=0x4 cmp=com.kidfocusstudio.timer.debug/com.kidfocus.timer.MainActivity
+      allowlistDuration=bcd4bab:+30s0ms/0/NOTIFICATION_SERVICE/NotificationManagerService
+    #8: PendingIntentRecord{fd35063 com.kidfocusstudio.timer.debug startActivity (allowlist: bcd4bab:+30s0ms/0/NOTIFICATION_SERVICE/NotificationManagerService)}
+      uid=10029 packageName=com.kidfocusstudio.timer.debug featureId=null type=startActivity flags=0x4000000
+      requestCode=2 requestResolvedType=null
+      requestIntent=xflg=0x4 cmp=com.kidfocusstudio.timer.debug/com.kidfocus.timer.MainActivity
+      allowlistDuration=bcd4bab:+30s0ms/0/NOTIFICATION_SERVICE/NotificationManagerService
+    #9: PendingIntentRecord{11ba770 com.kidfocusstudio.timer.debug broadcastIntent (allowlist: bcd4bab:+30s0ms/0/NOTIFICATION_SERVICE/NotificationManagerService)}
+      uid=10029 packageName=com.kidfocusstudio.timer.debug featureId=null type=broadcastIntent flags=0x4000000
+      requestCode=4 requestResolvedType=null
+      requestIntent=act=com.kidfocus.timer.ACTION_COMPLETE_ROUTINE xflg=0x4 cmp=com.kidfocusstudio.timer.debug/com.kidfocus.timer.service.RoutineCompleteReceiver (has extras)
+      allowlistDuration=bcd4bab:+30s0ms/0/NOTIFICATION_SERVICE/NotificationManagerService
+    #10: PendingIntentRecord{5f9bafa com.kidfocusstudio.timer.debug broadcastIntent}
+      uid=10029 packageName=com.kidfocusstudio.timer.debug featureId=null type=broadcastIntent flags=0x4000000
+      requestCode=407309420 requestResolvedType=null
+      requestIntent=dat=kidfocus://task/1790608779858144/7 xflg=0x4 cmp=com.kidfocusstudio.timer.debug/com.kidfocus.timer.alarm.TaskAlarmReceiver (has extras)
+    #11: PendingIntentRecord{d21d223 com.kidfocusstudio.timer.debug broadcastIntent}
+      uid=10029 packageName=com.kidfocusstudio.timer.debug featureId=null type=broadcastIntent flags=0x4000000
+      requestCode=1886309539 requestResolvedType=null
+      requestIntent=dat=kidfocus://task/1790608111341615/2 xflg=0x4 cmp=com.kidfocusstudio.timer.debug/com.kidfocus.timer.alarm.TaskAlarmReceiver (has extras)
+    #12: PendingIntentRecord{26e68b5 com.kidfocusstudio.timer.debug broadcastIntent}
+      uid=10029 packageName=com.kidfocusstudio.timer.debug featureId=null type=broadcastIntent flags=0x4000000
+      requestCode=1886309539 requestResolvedType=null
+      requestIntent=dat=kidfocus://task/1790608111341615/5 xflg=0x4 cmp=com.kidfocusstudio.timer.debug/com.kidfocus.timer.alarm.TaskAlarmReceiver (has extras)
+    #13: PendingIntentRecord{9cff96d com.kidfocusstudio.timer.debug broadcastIntent}
+      uid=10029 packageName=com.kidfocusstudio.timer.debug featureId=null type=broadcastIntent flags=0x4000000
+      requestCode=1886309539 requestResolvedType=null
+      requestIntent=dat=kidfocus://task/1790608111341615/6 xflg=0x4 cmp=com.kidfocusstudio.timer.debug/com.kidfocus.timer.alarm.TaskAlarmReceiver (has extras)
+    #14: PendingIntentRecord{bbef648 com.kidfocusstudio.timer.debug broadcastIntent}
+      uid=10029 packageName=com.kidfocusstudio.timer.debug featureId=null type=broadcastIntent flags=0x4000000
+      requestCode=1886309539 requestResolvedType=null
+      requestIntent=dat=kidfocus://task/1790608111341615/3 xflg=0x4 cmp=com.kidfocusstudio.timer.debug/com.kidfocus.timer.alarm.TaskAlarmReceiver (has extras)
+    #15: PendingIntentRecord{91a5421 com.kidfocusstudio.timer.debug startActivity (allowlist: bcd4bab:+30s0ms/0/NOTIFICATION_SERVICE/NotificationManagerService)}
+      uid=10029 packageName=com.kidfocusstudio.timer.debug featureId=null type=startActivity flags=0x4000000
+      requestIntent=xflg=0x4 cmp=com.kidfocusstudio.timer.debug/com.kidfocus.timer.MainActivity
+      allowlistDuration=bcd4bab:+30s0ms/0/NOTIFICATION_SERVICE/NotificationManagerService
+    #16: PendingIntentRecord{58b1b5d com.kidfocusstudio.timer.debug startActivity}
+      uid=10029 packageName=com.kidfocusstudio.timer.debug featureId=null type=startActivity flags=0x4000000
+      requestIntent=act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10000000 xflg=0x4 pkg=com.kidfocusstudio.timer.debug cmp=com.kidfocusstudio.timer.debug/com.kidfocus.timer.MainActivity
+    #17: PendingIntentRecord{fb9e051 com.kidfocusstudio.timer.debug broadcastIntent}
+      uid=10029 packageName=com.kidfocusstudio.timer.debug featureId=null type=broadcastIntent flags=0x4000000
+      requestCode=407309420 requestResolvedType=null
+      requestIntent=dat=kidfocus://task/1790608779858144/3 xflg=0x4 cmp=com.kidfocusstudio.timer.debug/com.kidfocus.timer.alarm.TaskAlarmReceiver (has extras)
+    #18: PendingIntentRecord{c748df0 com.kidfocusstudio.timer.debug broadcastIntent}
+      uid=10029 packageName=com.kidfocusstudio.timer.debug featureId=null type=broadcastIntent flags=0x4000000
+      requestCode=407309420 requestResolvedType=null
+      requestIntent=dat=kidfocus://task/1790608779858144/6 xflg=0x4 cmp=com.kidfocusstudio.timer.debug/com.kidfocus.timer.alarm.TaskAlarmReceiver (has extras)
+    #19: PendingIntentRecord{c626cb4 com.kidfocusstudio.timer.debug broadcastIntent}
+      uid=10029 packageName=com.kidfocusstudio.timer.debug featureId=null type=broadcastIntent flags=0x4000000
+      requestCode=407309420 requestResolvedType=null
+      requestIntent=dat=kidfocus://task/1790608779858144/2 xflg=0x4 cmp=com.kidfocusstudio.timer.debug/com.kidfocus.timer.alarm.TaskAlarmReceiver (has extras)
+    #20: PendingIntentRecord{417216 com.kidfocusstudio.timer.debug broadcastIntent}
+      uid=10029 packageName=com.kidfocusstudio.timer.debug featureId=null type=broadcastIntent flags=0x4000000
+      requestCode=407309420 requestResolvedType=null
+      requestIntent=dat=kidfocus://task/1790608779858144/5 xflg=0x4 cmp=com.kidfocusstudio.timer.debug/com.kidfocus.timer.alarm.TaskAlarmReceiver (has extras)

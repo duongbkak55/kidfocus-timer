@@ -1,256 +1,90 @@
-Captured 2026-09-28 before waking the device at the end of the resumed G3 session.
-Commands: adb logcat -d -b crash; adb logcat -d (filtered FATAL|AndroidRuntime|ANR). Logcat was cleared before the first app launch; it was not cleared again between the interrupted and resumed sessions.
+G3 retest after a2ba634; collected 2026-09-28T23:28:23.443158
 
-=== crash buffer (raw output) ===
---------- beginning of crash
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: FATAL EXCEPTION: main
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: PID: 13692
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: java.lang.IllegalStateException: UiAutomationService android.accessibilityservice.IAccessibilityServiceClient$Stub$Proxy@1c51561already registered!
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.os.Parcel.createExceptionOrNull(Parcel.java:3375)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.os.Parcel.createException(Parcel.java:3351)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.os.Parcel.readException(Parcel.java:3334)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.os.Parcel.readException(Parcel.java:3278)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.view.accessibility.IAccessibilityManager$Stub$Proxy.registerUiTestAutomationService(IAccessibilityManager.java:1201)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.app.UiAutomationConnection.registerUiTestAutomationServiceLocked(UiAutomationConnection.java:744)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.app.UiAutomationConnection.connect(UiAutomationConnection.java:122)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.app.UiAutomation.connectWithTimeout(UiAutomation.java:384)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.app.UiAutomation.connect(UiAutomation.java:330)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.uiautomator.core.UiAutomationShellWrapper.connect(UiAutomationShellWrapper.java:35)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.commands.uiautomator.DumpCommand.run(DumpCommand.java:78)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.commands.uiautomator.Launcher.main(Launcher.java:83)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit.nativeFinishInit(Native Method)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit.main(RuntimeInit.java:367)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: Caused by: android.os.RemoteException: Remote stack trace:
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.server.pm.UserManagerService$$ExternalSyntheticBUOutline2.m(R8$$SyntheticClass:0)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.server.accessibility.UiAutomationManager.registerUiTestAutomationServiceLocked(UiAutomationManager.java:109)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.server.accessibility.AccessibilityManagerService.registerUiTestAutomationService(AccessibilityManagerService.java:1994)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.view.accessibility.IAccessibilityManager$Stub.onTransact(IAccessibilityManager.java:591)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.os.Binder.execTransactInternal(Binder.java:1323)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: Couldn't report crash. Here's the crash:
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: java.lang.IllegalStateException: UiAutomationService android.accessibilityservice.IAccessibilityServiceClient$Stub$Proxy@1c51561already registered!
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.os.Parcel.createExceptionOrNull(Parcel.java:3375)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.os.Parcel.createException(Parcel.java:3351)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.os.Parcel.readException(Parcel.java:3334)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.os.Parcel.readException(Parcel.java:3278)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.view.accessibility.IAccessibilityManager$Stub$Proxy.registerUiTestAutomationService(IAccessibilityManager.java:1201)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.app.UiAutomationConnection.registerUiTestAutomationServiceLocked(UiAutomationConnection.java:744)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.app.UiAutomationConnection.connect(UiAutomationConnection.java:122)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.app.UiAutomation.connectWithTimeout(UiAutomation.java:384)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.app.UiAutomation.connect(UiAutomation.java:330)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.uiautomator.core.UiAutomationShellWrapper.connect(UiAutomationShellWrapper.java:35)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.commands.uiautomator.DumpCommand.run(DumpCommand.java:78)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.commands.uiautomator.Launcher.main(Launcher.java:83)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit.nativeFinishInit(Native Method)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit.main(RuntimeInit.java:367)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: Caused by: android.os.RemoteException: Remote stack trace:
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.server.pm.UserManagerService$$ExternalSyntheticBUOutline2.m(R8$$SyntheticClass:0)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.server.accessibility.UiAutomationManager.registerUiTestAutomationServiceLocked(UiAutomationManager.java:109)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.server.accessibility.AccessibilityManagerService.registerUiTestAutomationService(AccessibilityManagerService.java:1994)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.view.accessibility.IAccessibilityManager$Stub.onTransact(IAccessibilityManager.java:591)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.os.Binder.execTransactInternal(Binder.java:1323)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: Error reporting crash. Here's the error:
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: java.lang.RuntimeException: Bad file descriptor
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.os.BinderProxy.transactNative(Native Method)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.os.BinderProxy.transact(BinderProxy.java:674)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.app.IActivityManager$Stub$Proxy.handleApplicationCrash(IActivityManager.java:6214)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$KillApplicationHandler.uncaughtException(RuntimeInit.java:166)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at java.lang.ThreadGroup.uncaughtException(ThreadGroup.java:1098)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at java.lang.ThreadGroup.uncaughtException(ThreadGroup.java:1093)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at java.lang.Thread.dispatchUncaughtException(Thread.java:3380)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: FATAL EXCEPTION: main
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: PID: 14229
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: java.lang.IllegalStateException: UiAutomationService android.accessibilityservice.IAccessibilityServiceClient$Stub$Proxy@c263215already registered!
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.os.Parcel.createExceptionOrNull(Parcel.java:3375)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.os.Parcel.createException(Parcel.java:3351)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.os.Parcel.readException(Parcel.java:3334)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.os.Parcel.readException(Parcel.java:3278)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.view.accessibility.IAccessibilityManager$Stub$Proxy.registerUiTestAutomationService(IAccessibilityManager.java:1201)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.app.UiAutomationConnection.registerUiTestAutomationServiceLocked(UiAutomationConnection.java:744)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.app.UiAutomationConnection.connect(UiAutomationConnection.java:122)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.app.UiAutomation.connectWithTimeout(UiAutomation.java:384)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.app.UiAutomation.connect(UiAutomation.java:330)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.uiautomator.core.UiAutomationShellWrapper.connect(UiAutomationShellWrapper.java:35)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.commands.uiautomator.DumpCommand.run(DumpCommand.java:78)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.commands.uiautomator.Launcher.main(Launcher.java:83)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit.nativeFinishInit(Native Method)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit.main(RuntimeInit.java:367)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: Caused by: android.os.RemoteException: Remote stack trace:
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.server.pm.UserManagerService$$ExternalSyntheticBUOutline2.m(R8$$SyntheticClass:0)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.server.accessibility.UiAutomationManager.registerUiTestAutomationServiceLocked(UiAutomationManager.java:109)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.server.accessibility.AccessibilityManagerService.registerUiTestAutomationService(AccessibilityManagerService.java:1994)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.view.accessibility.IAccessibilityManager$Stub.onTransact(IAccessibilityManager.java:591)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.os.Binder.execTransactInternal(Binder.java:1323)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: Couldn't report crash. Here's the crash:
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: java.lang.IllegalStateException: UiAutomationService android.accessibilityservice.IAccessibilityServiceClient$Stub$Proxy@c263215already registered!
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.os.Parcel.createExceptionOrNull(Parcel.java:3375)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.os.Parcel.createException(Parcel.java:3351)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.os.Parcel.readException(Parcel.java:3334)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.os.Parcel.readException(Parcel.java:3278)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.view.accessibility.IAccessibilityManager$Stub$Proxy.registerUiTestAutomationService(IAccessibilityManager.java:1201)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.app.UiAutomationConnection.registerUiTestAutomationServiceLocked(UiAutomationConnection.java:744)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.app.UiAutomationConnection.connect(UiAutomationConnection.java:122)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.app.UiAutomation.connectWithTimeout(UiAutomation.java:384)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.app.UiAutomation.connect(UiAutomation.java:330)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.uiautomator.core.UiAutomationShellWrapper.connect(UiAutomationShellWrapper.java:35)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.commands.uiautomator.DumpCommand.run(DumpCommand.java:78)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.commands.uiautomator.Launcher.main(Launcher.java:83)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit.nativeFinishInit(Native Method)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit.main(RuntimeInit.java:367)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: Caused by: android.os.RemoteException: Remote stack trace:
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.server.pm.UserManagerService$$ExternalSyntheticBUOutline2.m(R8$$SyntheticClass:0)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.server.accessibility.UiAutomationManager.registerUiTestAutomationServiceLocked(UiAutomationManager.java:109)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.server.accessibility.AccessibilityManagerService.registerUiTestAutomationService(AccessibilityManagerService.java:1994)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.view.accessibility.IAccessibilityManager$Stub.onTransact(IAccessibilityManager.java:591)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.os.Binder.execTransactInternal(Binder.java:1323)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: Error reporting crash. Here's the error:
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: java.lang.RuntimeException: Bad file descriptor
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.os.BinderProxy.transactNative(Native Method)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.os.BinderProxy.transact(BinderProxy.java:674)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.app.IActivityManager$Stub$Proxy.handleApplicationCrash(IActivityManager.java:6214)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$KillApplicationHandler.uncaughtException(RuntimeInit.java:166)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at java.lang.ThreadGroup.uncaughtException(ThreadGroup.java:1098)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at java.lang.ThreadGroup.uncaughtException(ThreadGroup.java:1093)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at java.lang.Thread.dispatchUncaughtException(Thread.java:3380)
+$ adb logcat -d -b crash
 
-=== FATAL|AndroidRuntime|ANR matches ===
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: FATAL EXCEPTION: main
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: PID: 13692
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: java.lang.IllegalStateException: UiAutomationService android.accessibilityservice.IAccessibilityServiceClient$Stub$Proxy@1c51561already registered!
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.os.Parcel.createExceptionOrNull(Parcel.java:3375)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.os.Parcel.createException(Parcel.java:3351)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.os.Parcel.readException(Parcel.java:3334)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.os.Parcel.readException(Parcel.java:3278)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.view.accessibility.IAccessibilityManager$Stub$Proxy.registerUiTestAutomationService(IAccessibilityManager.java:1201)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.app.UiAutomationConnection.registerUiTestAutomationServiceLocked(UiAutomationConnection.java:744)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.app.UiAutomationConnection.connect(UiAutomationConnection.java:122)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.app.UiAutomation.connectWithTimeout(UiAutomation.java:384)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.app.UiAutomation.connect(UiAutomation.java:330)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.uiautomator.core.UiAutomationShellWrapper.connect(UiAutomationShellWrapper.java:35)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.commands.uiautomator.DumpCommand.run(DumpCommand.java:78)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.commands.uiautomator.Launcher.main(Launcher.java:83)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit.nativeFinishInit(Native Method)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit.main(RuntimeInit.java:367)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: Caused by: android.os.RemoteException: Remote stack trace:
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.server.pm.UserManagerService$$ExternalSyntheticBUOutline2.m(R8$$SyntheticClass:0)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.server.accessibility.UiAutomationManager.registerUiTestAutomationServiceLocked(UiAutomationManager.java:109)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.server.accessibility.AccessibilityManagerService.registerUiTestAutomationService(AccessibilityManagerService.java:1994)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.view.accessibility.IAccessibilityManager$Stub.onTransact(IAccessibilityManager.java:591)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.os.Binder.execTransactInternal(Binder.java:1323)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: Couldn't report crash. Here's the crash:
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: java.lang.IllegalStateException: UiAutomationService android.accessibilityservice.IAccessibilityServiceClient$Stub$Proxy@1c51561already registered!
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.os.Parcel.createExceptionOrNull(Parcel.java:3375)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.os.Parcel.createException(Parcel.java:3351)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.os.Parcel.readException(Parcel.java:3334)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.os.Parcel.readException(Parcel.java:3278)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.view.accessibility.IAccessibilityManager$Stub$Proxy.registerUiTestAutomationService(IAccessibilityManager.java:1201)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.app.UiAutomationConnection.registerUiTestAutomationServiceLocked(UiAutomationConnection.java:744)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.app.UiAutomationConnection.connect(UiAutomationConnection.java:122)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.app.UiAutomation.connectWithTimeout(UiAutomation.java:384)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.app.UiAutomation.connect(UiAutomation.java:330)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.uiautomator.core.UiAutomationShellWrapper.connect(UiAutomationShellWrapper.java:35)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.commands.uiautomator.DumpCommand.run(DumpCommand.java:78)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.commands.uiautomator.Launcher.main(Launcher.java:83)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit.nativeFinishInit(Native Method)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit.main(RuntimeInit.java:367)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: Caused by: android.os.RemoteException: Remote stack trace:
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.server.pm.UserManagerService$$ExternalSyntheticBUOutline2.m(R8$$SyntheticClass:0)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.server.accessibility.UiAutomationManager.registerUiTestAutomationServiceLocked(UiAutomationManager.java:109)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.server.accessibility.AccessibilityManagerService.registerUiTestAutomationService(AccessibilityManagerService.java:1994)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.view.accessibility.IAccessibilityManager$Stub.onTransact(IAccessibilityManager.java:591)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.os.Binder.execTransactInternal(Binder.java:1323)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: Error reporting crash. Here's the error:
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: java.lang.RuntimeException: Bad file descriptor
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.os.BinderProxy.transactNative(Native Method)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.os.BinderProxy.transact(BinderProxy.java:674)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at android.app.IActivityManager$Stub$Proxy.handleApplicationCrash(IActivityManager.java:6214)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$KillApplicationHandler.uncaughtException(RuntimeInit.java:166)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at java.lang.ThreadGroup.uncaughtException(ThreadGroup.java:1098)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at java.lang.ThreadGroup.uncaughtException(ThreadGroup.java:1093)
-09-28 22:05:20.314 13692 13692 E AndroidRuntime: 	at java.lang.Thread.dispatchUncaughtException(Thread.java:3380)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: FATAL EXCEPTION: main
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: PID: 14229
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: java.lang.IllegalStateException: UiAutomationService android.accessibilityservice.IAccessibilityServiceClient$Stub$Proxy@c263215already registered!
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.os.Parcel.createExceptionOrNull(Parcel.java:3375)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.os.Parcel.createException(Parcel.java:3351)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.os.Parcel.readException(Parcel.java:3334)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.os.Parcel.readException(Parcel.java:3278)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.view.accessibility.IAccessibilityManager$Stub$Proxy.registerUiTestAutomationService(IAccessibilityManager.java:1201)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.app.UiAutomationConnection.registerUiTestAutomationServiceLocked(UiAutomationConnection.java:744)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.app.UiAutomationConnection.connect(UiAutomationConnection.java:122)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.app.UiAutomation.connectWithTimeout(UiAutomation.java:384)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.app.UiAutomation.connect(UiAutomation.java:330)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.uiautomator.core.UiAutomationShellWrapper.connect(UiAutomationShellWrapper.java:35)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.commands.uiautomator.DumpCommand.run(DumpCommand.java:78)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.commands.uiautomator.Launcher.main(Launcher.java:83)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit.nativeFinishInit(Native Method)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit.main(RuntimeInit.java:367)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: Caused by: android.os.RemoteException: Remote stack trace:
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.server.pm.UserManagerService$$ExternalSyntheticBUOutline2.m(R8$$SyntheticClass:0)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.server.accessibility.UiAutomationManager.registerUiTestAutomationServiceLocked(UiAutomationManager.java:109)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.server.accessibility.AccessibilityManagerService.registerUiTestAutomationService(AccessibilityManagerService.java:1994)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.view.accessibility.IAccessibilityManager$Stub.onTransact(IAccessibilityManager.java:591)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.os.Binder.execTransactInternal(Binder.java:1323)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: Couldn't report crash. Here's the crash:
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: java.lang.IllegalStateException: UiAutomationService android.accessibilityservice.IAccessibilityServiceClient$Stub$Proxy@c263215already registered!
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.os.Parcel.createExceptionOrNull(Parcel.java:3375)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.os.Parcel.createException(Parcel.java:3351)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.os.Parcel.readException(Parcel.java:3334)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.os.Parcel.readException(Parcel.java:3278)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.view.accessibility.IAccessibilityManager$Stub$Proxy.registerUiTestAutomationService(IAccessibilityManager.java:1201)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.app.UiAutomationConnection.registerUiTestAutomationServiceLocked(UiAutomationConnection.java:744)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.app.UiAutomationConnection.connect(UiAutomationConnection.java:122)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.app.UiAutomation.connectWithTimeout(UiAutomation.java:384)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.app.UiAutomation.connect(UiAutomation.java:330)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.uiautomator.core.UiAutomationShellWrapper.connect(UiAutomationShellWrapper.java:35)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.commands.uiautomator.DumpCommand.run(DumpCommand.java:78)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.commands.uiautomator.Launcher.main(Launcher.java:83)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit.nativeFinishInit(Native Method)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit.main(RuntimeInit.java:367)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: Caused by: android.os.RemoteException: Remote stack trace:
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.server.pm.UserManagerService$$ExternalSyntheticBUOutline2.m(R8$$SyntheticClass:0)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.server.accessibility.UiAutomationManager.registerUiTestAutomationServiceLocked(UiAutomationManager.java:109)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.server.accessibility.AccessibilityManagerService.registerUiTestAutomationService(AccessibilityManagerService.java:1994)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.view.accessibility.IAccessibilityManager$Stub.onTransact(IAccessibilityManager.java:591)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.os.Binder.execTransactInternal(Binder.java:1323)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: Error reporting crash. Here's the error:
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: java.lang.RuntimeException: Bad file descriptor
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.os.BinderProxy.transactNative(Native Method)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.os.BinderProxy.transact(BinderProxy.java:674)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at android.app.IActivityManager$Stub$Proxy.handleApplicationCrash(IActivityManager.java:6214)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$KillApplicationHandler.uncaughtException(RuntimeInit.java:166)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at java.lang.ThreadGroup.uncaughtException(ThreadGroup.java:1098)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at java.lang.ThreadGroup.uncaughtException(ThreadGroup.java:1093)
-09-28 22:06:49.886 14229 14229 E AndroidRuntime: 	at java.lang.Thread.dispatchUncaughtException(Thread.java:3380)
-09-28 22:15:51.478 18594 18594 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
-09-28 22:15:51.484 18594 18594 I AndroidRuntime: Using default boot image
-09-28 22:15:51.484 18594 18594 I AndroidRuntime: Leaving lock profiling enabled
-09-28 22:15:51.563 18594 18594 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
-09-28 22:15:52.748 18594 18594 D AndroidRuntime: Shutting down VM
-09-28 22:15:57.013 18655 18655 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
-09-28 22:15:57.018 18655 18655 I AndroidRuntime: Using default boot image
-09-28 22:15:57.018 18655 18655 I AndroidRuntime: Leaving lock profiling enabled
-09-28 22:15:57.101 18655 18655 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
-09-28 22:15:58.258 18655 18655 D AndroidRuntime: Shutting down VM
-09-28 22:16:00.905 18690 18690 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
-09-28 22:16:00.910 18690 18690 I AndroidRuntime: Using default boot image
-09-28 22:16:00.910 18690 18690 I AndroidRuntime: Leaving lock profiling enabled
-09-28 22:16:01.034 18690 18690 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
-09-28 22:16:02.246 18690 18690 D AndroidRuntime: Shutting down VM
-09-28 22:16:33.843 18755 18755 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
-09-28 22:16:33.848 18755 18755 I AndroidRuntime: Using default boot image
-09-28 22:16:33.848 18755 18755 I AndroidRuntime: Leaving lock profiling enabled
-09-28 22:16:33.929 18755 18755 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
-09-28 22:16:35.119 18755 18755 D AndroidRuntime: Shutting down VM
-09-28 22:17:00.759 18833 18833 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
-09-28 22:17:00.763 18833 18833 I AndroidRuntime: Using default boot image
-09-28 22:17:00.763 18833 18833 I AndroidRuntime: Leaving lock profiling enabled
-09-28 22:17:00.906 18833 18833 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
-09-28 22:17:03.172 18833 18833 D AndroidRuntime: Shutting down VM
+$ adb logcat -d | grep -E "FATAL|AndroidRuntime|ANR"
+09-28 23:26:07.695 14949 14949 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+09-28 23:26:07.699 14949 14949 I AndroidRuntime: Using default boot image
+09-28 23:26:07.699 14949 14949 I AndroidRuntime: Leaving lock profiling enabled
+09-28 23:26:07.775 14949 14949 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+09-28 23:26:08.898 14949 14949 D AndroidRuntime: Shutting down VM
+09-28 23:26:10.221 14965 14965 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+09-28 23:26:10.226 14965 14965 I AndroidRuntime: Using default boot image
+09-28 23:26:10.226 14965 14965 I AndroidRuntime: Leaving lock profiling enabled
+09-28 23:26:10.304 14965 14965 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+09-28 23:26:11.528 14965 14965 D AndroidRuntime: Shutting down VM
+09-28 23:26:12.997 14989 14989 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+09-28 23:26:13.002 14989 14989 I AndroidRuntime: Using default boot image
+09-28 23:26:13.002 14989 14989 I AndroidRuntime: Leaving lock profiling enabled
+09-28 23:26:13.075 14989 14989 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+09-28 23:26:14.225 14989 14989 D AndroidRuntime: Shutting down VM
+09-28 23:26:15.616 15010 15010 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+09-28 23:26:15.623 15010 15010 I AndroidRuntime: Using default boot image
+09-28 23:26:15.623 15010 15010 I AndroidRuntime: Leaving lock profiling enabled
+09-28 23:26:15.715 15010 15010 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+09-28 23:26:16.874 15010 15010 D AndroidRuntime: Shutting down VM
+09-28 23:26:18.969 15037 15037 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+09-28 23:26:18.974 15037 15037 I AndroidRuntime: Using default boot image
+09-28 23:26:18.974 15037 15037 I AndroidRuntime: Leaving lock profiling enabled
+09-28 23:26:19.055 15037 15037 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+09-28 23:26:20.147 15037 15037 D AndroidRuntime: Shutting down VM
+09-28 23:26:21.630 15073 15073 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+09-28 23:26:21.635 15073 15073 I AndroidRuntime: Using default boot image
+09-28 23:26:21.635 15073 15073 I AndroidRuntime: Leaving lock profiling enabled
+09-28 23:26:21.717 15073 15073 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+09-28 23:26:22.793 15073 15073 D AndroidRuntime: Shutting down VM
+09-28 23:26:24.112 15089 15089 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+09-28 23:26:24.116 15089 15089 I AndroidRuntime: Using default boot image
+09-28 23:26:24.116 15089 15089 I AndroidRuntime: Leaving lock profiling enabled
+09-28 23:26:24.196 15089 15089 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+09-28 23:26:25.304 15089 15089 D AndroidRuntime: Shutting down VM
+09-28 23:26:26.760 15111 15111 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+09-28 23:26:26.764 15111 15111 I AndroidRuntime: Using default boot image
+09-28 23:26:26.764 15111 15111 I AndroidRuntime: Leaving lock profiling enabled
+09-28 23:26:26.834 15111 15111 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+09-28 23:26:27.926 15111 15111 D AndroidRuntime: Shutting down VM
+09-28 23:26:50.748 15184 15184 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+09-28 23:26:50.754 15184 15184 I AndroidRuntime: Using default boot image
+09-28 23:26:50.754 15184 15184 I AndroidRuntime: Leaving lock profiling enabled
+09-28 23:26:50.834 15184 15184 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+09-28 23:26:51.917 15184 15184 D AndroidRuntime: Shutting down VM
+09-28 23:26:53.489 15207 15207 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+09-28 23:26:53.494 15207 15207 I AndroidRuntime: Using default boot image
+09-28 23:26:53.494 15207 15207 I AndroidRuntime: Leaving lock profiling enabled
+09-28 23:26:53.568 15207 15207 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+09-28 23:26:54.697 15207 15207 D AndroidRuntime: Shutting down VM
+09-28 23:27:14.806 15239 15239 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+09-28 23:27:14.810 15239 15239 I AndroidRuntime: Using default boot image
+09-28 23:27:14.810 15239 15239 I AndroidRuntime: Leaving lock profiling enabled
+09-28 23:27:14.894 15239 15239 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+09-28 23:27:16.041 15239 15239 D AndroidRuntime: Shutting down VM
+09-28 23:27:17.570 15264 15264 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+09-28 23:27:17.577 15264 15264 I AndroidRuntime: Using default boot image
+09-28 23:27:17.577 15264 15264 I AndroidRuntime: Leaving lock profiling enabled
+09-28 23:27:17.655 15264 15264 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+09-28 23:27:18.787 15264 15264 D AndroidRuntime: Shutting down VM
+09-28 23:27:20.110 15285 15285 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+09-28 23:27:20.115 15285 15285 I AndroidRuntime: Using default boot image
+09-28 23:27:20.115 15285 15285 I AndroidRuntime: Leaving lock profiling enabled
+09-28 23:27:20.197 15285 15285 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+09-28 23:27:21.313 15285 15285 D AndroidRuntime: Shutting down VM
+09-28 23:27:22.624 15302 15302 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+09-28 23:27:22.629 15302 15302 I AndroidRuntime: Using default boot image
+09-28 23:27:22.629 15302 15302 I AndroidRuntime: Leaving lock profiling enabled
+09-28 23:27:22.711 15302 15302 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+09-28 23:27:23.926 15302 15302 D AndroidRuntime: Shutting down VM
+09-28 23:27:26.018 15326 15326 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+09-28 23:27:26.023 15326 15326 I AndroidRuntime: Using default boot image
+09-28 23:27:26.023 15326 15326 I AndroidRuntime: Leaving lock profiling enabled
+09-28 23:27:26.106 15326 15326 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+09-28 23:27:27.225 15326 15326 D AndroidRuntime: Shutting down VM
+09-28 23:27:28.680 15349 15349 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+09-28 23:27:28.685 15349 15349 I AndroidRuntime: Using default boot image
+09-28 23:27:28.685 15349 15349 I AndroidRuntime: Leaving lock profiling enabled
+09-28 23:27:28.791 15349 15349 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+09-28 23:27:29.903 15349 15349 D AndroidRuntime: Shutting down VM
+09-28 23:27:31.212 15368 15368 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+09-28 23:27:31.220 15368 15368 I AndroidRuntime: Using default boot image
+09-28 23:27:31.220 15368 15368 I AndroidRuntime: Leaving lock profiling enabled
+09-28 23:27:31.308 15368 15368 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+09-28 23:27:32.392 15368 15368 D AndroidRuntime: Shutting down VM

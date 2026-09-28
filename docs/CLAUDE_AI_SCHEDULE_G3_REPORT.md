@@ -1,8 +1,10 @@
-# Báo cáo G3 — FAIL ở chốt PIN; các phần còn lại chưa nghiệm thu đủ
+# Báo cáo G3 — chạy lại sau sửa PIN: B–I đạt 7/8, thông báo trễ
 
 Ngày: 2026-09-28 · Người chạy: Codex · Reviewer: Claude (Cowork) · Nghiệm thu: Duong
 
-## Kết luận
+**Kết quả mới nhất, bản `a2ba634`: B/C/D/F/G/H/I PASS; E FAIL vì thông báo trễ 130,091 giây. A giữ PASS của phiên trước. G3 chưa PASS toàn bộ.** Cổng PIN đã hoạt động trên Pixel; không có crash/ANR KidFocus trong log thu của lần chạy lại. Xem bảng và lỗi mới ở mục **G3 chạy lại sau Fixes G3** cuối báo cáo. Các phần trước mục đó giữ lịch sử phiên trước và việc sửa code, không phải kết quả nghiệm thu hiện tại.
+
+## Kết luận phiên gốc — trước sửa PIN
 
 **G3 chưa PASS: A PASS, B FAIL, C–I SKIP ở cấp kịch bản đầy đủ.** Sau khi Duong mở khóa và yêu cầu tiếp tục, đã lưu hồ sơ lớp 1, tạo Homework 21:00/45 phút, xem timeline và kiểm tra task tách giữa hai hồ sơ. Tuy nhiên, nhập đúng PIN 2468 để mở “Child’s daily rhythm / Weekly schedule advice” lại quay về màn PIN; không vào được lịch thông minh để đặt anchors, xem finding hoặc Apply/Undo. Đây là **lỗi mức Cao**, cần Claude review trước nghiệm thu.
 
@@ -29,9 +31,9 @@ Cuối phiên, điện thoại tự khóa khi đang chuẩn bị lưu task thôn
 
 APK SHA-256 đã cài: `ec0dc83d4546ae4420709c589885ee6179e17d66d0a67d0a46ad230473b8b56b`.
 
-[Log build offline](g3/09-offline-build.txt) · [Phiên kết nối đầu](g3/10-connected-session-status.txt) · [Phiên tiếp tục và trạng thái cuối](g3/26-resumed-session-notes.txt) · [Logcat thực tế](g3/logcat-crash.txt).
+[Log build offline](g3/09-offline-build.txt) · [Phiên kết nối đầu](g3/10-connected-session-status.txt) · [Phiên tiếp tục và trạng thái cuối](g3/26-resumed-session-notes.txt) · [Logcat thực tế](g3/89-before-fix-logcat-crash.txt).
 
-## Kịch bản A–I
+## Kịch bản A–I phiên gốc — trước sửa PIN
 
 SKIP nghĩa là chưa đủ các điều kiện kiểm tra của cả kịch bản; các phần đã thực hiện được ghi riêng, không dùng kết quả một phần để tính PASS toàn bộ.
 
@@ -76,7 +78,7 @@ Onboarding/PIN hiển thị tiếng Việt, Home/Parent settings hiển thị ti
 
 ## Crash logcat và giới hạn bằng chứng
 
-[logcat-crash.txt](g3/logcat-crash.txt) chứa output crash buffer thực tế (14.015 byte) và 137 dòng general log khớp bộ lọc. Có hai fatal stack lúc 22:05:20 và 22:06:49:
+[logcat-crash.txt](g3/89-before-fix-logcat-crash.txt) chứa output crash buffer thực tế (14.015 byte) và 137 dòng general log khớp bộ lọc. Có hai fatal stack lúc 22:05:20 và 22:06:49:
 
 ```text
 java.lang.IllegalStateException: UiAutomationService ... already registered!
@@ -137,8 +139,69 @@ git diff --cached --check
 
 [Log kiểm tra và tổng số test](g3/27-g3-fixes-checks.txt). Build tổng hợp **BUILD SUCCESSFUL in 1m**, 65 task (22 executed / 43 up-to-date). Generated BuildConfig xác nhận các key Firebase/RevenueCat rỗng. APK `app/build/outputs/apk/debug/app-debug.apk` SHA-256: `b8fefac42dd448dd24275b3d33717d48fdf7647011e534615142b3b9ba6f205f`.
 
-### Phạm vi và bước nghiệm thu tiếp
+### Phạm vi và bước nghiệm thu tiếp — tại thời điểm commit sửa PIN
 
 - Không thêm permission, không đổi manifest/Room (**v5**), không thêm WorkManager/service nền. Không reset/stash/sửa `.omc`, push/merge/deploy/reboot.
 - Các lệnh build/test chạy trên shared working tree, có **19 file tracked thay đổi từ trước** như phiên G3 gốc, không phải checkout sạch. Hash của 16 file ngoài ba file chồng phạm vi vẫn nguyên; ba file `app/build.gradle.kts`, `MainActivity.kt`, `AppNavigation.kt` được stage theo từng hunk G3. Giữ các thay đổi release/Learning/permission/callback Home khác ở working tree, ngoài commit. Các task/review và test Learning chưa tracked không được stage.
 - **Chưa chạy lại G3 máy thật và chưa chuyển bảng A–I cũ thành PASS.** Theo yêu cầu, chờ Duong báo Pixel đã mở khóa và bật giữ màn hình sáng; sau đó cài APK bằng `adb install -r` giữ dữ liệu, chạy lại B, C, D (anchors), E, F (anchors/góp ý), G, H, I và thu ảnh/logcat mới. A giữ kết quả PASS cũ.
+
+## G3 chạy lại sau Fixes G3 — 2026-09-28
+
+Duong báo “pixel ok, test đi”. Đã chạy lại B–I trên **Pixel 9 / Android 17 / API 37**, cùng thiết bị wireless ở trên. **B/C/D/F/G/H/I PASS, E FAIL; G3 chưa PASS toàn bộ.** G3-01 đã được kiểm chứng hết vòng lặp PIN; lỗi còn lại cần Claude review, không sửa code trong lần chạy thiết bị này.
+
+### Bản thử và chuẩn bị
+
+- Branch `feature/smart-schedule-w4`, code HEAD **`a2ba634`**. Build `assembleDebug` với cùng cấu hình dịch vụ rỗng ở mục Fixes G3: **BUILD SUCCESSFUL in 2s**, 44 task (1 executed / 43 up-to-date). `adb install -r` trả **Success**, giữ dữ liệu/PIN, không clear app. [Log build và cài](g3/28-retest-build.txt).
+- APK SHA-256 **`b8fefac42dd448dd24275b3d33717d48fdf7647011e534615142b3b9ba6f205f`**, khớp APK đã kiểm thử tự động sau sửa PIN. Generated BuildConfig xác minh key Firebase/RevenueCat rỗng; không thao tác AI, đăng nhập hoặc mua.
+- APK vẫn build từ shared working tree có **19 file tracked thay đổi từ trước**. Hash cả 19 file không đổi trong lần chạy lại. Không coi đây là APK từ checkout sạch chỉ chứa commit W4/G3. Không sửa/stage code, `.omc` hoặc task/review/Learning chưa tracked.
+- Locale thiết bị **en-GB**. Đầu phiên font_scale **1.0**, accelerometer_rotation **0**, user_rotation **0**. Quyền POST_NOTIFICATIONS đã được cấp ở phiên gốc; lần chạy lại không cấp quyền nào. Exact alarm appop cuối phiên: `No operations. Default mode: default`.
+- Clear logcat một lần đầu phiên chạy lại, không clear sau đó; cuối phiên thu cả crash buffer và general log theo bộ lọc yêu cầu. [Trạng thái cuối](g3/90-retest-final-status.txt).
+
+### Bảng nghiệm thu mới
+
+| Kịch bản | Kết quả | Bằng chứng / hành vi trên máy |
+|---|---|---|
+| A — Onboarding/PIN ban đầu | **PASS giữ từ phiên gốc** | Không chạy lại onboarding hoặc xóa dữ liệu. PIN kiểm chứng lại bằng [màn tiếng Anh](g3/30-retest-pin-english.png) → [mở lịch thành công](g3/31-B-smart-opens-after-pin.png). Onboarding locale chỉ có bằng chứng test tự động ở Fixes G3, không thêm kết luận kiểm trên Pixel |
+| B — Lớp 1, thức 06:15 / ngủ 22:30 T2–T6, ngủ thiếu Cao | **PASS** | [Đã lưu giờ giấc](g3/32-B-weekdays-0615-2230.png); [finding Cao 465/540 phút, đề xuất 21:15](g3/33-B-sleep-short-high.png). [Hai hồ sơ xác nhận Grade 1](g3/51-F-two-profiles-grade1-ages45.png) |
+| C — Áp dụng, Hoàn tác, Khôi phục lịch trước | **PASS** | Áp dụng **đêm thứ Hai được chọn** → ngủ 21:15, finding của đêm đó biến mất; snackbar [Apply/Undo](g3/34-C-applied-undo-snackbar.png), [dump sau Apply](g3/34-C-after-apply-ui.xml). [Undo trả 22:30/cảnh báo](g3/35-C-undo-restored-warning.png). Áp dụng lần nữa → [21:15](g3/36-C-bed-2115-before-restore.png), bấm Restore previous schedule (within 7 days) → [22:30](g3/37-C-restore-bed-2230.png). Các đêm khác giữ finding độc lập; một Apply không thay cả tuần |
+| D — Ca học, task muộn, timeline, qua nửa đêm | **PASS** | Đặt rồi lưu ca học 07:00–16:30 Weekdays ([editor](g3/38-D-school-0700-1630.png), [timeline đã lưu](g3/40-D-timeline-school-homework-sleep.png)). Homework có sẵn giữ 21:00, focus 45/break 15 phút; [cảnh báo muộn mức Medium](g3/39-D-late-homework-warning.png). Chỉnh riêng đêm thứ Hai [00:30](g3/41-D-monday-bed-0030.png), lưu; [timeline thứ Ba](g3/42-D-tuesday-sleep-0030-0615.png) hiển thị ngủ 00:30–06:15 và ca học, không chuyển sai sang đêm thứ Ba |
+| E — Task sau khoảng 3 phút, URI alarm, thông báo đúng giờ | **FAIL** | Reading đổi sang [23:15](g3/45-E-reading-future-time.png), [lưu 23:12:06](g3/46-E-reading-saved.png), còn 174 giây trước giờ chạy. Alarm có origWhen 23:15:00 và URI đúng, nhưng NotificationRecord được tạo **23:17:10.091**, trễ **130.091 giây**. [Timing](g3/47-E-notification-timing.json), [Alarm](g3/48-E-alarm-uri.txt), [PendingIntent/URI](g3/48-E-pending-intent-uri.txt), [Record thông báo](g3/49-E-notification-record.txt). Không đánh PASS chỉ vì có nhận thông báo |
+| F — Hai hồ sơ, giờ giấc/lịch/góp ý tách riêng | **PASS** | Tái sử dụng hai hồ sơ đã tạo trong G3 gốc, không tạo bé thứ ba. 3-B/Ages 4–5 có [anchors/trường trống](g3/52-F-second-profile-empty-anchors.png), [không findings](g3/53-F-second-profile-no-findings.png), [task chỉ là template chưa thêm](g3/54-F-second-profile-task-templates.png). Trở về Child thì [anchors/ca học](g3/55-F-child-anchors-returned.png) và [findings](g3/56-F-child-findings-returned.png) còn |
+| G — Nút AI ẩn khi chưa config | **PASS** | Kiểm Daily schedule và cuộn hết Smart weekly schedule: không có Nhập nhanh / AI nhập ảnh / Nhờ AI sắp lại. [Ảnh](g3/60-G-smart-ai-controls-hidden.png), [nhãn qua toàn bộ các trang cuộn](g3/61-G-smart-visible-labels.txt). Choose photo trong TaskEdit là ảnh minh họa local, không phải AI import; không mở picker. Đưa app vào nền rồi mở lại và vào lịch: [yêu cầu PIN](g3/62-G-background-requires-pin.png) → nhập 2468 → [vào lịch, không lặp PIN](g3/63-G-reentry-after-pin.png). Quick UI bị ẩn nên không thử đường vào Quick trên Pixel; luồng Quick có test thật ở Fixes G3 |
+| H — Font 1.3, xoay ngang, trả 1.0 | **PASS** | [Timeline portrait font 1.3](g3/70-H-timeline-font13.png), [landscape ổn định 2424×1080](g3/71-H-timeline-landscape-font13.png), [Góp ý font 1.3](g3/72-H-advice-font13.png). Chữ/nút đọc được, nội dung cuộn dọc bình thường; hàng ngày của timeline cuộn ngang. [Trả font 1.0](g3/73-H-advice-font10-restored.png); xác minh cuối **1.0 / rotation 0 / accelerometer 0**, không crash |
+| I — Force-stop + mở lại giữ dữ liệu | **PASS** | [Home trước force-stop](g3/80-I-before-force-stop-home.png) → `am force-stop` → mở lại [Home](g3/81-I-after-force-stop-home.png); PIN vẫn xác minh được. [Hai hồ sơ](g3/82-I-profiles-persisted.png), [anchors và ca học](g3/83-I-anchors-persisted.png), [giờ từng ngày](g3/84-I-individual-days-persisted.png), [timeline task/sleep/school](g3/85-I-tuesday-tasks-and-anchors-persisted.png), [nhãn xác minh](g3/85-I-persistence-visible-labels.txt) còn. Kết thúc ở [Home](g3/86-I-final-home.png). Không reboot |
+
+### Lỗi và xác minh sau sửa
+
+**G3-01 — Cao, đã sửa và kiểm chứng trên Pixel.** Nhập PIN 2468 mở Smart weekly schedule, thao tác B/C/D/F/H thành công. App vào nền rồi trở lại thì yêu cầu PIN mới; nhập đúng lại mở lịch, không vòng lặp. Đây là kiểm chứng UI thật, bổ sung cho 15 test phiên/điều hướng trong commit sửa. Lần này không chạy chờ 5 phút idle trên Pixel; trường hợp hết hạn đã có test thời gian giả ở Fixes G3.
+
+**G3-02 — Thấp, phần PIN đã kiểm chứng theo locale en-GB.** Màn xác minh PIN dùng tiếng Anh, đồng nhất với Parent settings/lịch. Onboarding không chạy lại để giữ dữ liệu A; vi/en của cả hai luồng đã kiểm bằng test ở commit sửa. Lỗi notification mới bên dưới nằm ngoài phạm vi F-G3-2.
+
+**G3-03 — TB: thông báo tới trễ 2 phút 10 giây trong cấu hình hiện tại.** Tái hiện: Child → Reading → đặt 23:15 every day → Save schedule lúc 23:12:06 → theo dõi đến sau giờ chạy. Bộ chọn giờ dùng bước 5 phút nên lưu cách mốc 174 giây, phù hợp phép thử “sau 3 phút” với sai số thao tác 6 giây. Mốc alarm `origWhen=2026-09-28 23:15:00.000`, `window=+2m10s41ms`. PendingIntentRecord **`c626cb4`** khớp giữa AlarmManager và bảng PendingIntent; Intent đến TaskAlarmReceiver có **`kidfocus://task/1790608779858144/2`** (thứ Hai). Android 17 không in URI ngay trong alarm record nên dùng đối chiếu này, không thay bằng khẳng định từ source.
+
+NotificationRecord Reading có `mCreationTimeMs=mUpdateTimeMs=1790612230091` → **23:17:10.091 GMT+7**, trễ **130.091 giây** so với `1790612100000`. Monitor chưa thấy record đến +91 giây; lần đọc đầu thấy ở +132 giây, nhưng độ trễ tính từ timestamp hệ thống, không tính từ thời điểm poll. [Bản đọc tại giờ chạy](g3/49-E-notification-at-due.txt) và [record nhận thực tế](g3/49-E-notification-record.txt) được giữ. Không chụp notification shade vì có thông báo của app khác; chỉ lưu record KidFocus và ảnh editor/task.
+
+Source `AlarmScheduler.kt` có fallback `AlarmManager.set` khi không được exact alarm, và `setAndAllowWhileIdle` khi exact bị SecurityException. **Suy luận:** window dương trên alarm phù hợp đường báo thức không chính xác trong cấu hình quyền hiện tại; chưa đủ bằng chứng quy thành regression W4 hoặc xác định nhánh fallback cụ thể đã chạy. POST_NOTIFICATIONS vẫn granted, không cấp/thay exact alarm để làm phép thử PASS. Đề nghị Claude quyết định tiêu chí “đúng giờ” và hướng xử lý; lần này chỉ ghi lỗi.
+
+**G3-04 — Thấp: notification hard-code tiếng Việt trên máy en-GB.** Cùng E, record có title “📚 Đến giờ rồi!” và text “Bắt đầu Reading nào! 🎯”; màn editor/lịch tiếng Anh. Đối chiếu `TaskAlarmReceiver.kt:57–58` còn hard-code. Ngoài PIN/onboarding đã giao sửa, không mở rộng sửa trong task chạy máy.
+
+### Logcat, dữ liệu cuối và phạm vi commit
+
+[logcat-crash.txt mới](g3/logcat-crash.txt): crash buffer **rỗng**, general filter có **85 dòng** khởi động/kết thúc AndroidRuntime của công cụ UI; không có FATAL/ANR hoặc stack KidFocus. Không clear log để loại lỗi; kết luận chỉ áp dụng phần B–I đã chạy. [Log gốc trước sửa](g3/89-before-fix-logcat-crash.txt) được sao nguyên byte và các liên kết lịch sử đã chuyển sang bản này, giữ hai lỗi uiautomator của phiên cũ.
+
+General buffer cuối phiên đã xoay vòng, phần lọc còn từ 23:26:07; log giữa phiên ở 43 bổ sung một đoạn trước đó. Crash buffer rỗng là kết quả thu riêng, không dùng general buffer còn lại để khẳng định toàn bộ sự kiện hệ thống trong cả phiên đều được lưu.
+
+Giữa D, Quick Settings phủ app làm guard dừng trước tap thứ Ba. Read-only trust xác nhận `deviceLocked=0`; XML xác nhận Quick Settings, đóng shade rồi tiếp tục. Không phải mở khóa bằng credential hay vượt khóa máy. [44](g3/44-retest-partial-status.txt) và [43](g3/43-retest-logcat-crash-partial.txt) là **bằng chứng giữa phiên**, không phải kết quả cuối; đã hoàn tất phần còn lại sau đó.
+
+Dữ liệu cuối: Child/Grade 1 active; 3-B/Ages 4–5 chưa đặt anchors/ca học/task. Child thức 06:15 T2–T6; ngủ đêm T2 00:30 (rạng sáng T3), các đêm T3–T6 22:30; cuối tuần unset. School session 07:00–16:30 weekdays; Homework 21:00/45 focus/15 break weekdays; Reading 23:15/30 focus/5 break every day; PIN 2468. **Đầu lần chạy lại đã thấy Reading 22:20 là task lưu sẵn**, khác ghi nhận draft trong phiên gốc; lần này giữ dữ liệu và đổi task đó cho E, không dùng báo cáo cũ làm bằng chứng persistence. Cỡ chữ/hướng màn hình cuối đã trả về **1.0 / 0 / 0**.
+
+Commit nghiệm thu lần này chỉ gồm báo cáo và `docs/g3/`: ảnh adb screencap, UI/alarm/notification evidence của KidFocus, logcat và ghi chú. Không lưu credential/pairing key hoặc notification app khác. Không sửa code/permission/Room, không WorkManager/service, không thay timeout/khóa máy, không clear dữ liệu, không reboot/login/mua/AI call/push/merge/deploy. Kiểm tra liên kết/ảnh, hash 19 file và diff trước commit; raw log được giữ nguyên whitespace theo cách kiểm riêng đã dùng ở phiên gốc.
+
+Kiểm tra docs: **80 liên kết tồn tại**, PNG mới có chữ ký/kích thước đúng (1080×2424, landscape 2424×1080); 19 hash ngoài task giữ nguyên. `git diff --check` phần chưa stage PASS. `git diff --cached --check` toàn bộ báo 8 dòng trailing whitespace trong **bản sao raw log cũ 89**, không có lỗi file khác. Giữ nguyên bằng chứng; bản sao khớp byte với `HEAD:docs/g3/logcat-crash.txt`. Kiểm tra tách phạm vi trước commit:
+
+```sh
+git diff --cached --check -- . ':!docs/g3/89-before-fix-logcat-crash.txt'
+git -c core.whitespace=-blank-at-eol diff --cached --check -- docs/g3/89-before-fix-logcat-crash.txt
+```
+
+Cả hai lệnh **PASS**; chỉ bỏ kiểm khoảng trắng cuối dòng cho raw log lịch sử, không đổi cấu hình git lưu trên máy. Lần này không thay code nên không chạy lại unit/lint; kết quả 245 test và lint của APK ở mục Fixes G3 vẫn là lần kiểm code gần nhất.

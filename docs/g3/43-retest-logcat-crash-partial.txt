@@ -1,0 +1,8 @@
+Crash buffer (raw):
+
+General log matches FATAL|AndroidRuntime|ANR:
+09-28 23:02:33.842  6076  6076 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+09-28 23:02:33.850  6076  6076 I AndroidRuntime: Using default boot image
+09-28 23:02:33.850  6076  6076 I AndroidRuntime: Leaving lock profiling enabled
+09-28 23:02:33.927  6076  6076 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+09-28 23:02:35.062  6076  6076 D AndroidRuntime: Shutting down VM

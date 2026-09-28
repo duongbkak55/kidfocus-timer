@@ -1,0 +1,8 @@
+G3 after a2ba634, interrupted by SystemUI Quick Settings at 2026-09-28T23:03:40
+B: PASS, saved wake 06:15 / bed 22:30 Weekdays, HIGH sleep-short 465/540 min.
+C: PASS for selected Monday night: Apply -> 21:15; Monday warning disappears; snackbar Undo and separate Restore each return 22:30. Other nights retain independent warnings.
+D: school 07:00-16:30 Weekdays saved; Homework 21:00 45min +15min break confirmed on timeline; MEDIUM late homework seen. Monday individual bedtime 00:30 saved; Tuesday-Friday remain 22:30. Monday timeline dump showed Sleep 00:30 (next day)-06:15 (next day), but Quick Settings covered the app before Tuesday selection/screenshot.
+Guard sent no Tuesday tap while SystemUI was foreground. Read-only dumpsys trust confirmed deviceLocked=0; saved local dump identified expanded Quick Settings, not a lock screen. Closed shade with cmd statusbar collapse and resumed.
+E/F/G/H/I: not run in this retest segment.
+App data now: Child active; wake weekdays 06:15; Monday bed 00:30, Tue-Fri 22:30; school 07:00-16:30 Weekdays; Homework 21:00 and Reading 22:20.
+No input sent into SystemUI settings; early read-only logcat captured; testing resumed after confirmed unlocked state.

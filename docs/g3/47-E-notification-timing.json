@@ -1,0 +1,18 @@
+{
+  "targetEpoch": 1790612100,
+  "targetLocal": "2026-09-28T23:15:00",
+  "preparedEpoch": 1790611629,
+  "saveDesiredEpoch": 1790611920,
+  "savedEpoch": 1790611926,
+  "leadSeconds": 174,
+  "noNotificationThroughEpoch": 1790612191,
+  "notificationFirstObservedEpoch": 1790612232,
+  "notificationFields": {
+    "mRankingTimeMs": "1790612230062",
+    "mCreationTimeMs": "1790612230091",
+    "mUpdateTimeMs": "1790612230091"
+  },
+  "notificationCreatedLocal": "2026-09-28T23:17:10.091",
+  "lateMilliseconds": 130091,
+  "result": "FAIL: delivered after requested time"
+}
