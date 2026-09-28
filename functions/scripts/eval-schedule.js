@@ -67,6 +67,7 @@ async function main() {
   if (!process.env.OPENROUTER_API_KEY) {
     console.error("Set OPENROUTER_API_KEY to run the manual, paid schedule evaluation."); process.exitCode = 1; return;
   }
+  if (process.argv.includes("--advise")) { await require("./eval-schedule-advise").evaluate(); return; }
   if (!process.argv.includes("--images")) await evaluate(textFixtures, "text");
   if (!process.argv.includes("--text")) await evaluate(imageFixtures, "image");
 }

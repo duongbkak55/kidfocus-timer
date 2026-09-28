@@ -34,6 +34,8 @@ const DEFAULT_CONFIG = {
   scheduleGuestEnabled: false,
   scheduleModel: "google/gemini-2.5-flash-lite",
   scheduleParseCost: 1,
+  scheduleAdviseCost: 2,
+  scheduleAdviseModel: "", // Fall back to the configured PARSE model.
   scheduleVisionModel: "google/gemini-2.5-flash-lite",
   scheduleImageCost: 3,
   scheduleImageTiers: ["early", "premium"],
@@ -238,6 +240,8 @@ async function loadConfig() {
     next.scheduleGuestEnabled = parseBoolean(value("ai_schedule_guest_enabled"), next.scheduleGuestEnabled);
     next.scheduleModel = safeString(value("ai_schedule_model"), 120) || next.scheduleModel;
     next.scheduleParseCost = parseIntSafe(value("ai_schedule_parse_cost"), next.scheduleParseCost, 1, 100);
+    next.scheduleAdviseCost = parseIntSafe(value("ai_schedule_advise_cost"), next.scheduleAdviseCost, 1, 100);
+    next.scheduleAdviseModel = safeString(value("ai_schedule_advise_model"), 120) || next.scheduleModel;
     next.scheduleVisionModel = safeString(value("ai_schedule_vision_model"), 120) || next.scheduleVisionModel;
     next.scheduleImageCost = parseIntSafe(value("ai_schedule_image_cost"), next.scheduleImageCost, 1, 100);
     const imageTiers = value("ai_schedule_image_tiers");
@@ -412,7 +416,7 @@ async function refundReservation(identity, model, requestId, quotaDb = db) {
 function publicConfig(config, usage) {
   return {enabled: config.enabled, models: config.models, usage,
     ai_schedule_enabled: config.scheduleEnabled && config.enabled, early_access_open: config.earlyAccessOpen,
-    ai_schedule_parse_cost: config.scheduleParseCost,
+    ai_schedule_parse_cost: config.scheduleParseCost, ai_schedule_advise_cost: config.scheduleAdviseCost,
     ai_schedule_image_tiers: config.scheduleImageTiers, ai_schedule_image_cost: config.scheduleImageCost,
     ai_schedule_free_daily_parses: config.scheduleFreeDailyParses};
 }

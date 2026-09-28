@@ -16,15 +16,25 @@ interface ScheduleParser {
     suspend fun parse(text: String, ageBand: String, current: ScheduleState): ScheduleParseReply
     suspend fun parseImage(text: String, image: String, ageBand: String, current: ScheduleState): ScheduleParseReply
 }
+interface ScheduleAdviser {
+    suspend fun advise(payload: Map<String, Any>): ScheduleAdviseReply
+}
+data class ScheduleAdviseReply(val advice: ScheduleAdvice, val usage: AiUsage)
 data class ScheduleParseReply(val draft: ScheduleDraft, val usage: AiUsage)
 
 @Singleton
-class ScheduleAiApi @Inject constructor(private val account: FirebaseAccountRepository) : ScheduleParser {
+class ScheduleAiApi @Inject constructor(private val account: FirebaseAccountRepository) : ScheduleParser, ScheduleAdviser {
     private fun functions(): FirebaseFunctions = FirebaseFunctions.getInstance(
         account.firebaseApp() ?: error("FIREBASE_NOT_CONFIGURED"), "asia-southeast1")
 
     suspend fun claimEarlyAccess() {
         withTimeout(30_000) { functions().getHttpsCallable("claimEarlyAccess").call().await() }
+    }
+
+    override suspend fun advise(payload: Map<String, Any>): ScheduleAdviseReply = withTimeout(30_000) {
+        val reply = functions().getHttpsCallable("aiSchedule").also { it.setTimeout(30, TimeUnit.SECONDS) }.call(payload).await().data as? Map<*, *> ?: error("AI_ADVISE_FAILED")
+        ScheduleAdviseReply(ScheduleAdvicePayload.advice(reply["advice"] as? Map<*, *> ?: error("AI_ADVISE_FAILED")),
+            (reply["usage"] as? Map<*, *>)?.let { usage -> AiUsage((usage["remainingQuestions"] as? Number)?.toInt() ?: 0, (usage["remainingCredits"] as? Number)?.toInt() ?: 0, usage["premium"] == true, usage["tier"] as? String ?: "free", (usage["earlyAccessUntil"] as? Number)?.toLong(), (usage["remainingScheduleParses"] as? Number)?.toInt()) } ?: error("AI_ADVISE_FAILED"))
     }
 
     override suspend fun parse(text: String, ageBand: String, current: ScheduleState) = parseRequest(text, null, ageBand, current)

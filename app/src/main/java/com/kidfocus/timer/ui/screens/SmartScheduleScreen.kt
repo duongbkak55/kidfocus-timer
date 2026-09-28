@@ -63,11 +63,13 @@ fun SmartScheduleScreen(onBack: () -> Unit, onQuickEntry: () -> Unit = {}, acces
                 Button(onClick = onQuickEntry, enabled = !busy) { Text(stringResource(R.string.quick_title)) }
                 if (account.isSignedIn) ScheduleUsage(config.usage, config.scheduleParseCost)
             }
+            SchedulePlanBanner(current, busy, viewModel)
             AnchorsEditor(current.profile.id, current.schedule.anchors, busy, viewModel::saveAnchors)
             if (current.canUndo) OutlinedButton(onClick = viewModel::undo, enabled = !busy) { Text(stringResource(R.string.smart_restore_previous)) }
             Text(stringResource(R.string.smart_advice_title), style = MaterialTheme.typography.titleLarge)
             Text(stringResource(R.string.smart_aasm), style = MaterialTheme.typography.bodySmall)
             Text(stringResource(R.string.smart_aasm_source), style = MaterialTheme.typography.bodySmall)
+            ScheduleAdvicePanel(current, busy, access, viewModel)
             if (current.findings.isEmpty()) Text(stringResource(R.string.smart_no_findings))
             current.findings.forEach { finding ->
                 Card(Modifier.fillMaxWidth()) {
@@ -82,7 +84,8 @@ fun SmartScheduleScreen(onBack: () -> Unit, onQuickEntry: () -> Unit = {}, acces
                         current.schedule.tasks.filter { it.id in finding.taskIds }.forEach { Text(it.name) }
                         finding.suggestion?.let { suggestion ->
                             Text(when (suggestion) {
-                                is ScheduleChange.AddTask, is ScheduleChange.SetAnchors -> stringResource(R.string.quick_preview)
+                                is ScheduleChange.AddTask, is ScheduleChange.SetAnchors, is ScheduleChange.RemoveTask -> stringResource(R.string.quick_preview)
+                                is ScheduleChange.SetWake -> stringResource(R.string.advise_suggest_wake, suggestion.times.values.first().toString())
                                 is ScheduleChange.SetBed -> stringResource(R.string.smart_suggest_bed, suggestion.times.values.first().toString())
                                 is ScheduleChange.MoveTask -> stringResource(R.string.smart_suggest_move, suggestion.start.toString())
                                 is ScheduleChange.ResizeTask -> stringResource(R.string.smart_suggest_resize, suggestion.durationMinutes)

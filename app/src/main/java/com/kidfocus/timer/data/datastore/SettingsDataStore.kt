@@ -52,8 +52,27 @@ class SettingsDataStore @Inject constructor(
         }.toMap()
     }
 
+    val schedulePlansJson: Flow<Map<String, String>> = context.dataStore.data.map { prefs ->
+        prefs.asMap().entries.mapNotNull { (key, value) ->
+            if (key.name.startsWith("schedule_plan_") && value is String) key.name.removePrefix("schedule_plan_") to value else null
+        }.toMap()
+    }
+
+    suspend fun saveSchedulePlansJson(rows: Map<String, String>) {
+        context.dataStore.edit { prefs -> rows.forEach { (profile, json) ->
+            val key = stringPreferencesKey("schedule_plan_$profile")
+            // Do not resurrect a synced plan after a manual anchor edit.
+            val anchors = prefs[stringPreferencesKey("schedule_anchors_$profile")]
+            val plan = runCatching { com.kidfocus.timer.data.schedule.SchedulePlanJson.decode(json) }.getOrNull()
+            prefs[key] = if (plan != null && anchors != null && !plan.matches(com.kidfocus.timer.data.schedule.ScheduleJson.decodeAnchors(anchors))) "null" else json
+        } }
+    }
+
     suspend fun saveScheduleAnchorsJson(rows: Map<String, String>) {
         context.dataStore.edit { prefs -> rows.forEach { (profile, json) ->
+            val planKey = stringPreferencesKey("schedule_plan_$profile")
+            val plan = prefs[planKey]?.let { runCatching { com.kidfocus.timer.data.schedule.SchedulePlanJson.decode(it) }.getOrNull() }
+            if (plan != null && !plan.matches(com.kidfocus.timer.data.schedule.ScheduleJson.decodeAnchors(json))) prefs[planKey] = "null"
             prefs[stringPreferencesKey("schedule_anchors_$profile")] = json
         } }
     }

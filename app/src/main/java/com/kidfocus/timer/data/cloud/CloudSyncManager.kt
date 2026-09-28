@@ -69,6 +69,7 @@ class CloudSyncManager @Inject constructor(
     private val alarmScheduler: AlarmScheduler,
     private val routineAlarmScheduler: RoutineAlarmScheduler,
     private val childProfileDao: ChildProfileDao,
+    private val schedulePlans: com.kidfocus.timer.data.schedule.SchedulePlansRepository,
     private val scheduleAnchors: com.kidfocus.timer.data.schedule.ScheduleAnchorsRepository,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -153,8 +154,8 @@ class CloudSyncManager @Inject constructor(
             ).hashCode()
         }
 
-    private val localRevision = combine(coreRevision, childProfileDao.observeAll(), scheduleAnchors.all) { core, profiles, anchors ->
-        31 * (31 * core + profiles.hashCode()) + anchors.hashCode()
+    private val localRevision = combine(coreRevision, childProfileDao.observeAll(), scheduleAnchors.all, schedulePlans.all) { core, profiles, anchors, plans ->
+        31 * (31 * (31 * core + profiles.hashCode()) + anchors.hashCode()) + plans.hashCode()
     }.stateIn(scope, SharingStarted.Eagerly, 0)
 
     private fun observeLocalChanges() {
@@ -234,7 +235,8 @@ class CloudSyncManager @Inject constructor(
                     "routineCompletions" to routineDao.getAllCompletionsForSync().map(RoutineCompletionEntity::toCloudMap),
                     "childProfiles" to childProfileDao.getAllForSync().map(ChildProfileEntity::toCloudMap),
                     "settings" to (settings.toCloudMap() + mapOf("scheduleAnchors" to scheduleAnchors.all.first()
-                        .mapValues { com.kidfocus.timer.data.schedule.ScheduleJson.anchorsMap(it.value) })),
+                        .mapValues { com.kidfocus.timer.data.schedule.ScheduleJson.anchorsMap(it.value) },
+                        "schedulePlans" to schedulePlans.all.first().mapValues { (_, plan) -> plan?.let(com.kidfocus.timer.data.schedule.SchedulePlanJson::toMap) })),
                 )
                 document(uid).set(payload).await()
                 lastAppliedRemoteMillis = now
@@ -288,6 +290,7 @@ class CloudSyncManager @Inject constructor(
             val cloudSettings = snapshot.get("settings") as? Map<*, *>
             if (cloudSettings != null) {
                 scheduleAnchors.applyRemote(cloudSettings["scheduleAnchors"])
+                schedulePlans.applyRemote(cloudSettings["schedulePlans"])
                 val local = settingsDataStore.settingsFlow.first()
                 settingsDataStore.saveSettings(
                     local.copy(

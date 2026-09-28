@@ -67,7 +67,9 @@ class SmartScheduleViewModelTest {
         every { routines.observeCompletionsSince(any<String>(), any<LocalDate>()) } returns flowOf(completions)
         every { anchors.observe(any()) } returns flowOf(ScheduleAnchors())
         coEvery { store.snapshot(any()) } returns null
-        return SmartScheduleViewModel(profiles, tasks, routines, anchors, mockk<ApplyScheduleUseCase>(), store)
+        val plans = mockk<com.kidfocus.timer.data.schedule.SchedulePlansRepository>()
+        every { plans.observe(any()) } returns flowOf(null)
+        return SmartScheduleViewModel(profiles, tasks, routines, anchors, mockk<ApplyScheduleUseCase>(), store, mockk<com.kidfocus.timer.data.remote.ScheduleAdviser>(), plans)
             .also { viewModel = it }
     }
 

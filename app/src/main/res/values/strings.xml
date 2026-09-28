@@ -519,4 +519,43 @@
     <string name="quick_crop_bottom">Mép dưới</string>
     <string name="quick_crop_left">Mép trái</string>
     <string name="quick_crop_right">Mép phải</string>
+
+    <!-- W4: parent-reviewed advice and gradual schedule plans -->
+    <string name="advise_title">Nhờ AI sắp lại · %1$d credit</string>
+    <string name="advise_privacy">Gửi lịch rút gọn, góp ý và số đếm routine cho AI. Không ghi tên bé hoặc trường trong tên hoạt động hay ghi chú. AI chỉ đề xuất; bạn duyệt từng dòng.</string>
+    <string name="advise_note">Ghi chú tuỳ chọn</string>
+    <string name="advise_note_hint">Không ghi tên/trường · %1$d/500</string>
+    <string name="advise_usage">Còn %1$d lượt theo quota · %2$d credit/lượt</string>
+    <string name="advise_send">Nhờ AI đề xuất</string>
+    <string name="advise_network_error">Chưa lấy được đề xuất. Kiểm tra mạng và thử lại; ghi chú vẫn được giữ.</string>
+    <string name="advise_removed">Đã loại: %1$s</string>
+    <string name="advise_invalid">Dữ liệu đề xuất không hợp lệ</string>
+    <string name="advise_high_conflict">Tăng góp ý mức Cao</string>
+    <string name="advise_school_protected">Chạm ca học cố định</string>
+    <string name="advise_study_protected">Không được xoá hoạt động thuộc nhóm học tập</string>
+    <string name="advise_fixes">Sửa được hoặc cải thiện: %1$s</string>
+    <string name="advise_no_fix">Chưa xác nhận sửa được góp ý nào</string>
+    <string name="advise_gradual_help">Mỗi bước %1$d phút, cách nhau %2$d ngày; chỉ áp dụng khi bạn duyệt.</string>
+    <string name="advise_gradual">Áp dụng dần</string>
+    <string name="advise_apply_selected">Áp dụng mục đã chọn</string>
+    <string name="advise_remove_title">Xác nhận xoá hoạt động</string>
+    <string name="advise_remove_confirm">Các hoạt động được đề xuất xoá sẽ bị bỏ khỏi những ngày đã chọn. Bạn có thể Hoàn tác sau khi áp dụng.</string>
+    <string name="advise_confirm">Xác nhận áp dụng</string>
+    <string name="advise_plan_step">Bước %1$d/%2$d: %3$s · %4$s</string>
+    <string name="advise_plan_due">Bước kế từ ngày %1$s; mở màn Góp ý để áp dụng.</string>
+    <string name="advise_cancel_plan">Bỏ kế hoạch</string>
+    <string name="advise_remove_task">Xoá khỏi ngày đã chọn</string>
+    <string name="advise_suggest_wake">Đổi giờ thức thành %1$s</string>
+    <string name="advise_tag_sleepy">Buồn ngủ trên lớp</string>
+    <string name="advise_tag_wake">Khó dậy buổi sáng</string>
+    <string name="advise_tag_evening">Hay quấy buổi tối</string>
+    <string name="advise_tag_homework">Bài tập kéo dài</string>
+    <string name="advise_tag_play">Ít thời gian chơi</string>
+    <string name="advise_rule_sleep">Thiếu thời gian ngủ</string>
+    <string name="advise_rule_weekend">Lệch giờ ngủ cuối tuần</string>
+    <string name="advise_rule_focus">Tập trung quá lâu</string>
+    <string name="advise_rule_morning">Hay trễ hoặc bỏ routine buổi sáng</string>
+    <string name="advise_disabled">AI sắp lịch đang tắt.</string>
+    <string name="advise_stale">Lịch đã thay đổi. Hãy lấy đề xuất mới trước khi áp dụng.</string>
+    <string name="advise_quota">Đã hết quota AI hôm nay. Ghi chú vẫn được giữ.</string>
 </resources>

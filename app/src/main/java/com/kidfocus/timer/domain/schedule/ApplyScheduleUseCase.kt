@@ -23,9 +23,31 @@ class ApplyScheduleUseCase(private val store: ScheduleStore, private val now: ()
         require(changes.isNotEmpty())
         val current = store.read(profileId)
         check(current == expected) { "Schedule changed; refresh before applying" }
+        val updated = prepare(profileId, current, changes, ageBand)
+        commit(profileId, current, updated, takeSnapshot = true)
+    }
+
+    /** No snapshots, storage or alarms: the very same validation used at commit. */
+    fun previewAdvice(profileId: String, current: ScheduleState, changes: List<ScheduleChange>, ageBand: String): ScheduleState =
+        prepare(profileId, current, changes, ageBand, advice = true)
+
+    suspend fun applyAdvice(profileId: String, expected: ScheduleState, changes: List<ScheduleChange>, ageBand: String): Unit = mutex.withLock {
+        check(store.read(profileId) == expected) { "Schedule changed; refresh before applying" }
+        val updated = previewAdvice(profileId, expected, changes, ageBand)
+        commit(profileId, expected, updated, takeSnapshot = true)
+    }
+
+    private fun prepare(profileId: String, current: ScheduleState, changes: List<ScheduleChange>, ageBand: String, advice: Boolean = false): ScheduleState {
+        require(changes.isNotEmpty())
+        if (advice) require(changes.none { it is ScheduleChange.AddTask || it is ScheduleChange.SetAnchors })
+        fun checkAnchorEdits(times: List<Map<java.time.DayOfWeek, java.time.LocalTime>>) {
+            require(times.flatMap { it.entries }.groupBy { it.key }.values.all { rows -> rows.map { it.value }.distinct().size == 1 })
+        }
+        checkAnchorEdits(changes.filterIsInstance<ScheduleChange.SetBed>().map { it.times })
+        checkAnchorEdits(changes.filterIsInstance<ScheduleChange.SetWake>().map { it.times })
         var tasks = current.tasks
         var anchors = current.anchors
-        changes.forEach { change ->
+        changes.filterNot { it is ScheduleChange.TaskChange }.forEach { change ->
             when (change) {
                 is ScheduleChange.AddTask -> {
                     require(change.task.id > 0 && tasks.none { it.id == change.task.id })
@@ -34,38 +56,79 @@ class ApplyScheduleUseCase(private val store: ScheduleStore, private val now: ()
                     tasks = tasks + change.task
                 }
                 is ScheduleChange.SetAnchors -> anchors = change.anchors
-                is ScheduleChange.SetBed -> anchors = anchors.copy(bed = anchors.bed + change.times)
-                is ScheduleChange.TaskChange -> {
-                    val task = tasks.single { it.id == change.taskId }
-                    val selected = DayCodec.toCalendar(change.days)
-                    require(selected.isNotEmpty() && task.daysOfWeek.containsAll(selected))
-                    val changed = when (change) {
-                        is ScheduleChange.MoveTask -> task.copy(hour = change.start.hour, minute = change.start.minute, daysOfWeek = selected)
-                        is ScheduleChange.ResizeTask -> task.copy(focusDurationMinutes = change.durationMinutes, daysOfWeek = selected)
-                    }
-                    val remaining = task.daysOfWeek - selected
-                    tasks = tasks.filterNot { it.id == task.id } + if (remaining.isEmpty()) listOf(changed)
-                        else listOf(task.copy(daysOfWeek = remaining), changed.copy(id = ScheduleIds.newId()))
-                }
+                is ScheduleChange.SetBed -> { require(change.times.isNotEmpty()); anchors = anchors.copy(bed = anchors.bed + change.times) }
+                is ScheduleChange.SetWake -> { require(change.times.isNotEmpty()); anchors = anchors.copy(wake = anchors.wake + change.times) }
+                is ScheduleChange.TaskChange -> error("Unreachable")
             }
+        }
+        // Apply MOVE + RESIZE to the same occurrence without losing the original reference
+        // after a recurring task is split. Preserve the original id on unchanged days.
+        changes.filterIsInstance<ScheduleChange.TaskChange>().groupBy { it.taskId }.forEach { (id, edits) ->
+            val task = tasks.single { it.id == id }
+            edits.forEach { require(it.days.isNotEmpty() && DayCodec.fromCalendar(task.daysOfWeek).containsAll(it.days)) }
+            if (advice && edits.any { it is ScheduleChange.RemoveTask }) {
+                require(task.taskType.category != com.kidfocus.timer.domain.model.TaskCategory.STUDY) { "STUDY_PROTECTED" }
+            }
+            edits.forEachIndexed { index, first -> edits.drop(index + 1).filter { second -> first.days.intersect(second.days).isNotEmpty() }.forEach { second ->
+                require((first !is ScheduleChange.RemoveTask && second !is ScheduleChange.RemoveTask) || (first is ScheduleChange.RemoveTask && second is ScheduleChange.RemoveTask))
+                if (first is ScheduleChange.MoveTask && second is ScheduleChange.MoveTask) require(first.start == second.start)
+                if (first is ScheduleChange.ResizeTask && second is ScheduleChange.ResizeTask) require(first.durationMinutes == second.durationMinutes)
+            } }
+            val occurrences = task.daysOfWeek.mapNotNull { day ->
+                var updated: ScheduledTask? = task.copy(daysOfWeek = setOf(day))
+                edits.filter { DayCodec.fromCalendar(day) in it.days }.forEach { change ->
+                    when (change) {
+                        is ScheduleChange.RemoveTask -> updated = null
+                        is ScheduleChange.MoveTask -> updated = checkNotNull(updated).copy(hour = change.start.hour, minute = change.start.minute)
+                        is ScheduleChange.ResizeTask -> updated = checkNotNull(updated).copy(focusDurationMinutes = change.durationMinutes)
+                    }
+                }
+                updated
+            }
+            val groups = occurrences.groupBy { it.copy(daysOfWeek = emptySet()) }.map { (value, rows) -> value.copy(daysOfWeek = rows.flatMap { it.daysOfWeek }.toSet()) }
+                .sortedByDescending { it.hour == task.hour && it.minute == task.minute && it.focusDurationMinutes == task.focusDurationMinutes }
+            tasks = tasks.filterNot { it.id == id } + groups.mapIndexed { index, row -> if (index == 0) row else row.copy(id = ScheduleIds.newId()) }
         }
         val updated = ScheduleState(tasks.sortedBy { it.id }, anchors)
         validate(profileId, updated)
-        // W2 imports are parent-reviewed in preview. AddTask/SetAnchors may introduce
-        // high findings; display warnings there and let the parent choose. W1 offline
-        // suggestions still enforce the original guard. Never mix the two flows.
         val importOnly = changes.all { it is ScheduleChange.AddTask || it is ScheduleChange.SetAnchors }
         require(importOnly || changes.none { it is ScheduleChange.AddTask || it is ScheduleChange.SetAnchors })
-        // Offline proposals must not add high-severity violations.
         val advisor = ScheduleAdvisor()
         fun highCounts(state: ScheduleState) = advisor.advise(state.tasks, state.anchors, ageBand)
             .filter { it.severity == Severity.HIGH }.flatMap { finding -> finding.days.map { finding.ruleId to it } }
             .groupingBy { it }.eachCount()
         val beforeHigh = highCounts(current)
-        val afterHigh = highCounts(updated)
-        require(importOnly || afterHigh.all { (key, count) -> count <= (beforeHigh[key] ?: 0) }) { "Suggestion introduces a high-severity conflict" }
-        commit(profileId, current, updated, takeSnapshot = true)
+        if (advice) {
+            require(updated.anchors.school == current.anchors.school) { "SCHOOL_PROTECTED" }
+            changes.forEach { change ->
+                when (change) {
+                    is ScheduleChange.MoveTask, is ScheduleChange.ResizeTask -> {
+                        val edit = change as ScheduleChange.TaskChange
+                        val original = current.tasks.single { it.id == edit.taskId }
+                        edit.days.forEach { day ->
+                            val time = (change as? ScheduleChange.MoveTask)?.start ?: java.time.LocalTime.of(original.hour, original.minute)
+                            val duration = (change as? ScheduleChange.ResizeTask)?.durationMinutes ?: original.focusDurationMinutes
+                            require(!touchesSchool(current.anchors, day, time.minutes(), duration + original.breakDurationMinutes)) { "SCHOOL_PROTECTED" }
+                        }
+                    }
+                    is ScheduleChange.SetBed -> change.times.forEach { (day, _) ->
+                        require(current.anchors.bed[day] != null)
+                        require(!touchesSchool(current.anchors, day, checkNotNull(updated.anchors.bedMinute(day)), 1)) { "SCHOOL_PROTECTED" }
+                    }
+                    is ScheduleChange.SetWake -> change.times.forEach { (day, time) ->
+                        require(current.anchors.wake[day] != null)
+                        require(!touchesSchool(current.anchors, day, time.minutes(), 1)) { "SCHOOL_PROTECTED" }
+                    }
+                    else -> Unit
+                }
+            }
+        }
+        require(importOnly || highCounts(updated).all { (key, count) -> count <= (beforeHigh[key] ?: 0) }) { "HIGH_INCREASED" }
+        return updated
     }
+
+    private fun touchesSchool(anchors: ScheduleAnchors, day: java.time.DayOfWeek, startMinute: Int, duration: Int): Boolean =
+        intervalsForDay(emptyList(), anchors, day).any { it.school != null && startMinute < it.end && it.start < startMinute + duration }
 
     suspend fun saveAnchors(profileId: String, expected: ScheduleState, anchors: ScheduleAnchors): Unit = mutex.withLock {
         check(store.read(profileId) == expected)

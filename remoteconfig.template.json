@@ -129,6 +129,18 @@
         "value": "3"
       },
       "valueType": "NUMBER"
+    },
+    "ai_schedule_advise_cost": {
+      "defaultValue": {
+        "value": "2"
+      },
+      "valueType": "NUMBER"
+    },
+    "ai_schedule_advise_model": {
+      "defaultValue": {
+        "value": "google/gemini-2.5-flash-lite"
+      },
+      "valueType": "STRING"
     }
   },
   "version": {

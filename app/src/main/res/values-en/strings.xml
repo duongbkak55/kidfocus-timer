@@ -493,4 +493,43 @@
     <string name="quick_crop_bottom">Bottom edge</string>
     <string name="quick_crop_left">Left edge</string>
     <string name="quick_crop_right">Right edge</string>
+
+    <!-- W4: parent-reviewed advice and gradual schedule plans -->
+    <string name="advise_title">Ask AI to rearrange · %1$d credits</string>
+    <string name="advise_privacy">Send a compact schedule, findings and routine counts to AI. Omit child and school names from activity names and notes. AI proposes; you approve each row.</string>
+    <string name="advise_note">Optional note</string>
+    <string name="advise_note_hint">Omit names/schools · %1$d/500</string>
+    <string name="advise_usage">%1$d requests available · %2$d credits/request</string>
+    <string name="advise_send">Ask AI for suggestions</string>
+    <string name="advise_network_error">Suggestions could not be loaded. Check your connection and retry; your note is kept.</string>
+    <string name="advise_removed">Rejected: %1$s</string>
+    <string name="advise_invalid">Invalid suggestion data</string>
+    <string name="advise_high_conflict">Adds a high-severity finding</string>
+    <string name="advise_school_protected">Touches a fixed school block</string>
+    <string name="advise_study_protected">Study activities cannot be removed</string>
+    <string name="advise_fixes">Fixes or improves: %1$s</string>
+    <string name="advise_no_fix">No verified finding improvement</string>
+    <string name="advise_gradual_help">Each step is %1$d minutes, %2$d days apart; you approve every step.</string>
+    <string name="advise_gradual">Apply gradually</string>
+    <string name="advise_apply_selected">Apply selected</string>
+    <string name="advise_remove_title">Confirm activity removal</string>
+    <string name="advise_remove_confirm">The proposed removals delete activities only on the selected days. You can undo after applying.</string>
+    <string name="advise_confirm">Confirm apply</string>
+    <string name="advise_plan_step">Step %1$d/%2$d: %3$s · %4$s</string>
+    <string name="advise_plan_due">Next step from %1$s; open Weekly advice to apply.</string>
+    <string name="advise_cancel_plan">Discard plan</string>
+    <string name="advise_remove_task">Remove from selected days</string>
+    <string name="advise_suggest_wake">Set wake time to %1$s</string>
+    <string name="advise_tag_sleepy">Sleepy in class</string>
+    <string name="advise_tag_wake">Hard to wake up</string>
+    <string name="advise_tag_evening">Fussy in the evening</string>
+    <string name="advise_tag_homework">Homework takes too long</string>
+    <string name="advise_tag_play">Little play time</string>
+    <string name="advise_rule_sleep">Short sleep</string>
+    <string name="advise_rule_weekend">Weekend bedtime difference</string>
+    <string name="advise_rule_focus">Focus blocks too long</string>
+    <string name="advise_rule_morning">Late or missed morning routines</string>
+    <string name="advise_disabled">AI scheduling is disabled.</string>
+    <string name="advise_stale">The schedule changed. Request new suggestions before applying.</string>
+    <string name="advise_quota">Today’s AI quota is exhausted. Your note is kept.</string>
 </resources>

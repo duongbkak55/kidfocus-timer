@@ -41,6 +41,7 @@ class RoomScheduleStoreTest {
         database = Room.inMemoryDatabaseBuilder(RuntimeEnvironment.getApplication(), SessionDatabase::class.java).allowMainThreadQueries().build()
         settings = mockk<SettingsDataStore>()
         every { settings.scheduleAnchorsJson } returns anchorRows
+        every { settings.schedulePlansJson } returns kotlinx.coroutines.flow.flowOf(emptyMap())
         coEvery { settings.saveScheduleAnchorsJson(any()) } coAnswers { anchorRows.value = anchorRows.value + firstArg<Map<String, String>>() }
         coEvery { settings.getScheduleSnapshotJson(any()) } coAnswers { snapshotJson }
         coEvery { settings.saveScheduleSnapshotJson(any(), any()) } coAnswers { snapshotJson = secondArg() }
@@ -115,6 +116,50 @@ class RoomScheduleStoreTest {
         assertEquals(before, store.read("default"))
         assertEquals(other, store.read("other").tasks.single())
         verify(exactly = 1) { alarms.cancelTask(added) }
+    }
+
+    @Test fun `W4 multiple edits and removal commit in Room undo restores alarms and other profile`() = runTest {
+        val tv = task.copy(id = 13, taskType = com.kidfocus.timer.domain.model.TaskType.TV_TIME, hour = 17, minute = 0)
+        val other = task.copy(id = 99, childProfileId = "other")
+        database.scheduledTaskDao().insertAll(listOf(task, tv, other).map(ScheduledTaskEntity::fromDomain))
+        anchorsRepository.save("default", anchors)
+        val before = store.read("default")
+        val useCase = ApplyScheduleUseCase(store)
+        useCase.applyAdvice("default", before, listOf(ScheduleChange.MoveTask(12, setOf(DayOfWeek.MONDAY), LocalTime.of(19, 0)),
+            ScheduleChange.ResizeTask(12, setOf(DayOfWeek.MONDAY), 20), ScheduleChange.RemoveTask(13, days),
+            ScheduleChange.SetWake(mapOf(DayOfWeek.TUESDAY to LocalTime.of(6, 30)))), "l1")
+        val after = store.read("default")
+        assertTrue(after.tasks.none { it.id == 13L })
+        assertEquals(20, after.tasks.single { 2 in it.daysOfWeek }.focusDurationMinutes)
+        assertEquals(other, store.read("other").tasks.single())
+        verify(exactly = 1) { alarms.cancelTask(tv) }
+        useCase.undo("default")
+        assertEquals(before, store.read("default"))
+        assertEquals(other, store.read("other").tasks.single())
+    }
+
+    @Test fun `W4 failed anchor write restores cancelled plan along with Room and snapshot`() = runTest {
+        val plan = SchedulePlan.create(PlanKind.BED, days, LocalTime.of(21, 30), anchors, java.time.LocalDate.now())
+        val planJson = com.kidfocus.timer.data.schedule.SchedulePlanJson.encode(plan)
+        val planRows = MutableStateFlow(mapOf("default" to planJson))
+        every { settings.schedulePlansJson } returns planRows
+        coEvery { settings.saveSchedulePlansJson(any()) } coAnswers { planRows.value = planRows.value + firstArg<Map<String, String>>() }
+        database.scheduledTaskDao().insert(ScheduledTaskEntity.fromDomain(task))
+        anchorsRepository.save("default", anchors)
+        val before = store.read("default")
+        coEvery { settings.saveScheduleAnchorsJson(any()) } coAnswers {
+            val values = firstArg<Map<String, String>>()
+            anchorRows.value = anchorRows.value + values
+            if (ScheduleJson.decodeAnchors(values.getValue("default")).bed != anchors.bed) {
+                planRows.value = mapOf("default" to "null")
+                error("injected failure after plan cancellation")
+            }
+        }
+        assertTrue(runCatching { ApplyScheduleUseCase(store).applyAdvice("default", before, listOf(ScheduleChange.SetBed(plan.timesAt(1))), "l1") }.isFailure)
+        assertEquals(before, store.read("default"))
+        assertEquals(planJson, planRows.value["default"])
+        assertNull(snapshotJson)
+        verify(exactly = 0) { alarms.scheduleAll(any()) }
     }
 
 }

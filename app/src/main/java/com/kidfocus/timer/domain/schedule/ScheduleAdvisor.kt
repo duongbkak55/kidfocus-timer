@@ -15,10 +15,12 @@ sealed interface ScheduleChange {
     data class AddTask(val task: ScheduledTask) : ScheduleChange
     data class SetAnchors(val anchors: ScheduleAnchors) : ScheduleChange
     data class SetBed(val times: Map<DayOfWeek, LocalTime>) : ScheduleChange
+    data class SetWake(val times: Map<DayOfWeek, LocalTime>) : ScheduleChange
     sealed interface TaskChange : ScheduleChange {
         val taskId: Long
         val days: Set<DayOfWeek>
     }
+    data class RemoveTask(override val taskId: Long, override val days: Set<DayOfWeek>) : TaskChange
     data class MoveTask(override val taskId: Long, override val days: Set<DayOfWeek>, val start: LocalTime) : TaskChange
     data class ResizeTask(override val taskId: Long, override val days: Set<DayOfWeek>, val durationMinutes: Int) : TaskChange
 }

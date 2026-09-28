@@ -13,6 +13,7 @@ import com.kidfocus.timer.domain.schedule.ScheduleStore
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 
 @Singleton
@@ -32,6 +33,7 @@ class RoomScheduleStore @Inject constructor(
         profileId, snapshot?.let(ScheduleJson::encodeSnapshot))
 
     override suspend fun replace(profileId: String, expected: ScheduleState, state: ScheduleState) {
+        val previousPlan = settings.schedulePlansJson.first()[profileId]
         var anchorsWritten = false
         try {
             database.withTransaction {
@@ -44,7 +46,10 @@ class RoomScheduleStore @Inject constructor(
             }
         } catch (error: Exception) {
             // Room rolls back SQL. DataStore is separate: compensate even when cancelled.
-            if (anchorsWritten) withContext(NonCancellable) { anchors.save(profileId, expected.anchors) }
+            if (anchorsWritten) withContext(NonCancellable) {
+                anchors.save(profileId, expected.anchors)
+                if (previousPlan != null) settings.saveSchedulePlansJson(mapOf(profileId to previousPlan))
+            }
             throw error
         }
     }
