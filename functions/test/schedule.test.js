@@ -272,7 +272,7 @@ test("free PARSE cap reserves transactionally under concurrency and leaves chat 
   assert.ok(results.filter((r) => r.status === "rejected").every((r) => r.reason.message === "SCHEDULE_DAILY_LIMIT_REACHED"));
   assert.equal(h.calls(), 3); assert.equal(h.db.usage("uid_parent").scheduleParses, 3);
   assert.equal(results.find((r) => r.status === "fulfilled").value.usage.remainingScheduleParses, 0);
-  await gateway.reserveQuota(gateway.identityFromEntitlement("parent", {}, 100), {...config, scheduleFreeDailyParses: 3},
+  await gateway.reserveQuota({...gateway.identityFromEntitlement("parent", {}, 100), quotaDate: "2026-09-28"}, {...config, scheduleFreeDailyParses: 3},
       {id: "chat", creditCost: 1, dailyLimit: 10}, "chat-1", h.db);
   assert.equal(h.db.usage("uid_parent").questions, 4); assert.equal(h.db.usage("uid_parent").scheduleParses, 3);
 });
