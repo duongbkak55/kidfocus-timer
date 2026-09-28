@@ -1,0 +1,37 @@
+G3 retry with wireless debugging — 2026-09-28
+Branch: feature/smart-schedule-w4
+Reviewed source commit: ce0220c
+Previous documentation commit: 21d19fc
+
+Actual results:
+
+$ adb devices -l
+List of devices attached
+
+$ adb mdns services
+List of discovered mdns services
+
+$ adb version
+Android Debug Bridge version 1.0.41
+Version 37.0.0-14910828
+Running on Darwin 25.5.0 (arm64)
+
+$ adb mdns check
+mdns daemon version [adb discovery 0.0.0]
+
+Selected fields from adb server-status:
+usb_backend: LIBUSB
+mdns_backend: LIBADBMDNS
+version: "37.0.0"
+mdns_enabled: true
+
+No device or pairing/connect service was discovered. No endpoint or pairing code
+was supplied. No adb pair/connect/install/shell command targeting the phone was
+run in this retry. The phone was not controlled or modified.
+
+Required manual information: pairing IP:port plus the current six-digit pairing
+code from Wireless debugging > Pair device with pairing code; connection IP:port
+from the main Wireless debugging screen. Keep the pairing dialog open while
+pairing. Pairing codes and private adb keys must not be committed in evidence.
+
+A–I remain SKIP. No screenshots or actual logcat capture were obtained.

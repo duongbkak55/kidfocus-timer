@@ -1,10 +1,12 @@
-# Báo cáo G3 — Máy thật: bị chặn ở USB authorization
+# Báo cáo G3 — Chưa kết nối được thiết bị (USB / wireless)
 
 Ngày: 2026-09-28 · Người chạy: Codex · Reviewer: Claude (Cowork) · Nghiệm thu: Duong
 
 ## Kết luận
 
-**G3 chưa thực hiện được; không kết luận PASS/FAIL ứng dụng.** Dừng tại bước chuẩn bị vì adb báo `device still authorizing` sau khi kết nối ban đầu hiện `device`. Task G3 yêu cầu dừng nếu cần xác nhận USB/thao tác tay; không thử tiếp sau khi đọc kết quả này. Duong cần kiểm tra điện thoại và bấm **Allow USB debugging** nếu hộp thoại đang hiện, rồi cho chạy tiếp G3.
+**G3 chưa thực hiện được; không kết luận PASS/FAIL ứng dụng.** Lần thử lại sau khi Duong bật wireless debugging: `adb devices -l` không có thiết bị, `adb mdns services` không có dịch vụ pairing/connect. ADB 37.0.0 trên Mac có mDNS bật và daemon trả lời; chưa có địa chỉ IP/cổng hoặc mã ghép đôi để kết nối. Dừng trước cài APK vì cần thao tác/thông tin từ điện thoại. A–I vẫn SKIP.
+
+Lần thử USB trước đó dừng vì `device still authorizing`; bằng chứng cũ được giữ ở `g3/00-adb-authorization.txt`. Các thông tin máy/build trong bảng chuẩn bị bên dưới thuộc lần thử trước, không phải xác minh thiết bị wireless hiện tại.
 
 Đã đọc `CLAUDE_AI_SCHEDULE_TASK_G3.md` và review W4 G2 PASS. Làm trên `feature/smart-schedule-w4`, HEAD code `ce0220c`; không sửa code, không đăng nhập Google, không mua, không gọi OpenRouter/Firebase production, không push/merge/deploy hoặc reboot. Không xoá dữ liệu, không đổi mạng/font/xoay màn trên điện thoại.
 
@@ -32,6 +34,7 @@ Bằng chứng:
 
 - [Kết quả adb và lý do dừng](g3/00-adb-authorization.txt).
 - [Log build debug và checksum](g3/01-build-debug.txt).
+- [Lần thử lại wireless và chẩn đoán adb](g3/02-wireless-preflight.txt).
 
 ## Kịch bản A–I
 
@@ -55,6 +58,14 @@ Duong cần kiểm tra/cấp xác nhận USB debugging trên điện thoại. N�
 
 Chưa tìm thấy lỗi app vì **chưa chạy A–I**. Không có crash logcat thực tế để trích dẫn. Không dùng kết quả unit/G2 thay G3, không tạo ảnh/log giả.
 
+## Lần thử lại wireless — 2026-09-28
+
+Duong yêu cầu thử lại sau khi bật Wireless debugging. Đã chạy lại inventory adb, discovery mDNS và kiểm tra phiên bản/server trên Mac. Cả danh sách thiết bị và dịch vụ đều trống; mDNS đang bật. Không đoán địa chỉ, không quét mạng, không chạy pair/connect khi thiếu endpoint, không bật/tắt mạng điện thoại.
+
+Cần Duong mở **Wireless debugging → Pair device with pairing code**, cung cấp **IP:cổng ghép đôi + mã 6 số** đang hiển thị và **IP:cổng kết nối** ở màn Wireless debugging chính; giữ hộp thoại ghép đôi mở trong lúc kết nối. Không lưu mã ghép đôi hoặc khóa adb vào repo. Chưa biết từ kết quả này điện thoại đã ghép đôi với Mac hay chưa, nên không kết luận có lỗi ứng dụng hoặc lỗi thiết lập cụ thể.
+
+Không build lại APK trong lần này; build PASS/checksum của lần trước được giữ nguyên, chưa install. Chưa có screenshot, UI dump, alarm check hoặc crash logcat. Không sửa code/đăng nhập/mua/gọi production/push/merge/deploy/reboot. Chỉ cập nhật báo cáo và thêm bằng chứng wireless. Cần kết nối thành công rồi chạy lại toàn bộ A–I; chưa có kịch bản nào được tính PASS.
+
 ## Phạm vi commit
 
-Chỉ `docs/g3/00-adb-authorization.txt`, `docs/g3/01-build-debug.txt` và báo cáo này. Không commit task/review có sẵn, APK, code hoặc `.omc`. Giữ nguyên 19 đường dẫn tracked intentional từ trước; không reset/stash.
+Commit USB trước gồm `docs/g3/00-adb-authorization.txt`, `docs/g3/01-build-debug.txt` và báo cáo này. Commit thử lại chỉ cập nhật báo cáo và thêm `docs/g3/02-wireless-preflight.txt`. Không commit task/review có sẵn, APK, code hoặc `.omc`. Giữ nguyên 19 đường dẫn tracked intentional từ trước; không reset/stash.
