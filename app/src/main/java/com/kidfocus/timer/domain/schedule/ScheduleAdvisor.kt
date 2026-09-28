@@ -63,8 +63,8 @@ class ScheduleAdvisor {
         nowMinute: Int = LocalTime.now().minutes(),
     ): List<Finding> {
         val findings = mutableListOf<Finding>()
-        val minSleep = ScheduleThresholds.sleepMinutes.getValue(ageBand)
-        val maxFocus = ScheduleThresholds.focusMinutes.getValue(ageBand)
+        val minSleep = ScheduleThresholds.sleepMinutes.getOrElse(ageBand) { ScheduleThresholds.sleepMinutes.getValue("4-5") }
+        val maxFocus = ScheduleThresholds.focusMinutes.getOrElse(ageBand) { ScheduleThresholds.focusMinutes.getValue("4-5") }
         val enabled = tasks.filter { it.enabled }
         DayOfWeek.entries.forEach { day ->
             val bed = anchors.bedMinute(day)
@@ -140,7 +140,8 @@ class ScheduleAdvisor {
             }
         }
         val recent = completions.filter { it.date in today.minusDays(ScheduleThresholds.HISTORY_DAYS - 1)..today }.associateBy { it.routineId to it.date }
-        routines.filter { it.deadlineMinutes < ScheduleThresholds.MORNING_END_MINUTES }.forEach { routine ->
+        val trackedRoutineIds = recent.values.mapTo(mutableSetOf()) { it.routineId }
+        routines.filter { it.id in trackedRoutineIds && it.deadlineMinutes < ScheduleThresholds.MORNING_END_MINUTES }.forEach { routine ->
             val badDates = (0 until ScheduleThresholds.MORNING_PATTERN_DAYS).map { today.minusDays(it) }.filter { date ->
                 if (date < routine.createdDate || date.dayOfWeek !in routine.days) return@filter false
                 val status = recent[routine.id to date]?.status

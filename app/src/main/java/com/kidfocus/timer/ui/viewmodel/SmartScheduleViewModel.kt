@@ -1,5 +1,6 @@
 package com.kidfocus.timer.ui.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kidfocus.timer.data.database.ChildProfileEntity
@@ -44,15 +45,23 @@ class SmartScheduleViewModel @Inject constructor(
         combine(tasks.allTasks, anchors.observe(profile.id), routines.observeAll(),
             routines.observeCompletionsSince(profile.id, LocalDate.now().minusDays(ScheduleThresholds.HISTORY_DAYS - 1)), clock) { rows, hours, routineRows, completions, now ->
             val scoped = rows.filter { it.childProfileId == profile.id }.sortedBy { it.id }
-            val patterns = routineRows.filter { it.childProfileId == profile.id && it.enabled }.map {
-                RoutinePattern(it.id, DayCodec.fromMask(it.repeatDaysMask), it.deadlineMinutes, RoutineTime.dateAt(it.createdAtMillis))
+            val patterns = routineRows.filter { it.childProfileId == profile.id && it.enabled }.mapNotNull {
+                runCatching {
+                    RoutinePattern(it.id, DayCodec.fromMask(it.repeatDaysMask), it.deadlineMinutes, RoutineTime.dateAt(it.createdAtMillis))
+                }.getOrNull()
             }
             val observations = completions.mapNotNull {
                 runCatching { RoutineObservation(it.routineId, LocalDate.parse(it.occurrenceDate), it.status) }.getOrNull()
             }
             val schedule = ScheduleState(scoped, hours)
             val snapshot = store.snapshot(profile.id)
-            SmartScheduleUiState(profile, schedule, ScheduleAdvisor().advise(scoped, hours, profile.ageBand, patterns, observations, now.toLocalDate(), now.toLocalTime().minutes()),
+            val findings = runCatching {
+                ScheduleAdvisor().advise(scoped, hours, profile.ageBand, patterns, observations, now.toLocalDate(), now.toLocalTime().minutes())
+            }.getOrElse { error ->
+                Log.w("SmartScheduleViewModel", "Unable to evaluate weekly schedule", error)
+                emptyList()
+            }
+            SmartScheduleUiState(profile, schedule, findings,
                 snapshot != null && snapshot.applied == schedule && System.currentTimeMillis() - snapshot.savedAtMillis in 0..604_800_000L)
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)

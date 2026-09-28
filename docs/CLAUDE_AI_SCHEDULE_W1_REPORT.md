@@ -112,3 +112,45 @@ Lần đầu shell dùng Java 11 nên Gradle bị chặn; chạy lại bằng JD
 Đã lưu baseline trước khi sửa. Chỉ stage W1; với file trùng phạm vi, stage patch chênh lệch baseline→W1 để các thay đổi release/Learning có sẵn nằm ngoài commit. Không dùng `git add -A`. Đã kiểm tra: đúng 19 đường dẫn tracked còn unstaged như baseline; 14 file không trùng phạm vi giữ nguyên từng byte; toàn bộ bản vá trước W1 vẫn reverse-check thành công (kiểm tra chỉ đọc). Manifest/schema/migration không xuất hiện trong staged diff.
 
 Các tài liệu context/design/task có sẵn, `.omc`, file mới do phiên khác tạo và thay đổi không thuộc W1 không được stage. Không reset/stash/checkout file không liên quan. Không push.
+
+
+## Fixes G2
+
+Ngày: 2026-09-28 · Review nguồn: `docs/CLAUDE_AI_SCHEDULE_W1_FIXES.md`, commit `6ab06e3`.
+Phạm vi duy nhất của commit tiếp theo: F1–F3, test hồi quy và mục báo cáo này.
+
+- **F1:** `MORNING_LATE_PATTERN` chỉ đánh giá routine có ít nhất một completion của chính routine đó trong cửa sổ 14 ngày (today−13 đến today, gồm hai đầu). Routine chưa được tick bị bỏ qua; routine có bằng chứng sử dụng vẫn suy ra MISSED theo deadline như trước.
+- **F2:** action hoàn thành và contentIntent dùng requestCode hash Long như RoutineAlarmScheduler, cùng data URI `kidfocus://routine/{id}/{occurrenceDate}/complete` và `/open`. ID và ngày trong extras của action hoàn thành được giữ đúng, không bị FLAG_UPDATE_CURRENT ghi đè bởi routine/ngày khác.
+- **F3:** ageBand không nhận diện được dùng ngưỡng `4-5` (sleep 600 phút / focus 20 phút); RoutinePattern dùng mapNotNull + runCatching, bỏ mask ngoài 0..127; lời gọi advisor trong ViewModel được bọc runCatching, lỗi trả findings rỗng và ghi log cảnh báo, giữ state flow để cập nhật tiếp.
+
+File thay đổi:
+
+- `app/src/main/java/com/kidfocus/timer/domain/schedule/ScheduleAdvisor.kt`
+- `app/src/main/java/com/kidfocus/timer/service/RoutineNotificationManager.kt`
+- `app/src/main/java/com/kidfocus/timer/ui/viewmodel/SmartScheduleViewModel.kt`
+- `app/src/test/java/com/kidfocus/timer/domain/schedule/ScheduleAdvisorTest.kt`
+- `app/src/test/java/com/kidfocus/timer/service/RoutineNotificationManagerTest.kt` (mới)
+- `app/src/test/java/com/kidfocus/timer/ui/viewmodel/SmartScheduleViewModelTest.kt` (mới)
+- `docs/CLAUDE_AI_SCHEDULE_W1_REPORT.md` (chỉ bổ sung mục này)
+
+Test hồi quy:
+
+- Routine 0 completion với 7 ngày đã qua deadline không có MORNING_LATE_PATTERN; biên 13/14 ngày, future và completion của routine khác không kích hoạt sai. Điều chỉnh test suy ra MISSED cũ để có completion chứng minh đang sử dụng tick.
+- Robolectric: hai ID lớn có cùng 32 bit thấp tạo hai PendingIntent complete/open riêng biệt, kiểm tra hash/URI/component/action/extras; ngày occurrence mới không ghi đè extras ngày cũ.
+- Advisor với ageBand lạ/rỗng cho cùng kết quả với `4-5`, kiểm tra cả ngưỡng ngủ và focus.
+- ViewModel với mask −1/128/Int.MAX_VALUE bỏ qua routine hỏng, mask 0/127 vẫn xử lý được; ageBand cũ vẫn có finding theo fallback; cố tình gây exception advisor để kiểm tra findings rỗng + log và phục hồi ở lần cập nhật kế tiếp.
+
+Kết quả kiểm tra G2:
+
+```sh
+JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home ./gradlew testDebugUnitTest assembleDebug lintDebug
+git diff --check
+git diff --cached --check
+```
+
+- **PASS** — BUILD SUCCESSFUL trong 55 giây; 65 task (24 executed / 41 up-to-date).
+- **172 test pass**, 0 failure/error/skipped; thêm 8 test mới so với W1 (và cập nhật 1 test cũ theo điều kiện F1). Ba suite trực tiếp: ScheduleAdvisorTest 22, RoutineNotificationManagerTest 2, SmartScheduleViewModelTest 3.
+- Lint: 0 error/fatal, 203 warning trên toàn working tree; assembleDebug tạo APK thành công.
+- `git diff --check` và `git diff --cached --check`: sạch.
+- Giữ nguyên từng byte toàn bộ 19 file tracked có thay đổi sẵn lúc bắt đầu G2; chỉ stage đúng 7 file liệt kê ở trên. Phần W1_REPORT trước mục Fixes G2 không bị chỉnh sửa.
+- Cùng branch `feature/smart-schedule-w1`; commit mới chỉ F1–F3. Không push, không sửa Manifest/Room/permission, không gọi AI, không sửa `.omc` hoặc thực hiện backlog ngoài F1–F3.

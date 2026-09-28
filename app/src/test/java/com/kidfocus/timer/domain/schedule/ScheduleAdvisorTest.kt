@@ -115,8 +115,34 @@ class ScheduleAdvisorTest {
         assertTrue(advisor.advise(emptyList(), hours(), "l1", listOf(routine()), completions, today, 8 * 60).none { it.ruleId == RuleId.MORNING_LATE_PATTERN })
     }
     @Test fun `missing occurrences inferred only since creation and after deadline`() {
-        val fresh = routine().copy(createdDate = today.minusDays(2))
-        assertTrue(advisor.advise(emptyList(), hours(), "l1", listOf(fresh), today = today, nowMinute = 6 * 60).none { it.ruleId == RuleId.MORNING_LATE_PATTERN })
-        assertEquals(3, advisor.advise(emptyList(), hours(), "l1", listOf(fresh), today = today, nowMinute = 8 * 60).single { it.ruleId == RuleId.MORNING_LATE_PATTERN }.params["count"])
+        val fresh = routine().copy(createdDate = today.minusDays(3))
+        val completions = listOf(RoutineObservation(fresh.id, fresh.createdDate, "ON_TIME"))
+        assertTrue(advisor.advise(emptyList(), hours(), "l1", listOf(fresh), completions, today, 6 * 60).none { it.ruleId == RuleId.MORNING_LATE_PATTERN })
+        assertEquals(3, advisor.advise(emptyList(), hours(), "l1", listOf(fresh), completions, today, 8 * 60).single { it.ruleId == RuleId.MORNING_LATE_PATTERN }.params["count"])
+    }
+
+    @Test fun `morning routine with no completion does not infer seven missed days`() {
+        val found = advisor.advise(emptyList(), hours(), "l1", listOf(routine()), today = today, nowMinute = 8 * 60)
+        assertTrue(found.none { it.ruleId == RuleId.MORNING_LATE_PATTERN })
+    }
+    @Test fun `only this routine's completion within fourteen day window enables morning evaluation`() {
+        val firstDay = RoutineObservation(42, today.minusDays(13), "ON_TIME")
+        assertEquals(7, advisor.advise(emptyList(), hours(), "l1", listOf(routine()), listOf(firstDay), today, 8 * 60)
+            .single { it.ruleId == RuleId.MORNING_LATE_PATTERN }.params["count"])
+        listOf(firstDay.copy(date = today.minusDays(14)), firstDay.copy(date = today.plusDays(1)), firstDay.copy(routineId = 43)).forEach {
+            assertTrue(advisor.advise(emptyList(), hours(), "l1", listOf(routine()), listOf(it), today, 8 * 60)
+                .none { finding -> finding.ruleId == RuleId.MORNING_LATE_PATTERN })
+        }
+    }
+    @Test fun `unknown age band falls back to 4-5 sleep and focus thresholds`() {
+        val tasks = listOf(task(duration = 21))
+        val anchors = hours(bed = "22:30")
+        val expected = advisor.advise(tasks, anchors, "4-5", today = today)
+        listOf("legacy", "", "unknown").forEach { ageBand ->
+            val found = advisor.advise(tasks, anchors, ageBand, today = today)
+            assertEquals(expected, found)
+            assertEquals(600, found.first { it.ruleId == RuleId.SLEEP_SHORT }.params["minimum"])
+            assertEquals(20, found.single { it.ruleId == RuleId.FOCUS_TOO_LONG }.params["maximum"])
+        }
     }
 }
