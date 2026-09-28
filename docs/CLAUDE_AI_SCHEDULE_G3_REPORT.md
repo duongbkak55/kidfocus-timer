@@ -1,8 +1,8 @@
-# Báo cáo G3 — chạy lại sau sửa PIN: B–I đạt 7/8, thông báo trễ
+# Báo cáo G3 — E PASS sau cấp quyền exact alarm; giữ lịch sử các vòng
 
-Ngày: 2026-09-28 · Người chạy: Codex · Reviewer: Claude (Cowork) · Nghiệm thu: Duong
+Ngày: 2026-09-28–2026-09-29 · Người chạy: Codex · Reviewer: Claude (Cowork) · Nghiệm thu: Duong
 
-**Kết quả mới nhất, bản `a2ba634`: B/C/D/F/G/H/I PASS; E FAIL vì thông báo trễ 130,091 giây. A giữ PASS của phiên trước. G3 chưa PASS toàn bộ.** Cổng PIN đã hoạt động trên Pixel; không có crash/ANR KidFocus trong log thu của lần chạy lại. Xem bảng và lỗi mới ở mục **G3 chạy lại sau Fixes G3** cuối báo cáo. Các phần trước mục đó giữ lịch sử phiên trước và việc sửa code, không phải kết quả nghiệm thu hiện tại.
+**Kết quả mới nhất, bản `8f4a835` ngày 2026-09-29: E PASS khi cấp quyền qua thẻ mới — notification tiếng Anh, tạo sau giờ hẹn 19 ms.** Lượt tham khảo chưa có quyền trễ 132.811 giây. Test/build/lint vòng 2 PASS (264 test, 0 lint errors). A và B/C/D/F/G/H/I giữ bằng chứng đã đạt ở các vòng trước; lần này chỉ chạy lại E và luồng quyền mới. Xem **Fixes G3 vòng 2 / Chạy lại E trên Pixel** cuối báo cáo. Các mục lỗi/PASS/FAIL cũ bên dưới là lịch sử, không thay bằng kết quả chưa chạy lại.
 
 ## Kết luận phiên gốc — trước sửa PIN
 
@@ -187,7 +187,7 @@ Source `AlarmScheduler.kt` có fallback `AlarmManager.set` khi không được e
 
 ### Logcat, dữ liệu cuối và phạm vi commit
 
-[logcat-crash.txt mới](g3/logcat-crash.txt): crash buffer **rỗng**, general filter có **85 dòng** khởi động/kết thúc AndroidRuntime của công cụ UI; không có FATAL/ANR hoặc stack KidFocus. Không clear log để loại lỗi; kết luận chỉ áp dụng phần B–I đã chạy. [Log gốc trước sửa](g3/89-before-fix-logcat-crash.txt) được sao nguyên byte và các liên kết lịch sử đã chuyển sang bản này, giữ hai lỗi uiautomator của phiên cũ.
+[logcat-crash.txt của lần chạy sau sửa PIN](g3/119-before-v2-logcat-crash.txt): crash buffer **rỗng**, general filter có **85 dòng** khởi động/kết thúc AndroidRuntime của công cụ UI; không có FATAL/ANR hoặc stack KidFocus. Không clear log để loại lỗi; kết luận chỉ áp dụng phần B–I đã chạy. [Log gốc trước sửa](g3/89-before-fix-logcat-crash.txt) được sao nguyên byte và các liên kết lịch sử đã chuyển sang bản này, giữ hai lỗi uiautomator của phiên cũ.
 
 General buffer cuối phiên đã xoay vòng, phần lọc còn từ 23:26:07; log giữa phiên ở 43 bổ sung một đoạn trước đó. Crash buffer rỗng là kết quả thu riêng, không dùng general buffer còn lại để khẳng định toàn bộ sự kiện hệ thống trong cả phiên đều được lưu.
 
@@ -242,3 +242,42 @@ Lệnh giống mục Fixes G3: JDK 17, Firebase/RevenueCat env rỗng, `./gradle
 Working tree vẫn có 19 đường dẫn tracked từ trước. **15 đường dẫn không chồng phạm vi giữ nguyên hash**, gồm Manifest/build/dependency; 4 đường dẫn chồng là AppNavigation, RoutineScreens, strings vi/en được dựng patch chỉ chứa delta G3 so với snapshot đầu task. Các thay đổi Home/permission thông báo Routine/release/Learning còn ngoài commit. Không reset/stash/sửa `.omc`, không thêm permission mới (**SCHEDULE_EXACT_ALARM đã có**; không USE_EXACT_ALARM), Room **v5**, không WorkManager/service/push/merge/deploy/reboot.
 
 **Nghiệm thu máy tại thời điểm commit sửa: chưa chạy lại E.** Sau commit, cài APK giữ dữ liệu; đo lượt không có quyền hiện tại trước để lấy số liệu tham khảo, rồi dùng chính thẻ mới cấp quyền và đo lượt có quyền (kỳ vọng <10 giây, notification tiếng Anh). Chỉ kết luận E từ timestamp/ảnh trên Pixel, không dùng kết quả unit test thay phép đo máy.
+
+### Chạy lại E trên Pixel — sau commit `8f4a835`
+
+**E PASS với quyền exact alarm**, đúng yêu cầu vòng 2. Thiết bị vẫn Pixel 9 / Android 17 API 37 / en-GB, cùng wireless target; [cài APK giữ dữ liệu](g3/92-v2-device-install.txt) bằng `adb install -r` trả Success. APK SHA-256 khớp bản kiểm tra ở trên. Quyền ban đầu chưa cấp, nên đo lượt tham khảo trước rồi bật qua thẻ, tránh phải thu hồi quyền hoặc làm app bị hệ thống đóng giữa phép thử. Không đổi permission bằng adb appops; chỉ đọc trạng thái và thao tác UI special access của KidFocus.
+
+| Lượt đo | Lưu task / mốc hẹn (GMT+7, 2026-09-29) | Alarm trước giờ hẹn | NotificationRecord | Kết quả |
+|---|---|---|---|---|
+| Chưa có quyền — tham khảo | Reading1 lưu **06:02:03**, hẹn **06:05:00**, lead **177 giây** | `window=+2m12s758ms`, flags `0x20`; appop default chưa cấp. [Alarm](g3/98-E-reference-alarm.txt), [URI đối chiếu](g3/98-E-reference-identity-proof.txt) | `mCreationTimeMs=mUpdateTimeMs=1790636832811` → **06:07:12.811**, trễ **132.811 giây**. [Timing](g3/98-E-reference-timing.json), [record](g3/98-E-reference-notification.txt) | **Số liệu tham khảo**, không coi fallback là exact. [Ảnh thông báo tiếng Anh](g3/99-E-reference-notification-english.png) |
+| Đã có quyền — nghiệm thu E | Reading lưu **06:12:03**, hẹn **06:15:00**, lead **177 giây** | **`window=0 exactAllowReason=permission`**, flags `0x5`; appop allow. [Alarm](g3/108-E-exact-alarm.txt), [URI đối chiếu](g3/108-E-exact-identity-proof.txt) | `mCreationTimeMs=mUpdateTimeMs=1790637300019` → **06:15:00.019**, trễ **19 ms**. [Timing](g3/108-E-exact-timing.json), [record](g3/108-E-exact-notification.txt) | **PASS <10 giây**, [heads-up tiếng Anh thực tế](g3/109-E-exact-notification-english.png): “📚 It’s time!” / “Time to start Reading! 🎯” |
+
+Task dùng lại Reading hiện có, cùng ID **1790608779858144**, Calendar day **3** (thứ Ba), URI **`kidfocus://task/1790608779858144/3`**. Tạm đặt tên Reading1 cho lượt tham khảo để tách Notification ID theo tên; trả tên Reading cho lượt exact. Đối chiếu PendingIntentRecord **`3e34885`** (tham khảo) và **`d4e47b6`** (exact) giữa [bảng intents lượt 1](g3/98-E-reference-pending-intents.txt)/[lượt 2](g3/108-E-exact-pending-intents.txt) với alarm tương ứng. Không chỉ suy URI từ source. Bộ chọn phút bước 5; tự chờ đến mốc hẹn trừ 3 phút rồi lưu, thao tác hoàn tất lệch 3 giây nên lead thực tế 177 giây ở cả hai lượt. [Giờ tham khảo](g3/96-E-reference-time-prepared.png), [chuẩn bị lưu](g3/97-E-reference-save-ready.png), [đã lưu](g3/98-E-reference-saved.png); [giờ exact](g3/106-E-exact-time-prepared.png), [chuẩn bị lưu](g3/107-E-exact-save-ready.png), [đã lưu](g3/108-E-exact-saved.png).
+
+Độ trễ tính bằng timestamp hệ thống trừ `targetEpoch×1000`, không lấy lúc script poll thấy làm thời điểm giao thông báo. Record exact còn có `mInterruptionTimeMs=1790637301161` (+1.161 giây); script thấy record ở +1 giây và chụp được heads-up. Hai ảnh là **PNG nguyên bản từ adb screencap**, không cắt/chỉnh/tạo lại nội dung; không mở notification shade và không đưa thông báo app khác vào repo.
+
+### Quyền và reschedule kiểm chứng trên máy
+
+1. Khi chưa có quyền, thẻ xuất hiện ở cả [Góp ý](g3/94-v2-smart-exact-permission-card.png) và [Lịch ngày](g3/95-v2-daily-exact-permission-card.png).
+2. Từ Lịch ngày → Open settings mở đúng trang **KidFocus → Alarms and reminders**, [switch tắt](g3/101-E-exact-settings-before-grant.png). Bật switch qua UI → [đã cấp](g3/102-E-exact-settings-granted.png).
+3. Back trở về app, [thẻ Lịch ngày biến mất](g3/103-E-daily-card-hidden-after-grant.png). **Trước khi sửa/lưu task cho lượt exact**, đối chiếu [alarm trước cấp quyền](g3/100-E-before-permission-alarms.txt) với [sau trở lại app](g3/104-E-after-permission-alarms.txt): các task đã lưu, gồm Homework 21:00 và Reading các ngày sau, chuyển sang `window=0 exactAllowReason=permission`. [Appop đọc lại](g3/104-E-permission-status.txt) là allow. Đây là bằng chứng reschedule thực tế của luồng trở lại, không dùng việc Save task lần sau thay cho reschedule.
+4. Vào lại khu phụ huynh vẫn phải nhập PIN 2468 do app đã đi nền; PIN đúng mở Smart, [thẻ Góp ý cũng ẩn](g3/105-E-smart-card-hidden-after-grant.png). Không bypass chốt PIN để xin quyền. Dismiss/persistence đã kiểm bằng DataStore thật và Compose ở test; không bấm Dismiss trên Pixel để giữ luồng cấp quyền qua thẻ.
+
+**G3-03:** thiếu đường xin quyền trong lịch đã xử lý và kiểm trên máy; E với quyền đạt. Fallback chưa có quyền vẫn có thể trễ, đúng cảnh báo của thẻ; một mẫu 132.811 giây không phải cam kết độ trễ chung. **G3-04:** notification task tiếng Anh đã kiểm trên Pixel; Routine vi/en kiểm bằng notification thật trong Robolectric, không tạo thêm routine để mở rộng kịch bản E. F-G3-1/2 giữ kết quả Claude đã xác nhận.
+
+### Kết thúc lượt máy vòng 2
+
+Sau phép đo, trả task Reading về **23:15 every day, 30 focus / 5 break**, tên/ID như trước: [editor](g3/110-E-original-reading-time-restored.png), [lịch đã lưu lại](g3/111-E-reading-schedule-restored.png), [Home cuối](g3/112-E-final-home.png). Homework/anchors/ca học/hồ sơ/PIN giữ nguyên. Quyền exact giữ **allow** theo luồng người dùng vừa cấp; không thu hồi. Cỡ chữ/rotation giữ **1.0 / 0 / 0**, không thay timeout, khóa máy hoặc locale.
+
+[Logcat vòng 2](g3/logcat-crash.txt) thu cuối phiên: **crash buffer rỗng**, general filter **86 dòng** runtime của công cụ UI, không FATAL/ANR hoặc stack KidFocus trong output thu được. [Ghi chú trạng thái cuối](g3/120-v2-device-final-status.txt), [alarm sau trả Reading 23:15](g3/113-E-restored-task-alarms.txt). Clear một lần sau cài APK, không clear để loại lỗi giữa các lượt. Log từ vòng trước sao nguyên byte sang [119](g3/119-before-v2-logcat-crash.txt) và liên kết lịch sử giữ đúng phiên. General buffer cuối còn từ 06:15:53, không dùng log đã xoay vòng để khẳng định mọi sự kiện của toàn phiên đều được lưu.
+
+Không thay code sau commit sửa; hash **240 file tracked ngoài docs** giữ nguyên trong phần chạy máy. Commit bằng chứng tiếp theo chỉ `docs/g3/` + báo cáo; giữ 19 thay đổi tracked có từ trước ở working tree và các task/review/Learning chưa tracked. Không thêm permission/Room/WorkManager/service, không clear dữ liệu/reboot/Google login/mua/AI call/push/merge/deploy. A/B/C/D/F/G/H/I không chạy lại toàn bộ trên APK vòng 2; giữ bằng chứng các vòng trước theo đúng phạm vi Claude giao. Lượt này máy mở khóa, màn hình sáng/đang sạc và app foreground; không dùng hai số đo này làm kiểm thử Doze hoặc bảo đảm SLA trên mọi thiết bị.
+
+Kiểm bằng chứng trước commit: **116 liên kết tồn tại**, 18 ảnh PNG mới đúng chữ ký/kích thước 1080×2424; log lịch sử 119 khớp byte với bản trước; 240 hash code/config ngoài docs không đổi. Full staged diff báo trailing whitespace và blank line cuối trong **record notification raw lượt tham khảo 98, dòng 86** (dòng chỉ có hai dấu cách từ output hệ thống). Giữ nguyên record; phần còn lại kiểm chuẩn và record này kiểm riêng **PASS**:
+
+```sh
+git diff --cached --check -- . ':!docs/g3/98-E-reference-notification.txt'
+git -c core.whitespace=-blank-at-eol,-blank-at-eof diff --cached --check -- docs/g3/98-E-reference-notification.txt
+```
+
+Không thay cấu hình git lâu dài; kiểm code ở commit sửa vẫn `git diff --check` và staged check chuẩn PASS, không áp ngoại lệ này cho code.

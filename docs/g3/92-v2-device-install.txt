@@ -1,0 +1,15 @@
+G3 E round 2 / code 8f4a835 / branch feature/smart-schedule-w4
+ro.product.model=Pixel 9
+ro.build.version.release=17
+ro.build.version.sdk=37
+persist.sys.locale=en-GB
+device time=2026-09-29T05:54:07+07:00
+initial exact permission=No operations.
+Default mode: default
+font_scale=1.0
+accelerometer_rotation=0
+user_rotation=0
+APK SHA-256=4a3cae9645fe298bc68ce91b4eac5c422d0caeb7d6bb31e505d3242fe6057f1f
+Performing Streamed Install
+Success
+Starting: Intent { cmp=com.kidfocusstudio.timer.debug/com.kidfocus.timer.MainActivity }

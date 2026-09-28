@@ -1,0 +1,22 @@
+{
+  "mode": "without_permission",
+  "taskName": "Reading1",
+  "targetEpoch": 1790636700,
+  "targetLocal": "2026-09-29T06:05:00+07:00",
+  "saveDesiredEpoch": 1790636520,
+  "preparedEpoch": 1790636220,
+  "exactAppop": "No operations.\nDefault mode: default",
+  "saveClickEpoch": 1790636522,
+  "savedEpoch": 1790636523,
+  "leadSeconds": 177,
+  "notificationFields": {
+    "mRankingTimeMs": 1790636832804,
+    "mCreationTimeMs": 1790636832811,
+    "mUpdateTimeMs": 1790636832811,
+    "mInterruptionTimeMs": 1790636832811
+  },
+  "notificationFirstObservedEpoch": 1790636832,
+  "notificationUpdatedLocal": "2026-09-29T06:07:12.811000+07:00",
+  "lateMilliseconds": 132811,
+  "result": "REFERENCE DELAY"
+}

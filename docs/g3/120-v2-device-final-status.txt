@@ -1,0 +1,17 @@
+G3 E round 2 completed 2026-09-29; code 8f4a835; feature/smart-schedule-w4.
+Pixel 9 / Android 17 / API37 / en-GB; APK SHA-256 4a3cae9645fe298bc68ce91b4eac5c422d0caeb7d6bb31e505d3242fe6057f1f; install-r Success; no clear-data.
+Reference: Reading1 saved06:02:03, target06:05:00, notification06:07:12.811, delay132.811sec. Missing exact permission, inexact window+2m12s758ms.
+Acceptance: Reading saved06:12:03, target06:15:00, notification06:15:00.019, delay19ms PASS(<10s). Exact window0 / permission reason.
+Both alarms URI kidfocus://task/1790608779858144/3 correlated by system PendingIntent records.
+Both notification screenshots are original adb PNGs, only KidFocus heads-up over KidFocus; English title/body.
+Permission granted through new Daily schedule card -> own KidFocus Alarms and reminders Settings switch. No appops mutation.
+Returning to app hid both Daily/Smart cards, rescheduled existing enabled alarms to exact before exact task Save. Parent PIN still required after Settings background.
+Restored Reading name / 23:15 every day / 30focus5break. Homework21:00 45focus15break weekdays, Child/Grade1 active, existing profiles/anchors/school/PIN2468 preserved. Ended at Home.
+No code edits during device phase; SHA256 all240 tracked non-doc files unchanged. 19 pre-existing dirty tracked paths remain outside G3 commits.
+No new Manifest permission, no Room change(v5), no WorkManager/service/background task, no data clear/timeout/security/locale changes, reboot/login/purchase/AI/network service/push/merge/deploy.
+Read-only final settings:
+font_scale=1.0
+accelerometer_rotation=0
+user_rotation=0
+Uid mode: SCHEDULE_EXACT_ALARM: allow
+Crash buffer bytes=0; general filter lines=86; no FATAL/ANR/KidFocus stack in collected output. General log can rotate.

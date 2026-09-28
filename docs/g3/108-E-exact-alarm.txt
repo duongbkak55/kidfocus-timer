@@ -1,0 +1,72 @@
+    RTC_WAKEUP #14: Alarm{c115078 type 0 origWhen 1790637300000 whenElapsed 839122898 com.kidfocusstudio.timer.debug}
+      tag=*walarm*:com.kidfocusstudio.timer.debug/com.kidfocus.timer.alarm.TaskAlarmReceiver
+      type=RTC_WAKEUP origWhen=2026-09-29 06:15:00.000 window=0 exactAllowReason=permission repeatInterval=0 count=0 flags=0x5
+      policyWhenElapsed: requester=+2m52s653ms app_standby=-3s851ms device_idle=-- battery_saver=-3s851ms
+      whenElapsed=+2m52s653ms maxWhenElapsed=+2m52s653ms
+      operation=PendingIntent{eb40351: PendingIntentRecord{d4e47b6 com.kidfocusstudio.timer.debug broadcastIntent}}
+    RTC_WAKEUP #69: Alarm{7dd1544 type 0 origWhen 1790690400000 whenElapsed 892222899 com.kidfocusstudio.timer.debug}
+      tag=*walarm*:com.kidfocusstudio.timer.debug/com.kidfocus.timer.alarm.TaskAlarmReceiver
+      type=RTC_WAKEUP origWhen=2026-09-29 21:00:00.000 window=0 exactAllowReason=permission repeatInterval=0 count=0 flags=0x5
+      policyWhenElapsed: requester=+14h47m52s654ms app_standby=-3m27s427ms device_idle=-- battery_saver=-3m27s427ms
+      whenElapsed=+14h47m52s654ms maxWhenElapsed=+14h47m52s654ms
+      operation=PendingIntent{c34f62d: PendingIntentRecord{95cb762 com.kidfocusstudio.timer.debug broadcastIntent}}
+    RTC_WAKEUP #89: Alarm{9b690 type 0 origWhen 1790723700000 whenElapsed 925522899 com.kidfocusstudio.timer.debug}
+      tag=*walarm*:com.kidfocusstudio.timer.debug/com.kidfocus.timer.alarm.TaskAlarmReceiver
+      type=RTC_WAKEUP origWhen=2026-09-30 06:15:00.000 window=0 exactAllowReason=permission repeatInterval=0 count=0 flags=0x5
+      policyWhenElapsed: requester=+1d0h2m52s654ms app_standby=-3s850ms device_idle=-- battery_saver=-3s850ms
+      whenElapsed=+1d0h2m52s654ms maxWhenElapsed=+1d0h2m52s654ms
+      operation=PendingIntent{d22cb89: PendingIntentRecord{6ca978e com.kidfocusstudio.timer.debug broadcastIntent}}
+    RTC_WAKEUP #93: Alarm{cd2e7ae type 0 origWhen 1790776800000 whenElapsed 978622899 com.kidfocusstudio.timer.debug}
+      tag=*walarm*:com.kidfocusstudio.timer.debug/com.kidfocus.timer.alarm.TaskAlarmReceiver
+      type=RTC_WAKEUP origWhen=2026-09-30 21:00:00.000 window=0 exactAllowReason=permission repeatInterval=0 count=0 flags=0x5
+      policyWhenElapsed: requester=+1d14h47m52s654ms app_standby=-3m27s426ms device_idle=-- battery_saver=-3m27s426ms
+      whenElapsed=+1d14h47m52s654ms maxWhenElapsed=+1d14h47m52s654ms
+      operation=PendingIntent{6f7d94f: PendingIntentRecord{dd7c8dc com.kidfocusstudio.timer.debug broadcastIntent}}
+    RTC_WAKEUP #95: Alarm{443fbaf type 0 origWhen 1790810100000 whenElapsed 1011922898 com.kidfocusstudio.timer.debug}
+      tag=*walarm*:com.kidfocusstudio.timer.debug/com.kidfocus.timer.alarm.TaskAlarmReceiver
+      type=RTC_WAKEUP origWhen=2026-10-01 06:15:00.000 window=0 exactAllowReason=permission repeatInterval=0 count=0 flags=0x5
+      policyWhenElapsed: requester=+2d0h2m52s653ms app_standby=-3s850ms device_idle=-- battery_saver=-3s850ms
+      whenElapsed=+2d0h2m52s653ms maxWhenElapsed=+2d0h2m52s653ms
+      operation=PendingIntent{ffbabbc: PendingIntentRecord{be39745 com.kidfocusstudio.timer.debug broadcastIntent}}
+    RTC_WAKEUP #99: Alarm{b8696c8 type 0 origWhen 1790863200000 whenElapsed 1065022899 com.kidfocusstudio.timer.debug}
+      tag=*walarm*:com.kidfocusstudio.timer.debug/com.kidfocus.timer.alarm.TaskAlarmReceiver
+      type=RTC_WAKEUP origWhen=2026-10-01 21:00:00.000 window=0 exactAllowReason=permission repeatInterval=0 count=0 flags=0x5
+      policyWhenElapsed: requester=+2d14h47m52s654ms app_standby=-3m27s425ms device_idle=-- battery_saver=-3m27s425ms
+      whenElapsed=+2d14h47m52s654ms maxWhenElapsed=+2d14h47m52s654ms
+      operation=PendingIntent{ef5361: PendingIntentRecord{f543e86 com.kidfocusstudio.timer.debug broadcastIntent}}
+    RTC_WAKEUP #102: Alarm{c5c9e9a type 0 origWhen 1790896500000 whenElapsed 1098322899 com.kidfocusstudio.timer.debug}
+      tag=*walarm*:com.kidfocusstudio.timer.debug/com.kidfocus.timer.alarm.TaskAlarmReceiver
+      type=RTC_WAKEUP origWhen=2026-10-02 06:15:00.000 window=0 exactAllowReason=permission repeatInterval=0 count=0 flags=0x5
+      policyWhenElapsed: requester=+3d0h2m52s654ms app_standby=-3s849ms device_idle=-- battery_saver=-3s849ms
+      whenElapsed=+3d0h2m52s654ms maxWhenElapsed=+3d0h2m52s654ms
+      operation=PendingIntent{dea3cb: PendingIntentRecord{eb5c7a8 com.kidfocusstudio.timer.debug broadcastIntent}}
+    RTC_WAKEUP #103: Alarm{125bd12 type 0 origWhen 1790949600000 whenElapsed 1151422898 com.kidfocusstudio.timer.debug}
+      tag=*walarm*:com.kidfocusstudio.timer.debug/com.kidfocus.timer.alarm.TaskAlarmReceiver
+      type=RTC_WAKEUP origWhen=2026-10-02 21:00:00.000 window=0 exactAllowReason=permission repeatInterval=0 count=0 flags=0x5
+      policyWhenElapsed: requester=+3d14h47m52s653ms app_standby=-3m27s424ms device_idle=-- battery_saver=-3m27s424ms
+      whenElapsed=+3d14h47m52s653ms maxWhenElapsed=+3d14h47m52s653ms
+      operation=PendingIntent{a992ce3: PendingIntentRecord{97776e0 com.kidfocusstudio.timer.debug broadcastIntent}}
+    RTC_WAKEUP #104: Alarm{a2b62c1 type 0 origWhen 1790982900000 whenElapsed 1184722899 com.kidfocusstudio.timer.debug}
+      tag=*walarm*:com.kidfocusstudio.timer.debug/com.kidfocus.timer.alarm.TaskAlarmReceiver
+      type=RTC_WAKEUP origWhen=2026-10-03 06:15:00.000 window=0 exactAllowReason=permission repeatInterval=0 count=0 flags=0x5
+      policyWhenElapsed: requester=+4d0h2m52s654ms app_standby=-3s849ms device_idle=-- battery_saver=-3s849ms
+      whenElapsed=+4d0h2m52s654ms maxWhenElapsed=+4d0h2m52s654ms
+      operation=PendingIntent{ed60a66: PendingIntentRecord{931b1a7 com.kidfocusstudio.timer.debug broadcastIntent}}
+    RTC_WAKEUP #106: Alarm{c73b654 type 0 origWhen 1791069300000 whenElapsed 1271122899 com.kidfocusstudio.timer.debug}
+      tag=*walarm*:com.kidfocusstudio.timer.debug/com.kidfocus.timer.alarm.TaskAlarmReceiver
+      type=RTC_WAKEUP origWhen=2026-10-04 06:15:00.000 window=0 exactAllowReason=permission repeatInterval=0 count=0 flags=0x5
+      policyWhenElapsed: requester=+5d0h2m52s654ms app_standby=-3s848ms device_idle=-- battery_saver=-3s848ms
+      whenElapsed=+5d0h2m52s654ms maxWhenElapsed=+5d0h2m52s654ms
+      operation=PendingIntent{7ca69fd: PendingIntentRecord{42866f2 com.kidfocusstudio.timer.debug broadcastIntent}}
+    RTC_WAKEUP #108: Alarm{5bdc143 type 0 origWhen 1791155700000 whenElapsed 1357522899 com.kidfocusstudio.timer.debug}
+      tag=*walarm*:com.kidfocusstudio.timer.debug/com.kidfocus.timer.alarm.TaskAlarmReceiver
+      type=RTC_WAKEUP origWhen=2026-10-05 06:15:00.000 window=0 exactAllowReason=permission repeatInterval=0 count=0 flags=0x5
+      policyWhenElapsed: requester=+6d0h2m52s654ms app_standby=-3s851ms device_idle=-- battery_saver=-3s851ms
+      whenElapsed=+6d0h2m52s654ms maxWhenElapsed=+6d0h2m52s654ms
+      operation=PendingIntent{f7fe3c0: PendingIntentRecord{758a8f9 com.kidfocusstudio.timer.debug broadcastIntent}}
+    RTC_WAKEUP #109: Alarm{fef5536 type 0 origWhen 1791208800000 whenElapsed 1410622898 com.kidfocusstudio.timer.debug}
+      tag=*walarm*:com.kidfocusstudio.timer.debug/com.kidfocus.timer.alarm.TaskAlarmReceiver
+      type=RTC_WAKEUP origWhen=2026-10-05 21:00:00.000 window=0 exactAllowReason=permission repeatInterval=0 count=0 flags=0x5
+      policyWhenElapsed: requester=+6d14h47m52s653ms app_standby=-3m27s428ms device_idle=-- battery_saver=-3m27s428ms
+      whenElapsed=+6d14h47m52s653ms maxWhenElapsed=+6d14h47m52s653ms
+      operation=PendingIntent{2a1ec37: PendingIntentRecord{e7485a4 com.kidfocusstudio.timer.debug broadcastIntent}}

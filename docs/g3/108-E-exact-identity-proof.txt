@@ -1,0 +1,14 @@
+Derived cross-check of raw AlarmManager and PendingIntent evidence:
+RTC_WAKEUP #14: Alarm{c115078 type 0 origWhen 1790637300000 whenElapsed 839122898 com.kidfocusstudio.timer.debug}
+      tag=*walarm*:com.kidfocusstudio.timer.debug/com.kidfocus.timer.alarm.TaskAlarmReceiver
+      type=RTC_WAKEUP origWhen=2026-09-29 06:15:00.000 window=0 exactAllowReason=permission repeatInterval=0 count=0 flags=0x5
+      policyWhenElapsed: requester=+2m52s653ms app_standby=-3s851ms device_idle=-- battery_saver=-3s851ms
+      whenElapsed=+2m52s653ms maxWhenElapsed=+2m52s653ms
+      operation=PendingIntent{eb40351: PendingIntentRecord{d4e47b6 com.kidfocusstudio.timer.debug broadcastIntent}}
+
+PendingIntentRecord{d4e47b6 com.kidfocusstudio.timer.debug broadcastIntent}
+      uid=10029 packageName=com.kidfocusstudio.timer.debug featureId=null type=broadcastIntent flags=0x4000000
+      requestCode=407309420 requestResolvedType=null
+      requestIntent=dat=kidfocus://task/1790608779858144/3 xflg=0x4 cmp=com.kidfocusstudio.timer.debug/com.kidfocus.timer.alarm.TaskAlarmReceiver (has extras)
+
+Confirmed task URI: kidfocus://task/1790608779858144/3
