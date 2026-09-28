@@ -1,0 +1,32 @@
+G3 preflight — 2026-09-28
+Branch: feature/smart-schedule-w4
+Reviewed source commit: ce0220c
+These are excerpts from the actual adb results in this attempt, not screenshots.
+
+Initial command: adb devices -l
+List of devices attached
+4A150DLAQ0013S         device usb:0-1 product:tokay model:Pixel_9 device:tokay transport_id:1
+
+Next preparation commands and actual results:
+
+adb -s 4A150DLAQ0013S shell getprop ro.product.model
+adb: device '4A150DLAQ0013S' not found
+
+adb -s 4A150DLAQ0013S shell getprop ro.build.version.release
+adb: device '4A150DLAQ0013S' not found
+
+adb -s 4A150DLAQ0013S shell getprop ro.build.version.sdk
+adb: device '4A150DLAQ0013S' not found
+
+adb -s 4A150DLAQ0013S shell dumpsys window (filtered for focus/keyguard state)
+adb: device still authorizing
+
+The same already-dispatched read-only preparation batch also returned:
+adb -s 4A150DLAQ0013S shell pm list packages (filtered for KidFocus)
+package:com.kidfocusstudio.timer.debug
+
+After reading this batch result, device testing was stopped as instructed.
+No further adb command was run. No install, launch, UI input, screenshot, logcat
+clear/capture, font/rotation/network change, force-stop or reboot was performed.
+The phone's USB authorization dialog was not visually observed; adb reported
+that authorization was still in progress. Duong must inspect/confirm the phone.

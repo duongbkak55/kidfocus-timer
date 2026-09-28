@@ -1,5 +1,6 @@
 package com.kidfocus.timer.ui.screens
 
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -31,39 +32,41 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kidfocus.timer.R
 import com.kidfocus.timer.ui.theme.KidFocusTheme
 
 private data class OnboardingPage(
     val emoji: String,
-    val title: String,
-    val description: String,
+    @StringRes val title: Int,
+    @StringRes val description: Int,
 )
 
 private val onboardingPages = listOf(
     OnboardingPage(
         emoji = "🦉",
-        title = "Chào mừng đến với KidFocus!",
-        description = "Ứng dụng giúp con tập trung học tập và nghỉ ngơi đúng cách, vui vẻ mỗi ngày!",
+        title = R.string.onboarding_welcome_title,
+        description = R.string.onboarding_welcome_desc,
     ),
     OnboardingPage(
         emoji = "⏱️",
-        title = "Học theo nhịp Pomodoro",
-        description = "Tập trung 25 phút, sau đó nghỉ 5 phút. Phương pháp được chứng minh giúp học hiệu quả hơn!",
+        title = R.string.onboarding_pomodoro_title,
+        description = R.string.onboarding_pomodoro_desc,
     ),
     OnboardingPage(
         emoji = "🎉",
-        title = "Nhận phần thưởng!",
-        description = "Sau mỗi phiên tập trung, con sẽ được ăn mừng và xem mình đã học được bao nhiêu!",
+        title = R.string.onboarding_reward_title,
+        description = R.string.onboarding_reward_desc,
     ),
     OnboardingPage(
         emoji = "🔒",
-        title = "Phụ huynh kiểm soát",
-        description = "Bố mẹ có thể thiết lập PIN để bảo vệ cài đặt và tùy chỉnh thời gian phù hợp với con.",
+        title = R.string.onboarding_parent_title,
+        description = R.string.onboarding_parent_desc,
     ),
 )
 
@@ -110,7 +113,7 @@ fun OnboardingScreen(onFinished: () -> Unit) {
                     Spacer(modifier = Modifier.height(32.dp))
 
                     Text(
-                        text = current.title,
+                        text = stringResource(current.title),
                         style = MaterialTheme.typography.headlineSmall,
                         color = colors.primary,
                         fontWeight = FontWeight.Bold,
@@ -120,7 +123,7 @@ fun OnboardingScreen(onFinished: () -> Unit) {
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
-                        text = current.description,
+                        text = stringResource(current.description),
                         style = MaterialTheme.typography.bodyLarge,
                         color = colors.onBackground.copy(alpha = 0.7f),
                         textAlign = TextAlign.Center,
@@ -163,7 +166,7 @@ fun OnboardingScreen(onFinished: () -> Unit) {
                     colors = ButtonDefaults.buttonColors(containerColor = colors.primary),
                 ) {
                     Text(
-                        text = if (isLast) "Bắt đầu ngay!" else "Tiếp theo",
+                        text = stringResource(if (isLast) R.string.onboarding_get_started else R.string.next),
                         style = MaterialTheme.typography.titleMedium,
                         color = colors.onPrimary,
                         fontWeight = FontWeight.Bold,
@@ -180,7 +183,7 @@ fun OnboardingScreen(onFinished: () -> Unit) {
                         shape = RoundedCornerShape(18.dp),
                     ) {
                         Text(
-                            text = "Bỏ qua",
+                            text = stringResource(R.string.skip),
                             style = MaterialTheme.typography.titleSmall,
                             color = colors.onBackground.copy(alpha = 0.5f),
                         )

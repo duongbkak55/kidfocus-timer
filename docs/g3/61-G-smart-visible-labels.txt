@@ -1,0 +1,47 @@
+Offline Smart screen; complete vertical scroll inspection:
+Child
+Child’s daily rhythm
+Bedtime means lights out. After-midnight bedtime belongs to the selected night (Mon 00:30 means early Tuesday).
+Weekdays
+Wake: 06:15
+Bed: 00:30
+Weekend
+Wake: Not set
+Bed: Not set
+Edit individual days
+At school
+School session
+School session name
+Start: 07:00
+End: 16:30
+M
+T
+W
+F
+S
+Remove school session
+Add school session
+Smart weekly schedule
+0
+Travel each way (0–180 minutes)
+Save daily rhythm
+Weekly schedule advice
+Based on AASM recommendations; not a substitute for medical advice. App thresholds: ages 2–3: 11 hours; ages 4–5: 10 hours; grades 1–3: 9 hours. For young children, recommended total sleep includes naps.
+Source: aasm.org/advocacy/position-statements/child-sleep-duration-health-advisory/
+High
+This night allows 345 minutes of sleep, below the age-band threshold of 540 minutes.
+Suggested bedtime for this night: 21:15.
+Apply
+This night allows 465 minutes of sleep, below the age-band threshold of 540 minutes.
+Medium
+Study ends within an hour before bed or later.
+Reading
+Suggested start for this day: 23:00.
+Homework
+Suggested start for this day: 20:45.
+Suggested start for this day: 21:00.
+Low
+Focus session exceeds the age-band threshold of 30 minutes.
+Suggested focus duration for this day: 30 minutes.
+
+Quick entry / Ask AI to rearrange / AI photo import absent.

@@ -54,8 +54,8 @@ class TaskAlarmReceiver : BroadcastReceiver() {
 
         val notification = NotificationCompat.Builder(context, KidFocusApp.ALERT_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_timer_notification)
-            .setContentTitle("$emoji Đến giờ rồi!")
-            .setContentText("Bắt đầu $taskName nào! 🎯")
+            .setContentTitle(context.getString(R.string.task_notification_title, emoji))
+            .setContentText(context.getString(R.string.task_notification_text, taskName))
             .setAutoCancel(true)
             .setContentIntent(contentIntent)
             .setPriority(NotificationCompat.PRIORITY_HIGH)

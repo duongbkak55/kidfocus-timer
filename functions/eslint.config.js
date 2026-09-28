@@ -11,6 +11,10 @@ module.exports = [
       sourceType: "commonjs",
       globals: {
         console: "readonly",
+        __dirname: "readonly",
+        Buffer: "readonly",
+        AbortSignal: "readonly",
+        structuredClone: "readonly",
         exports: "writable",
         fetch: "readonly",
         Intl: "readonly",

@@ -3,6 +3,7 @@ package com.kidfocus.timer.data.repository
 import com.kidfocus.timer.data.database.RoutineCompletionEntity
 import com.kidfocus.timer.data.database.RoutineDao
 import com.kidfocus.timer.data.database.RoutineEntity
+import com.kidfocus.timer.domain.schedule.ScheduleIds
 import com.kidfocus.timer.domain.model.RoutineStatus
 import com.kidfocus.timer.domain.model.RoutineTime
 import kotlinx.coroutines.flow.Flow
@@ -44,7 +45,7 @@ class RoutineRepository @Inject constructor(
     suspend fun save(routine: RoutineEntity): RoutineEntity {
         validate(routine)
         return if (routine.id == 0L) {
-            routine.copy(id = routineDao.insert(routine))
+            routine.copy(id = routineDao.insert(routine.copy(id = ScheduleIds.newId())))
         } else {
             routineDao.update(routine)
             routine
@@ -53,7 +54,7 @@ class RoutineRepository @Inject constructor(
 
     suspend fun savePreset(routines: List<RoutineEntity>): List<RoutineEntity> {
         routines.forEach(::validate)
-        return routineDao.insertPreset(routines)
+        return routineDao.insertPreset(routines.map { if (it.id == 0L) it.copy(id = ScheduleIds.newId()) else it })
     }
 
     suspend fun delete(routine: RoutineEntity) = routineDao.delete(routine)

@@ -1,5 +1,7 @@
 package com.kidfocus.timer.ui.viewmodel
 
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kidfocus.timer.data.repository.SettingsRepository
@@ -8,6 +10,8 @@ import com.kidfocus.timer.domain.model.TimerSettings
 import com.kidfocus.timer.domain.usecase.GetTimerSettingsUseCase
 import com.kidfocus.timer.domain.usecase.SaveTimerSettingsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -27,7 +31,7 @@ class SettingsViewModel @Inject constructor(
     private val getTimerSettingsUseCase: GetTimerSettingsUseCase,
     private val saveTimerSettingsUseCase: SaveTimerSettingsUseCase,
     private val settingsRepository: SettingsRepository,
-) : ViewModel() {
+) : ViewModel(), DefaultLifecycleObserver {
 
     /** Latest [TimerSettings], null until the DataStore emits the first value. */
     val settings: StateFlow<TimerSettings?> = getTimerSettingsUseCase()
@@ -44,6 +48,29 @@ class SettingsViewModel @Inject constructor(
 
     private val _pinVerified = MutableStateFlow(false)
     val pinVerified: StateFlow<Boolean> = _pinVerified.asStateFlow()
+
+    private val _parentUnlocked = MutableStateFlow(false)
+    val parentUnlocked: StateFlow<Boolean> = _parentUnlocked.asStateFlow()
+    private var parentTimeout: Job? = null
+
+    /** Called for actual touch/key interaction, not for recomposition or background work. */
+    fun recordParentInteraction() {
+        if (!_parentUnlocked.value) return
+        parentTimeout?.cancel()
+        parentTimeout = viewModelScope.launch {
+            delay(PARENT_INACTIVITY_TIMEOUT_MILLIS)
+            lockParentSession()
+        }
+    }
+
+    fun lockParentSession() {
+        parentTimeout?.cancel()
+        parentTimeout = null
+        _parentUnlocked.value = false
+        resetPinVerification()
+    }
+
+    override fun onStop(owner: LifecycleOwner) = lockParentSession()
 
     // ---- Settings mutations --------------------------------------------------------------------
 
@@ -102,6 +129,7 @@ class SettingsViewModel @Inject constructor(
 
     /** Removes the stored PIN hash, disabling the parental lock. */
     fun clearPin() {
+        lockParentSession()
         viewModelScope.launch { settingsRepository.clearPin() }
     }
 
@@ -115,11 +143,17 @@ class SettingsViewModel @Inject constructor(
             return
         }
         val valid = settingsRepository.verifyPin(pin, storedHash)
+        if (valid) {
+            _parentUnlocked.value = true
+            recordParentInteraction()
+        } else {
+            lockParentSession()
+        }
         _pinError.update { !valid }
         _pinVerified.update { valid }
     }
 
-    /** Clears the pin verified state (e.g. when navigating away from parent settings). */
+    /** Consumes the one-shot PIN result without clearing the parent session. */
     fun resetPinVerification() {
         _pinVerified.update { false }
         _pinError.update { false }
@@ -142,5 +176,9 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             runCatching { saveTimerSettingsUseCase(settings) }
         }
+    }
+
+    companion object {
+        const val PARENT_INACTIVITY_TIMEOUT_MILLIS = 5 * 60_000L
     }
 }

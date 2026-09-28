@@ -48,6 +48,10 @@ sealed class NavRoutes(val route: String) {
     /** Schedule management screen (list of scheduled tasks). */
     data object Schedule : NavRoutes("schedule")
 
+    data object QuickSchedule : NavRoutes("quick_schedule")
+
+    data object SmartSchedule : NavRoutes("smart_schedule")
+
     /** Daily timeline view showing today's (or any day's) tasks. */
     data object DailySchedule : NavRoutes("daily_schedule")
 

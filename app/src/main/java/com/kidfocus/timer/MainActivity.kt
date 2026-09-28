@@ -7,6 +7,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -16,7 +17,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.kidfocus.timer.domain.model.AppTheme
 import com.kidfocus.timer.ui.navigation.AppNavigation
 import com.kidfocus.timer.ui.theme.KidFocusTheme
@@ -34,13 +34,19 @@ class MainActivity : ComponentActivity() {
         ActivityResultContracts.RequestPermission()
     ) { /* Permission result handled silently */ }
 
+    private val settingsViewModel: SettingsViewModel by viewModels()
+
+    override fun onUserInteraction() {
+        super.onUserInteraction()
+        settingsViewModel.recordParentInteraction()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         requestNotificationPermissionIfNeeded()
 
         setContent {
-            val settingsViewModel: SettingsViewModel = hiltViewModel()
             val settings by settingsViewModel.settings.collectAsState()
             val appTheme = settings?.appTheme ?: AppTheme.OCEAN
 

@@ -1,0 +1,86 @@
+    NotificationRecord(0x0258e462: pkg=com.kidfocusstudio.timer.debug user=UserHandle{0} id=-802264275 tag=null importance=4 key=0|com.kidfocusstudio.timer.debug|-802264275|null|10029: Notification(channel=kidfocus_alert_channel shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=AUTO_CANCEL color=0x00000000 vis=PRIVATE template=null))
+      uid=10029 userId=0
+      opPkg=com.kidfocusstudio.timer.debug
+      icon=Icon(typ=RESOURCE pkg=com.kidfocusstudio.timer.debug id=0x7f070021)
+      flags=AUTO_CANCEL
+      originalFlags=AUTO_CANCEL
+      pri=1
+      key=0|com.kidfocusstudio.timer.debug|-802264275|null|10029
+      seen=false
+      groupKey=0|com.kidfocusstudio.timer.debug|-802264275|null|10029
+      notification=
+            fullscreenIntent=null
+            contentIntent=PendingIntent{b3b49f3: PendingIntentRecord{24eed80 com.kidfocusstudio.timer.debug startActivity (allowlist: bcd4bab:+30s0ms/0/NOTIFICATION_SERVICE/NotificationManagerService)}}
+            deleteIntent=null
+            number=0
+            groupAlertBehavior=0
+            when=1790636832804/1790636832804
+            tickerText=null
+            vis=0
+            contentView=null
+            bigContentView=null
+            headsUpContentView=null
+            color=0x00000000
+            timeout=PT72H
+            extras={
+                android.title=String (📚 It’s time!)
+                android.reduced.images=Boolean (true)
+                android.subText=null
+                android.showChronometer=Boolean (false)
+                android.text=String (Time to start Reading1! 🎯)
+                android.progress=Integer (0)
+                android.progressMax=Integer (0)
+                android.appInfo=ApplicationInfo (ApplicationInfo{db8b6b0 com.kidfocusstudio.timer.debug})
+                android.showWhen=Boolean (true)
+                android.largeIcon=null
+                android.infoText=null
+                android.progressIndeterminate=Boolean (false)
+                android.remoteInputHistory=null
+            }
+      publicNotification=
+            None
+      stats=SingleNotificationStats{posttimeElapsedMs=-1, posttimeToFirstClickMs=-1, posttimeToDismissMs=-1, airtimeCount=0, airtimeMs=0, currentAirtimeStartElapsedMs=-1, airtimeExpandedMs=0, posttimeToFirstVisibleExpansionMs=-1, currentAirtimeExpandedStartElapsedMs=-1, requestedImportance=4, naturalImportance=4, isNoisy=true}
+      mContactAffinity=0.0
+      mContactColor=null
+      mPackagePriority=0
+      mPackageVisibility=0
+      mSystemImportance=UNSPECIFIED
+      mAsstImportance=UNSPECIFIED
+      mRuleImportance=UNSPECIFIED
+      mImportance=HIGH
+      mImportanceExplanation=app
+      mProposedImportance=UNSPECIFIED
+      mIsAppImportanceLocked=true
+      mSensitiveContent=false
+      mCanceledAfterLifetimeExtension=false
+      mIntercept=false
+      mHidden==false
+      mGlobalSortKey=null
+      mRankingTimeMs=1790636832804
+      mCreationTimeMs=1790636832811
+      mVisibleSinceMs=0
+      mUpdateTimeMs=1790636832811
+      mInterruptionTimeMs=1790636832811
+      mSuppressedVisualEffects= 0
+      mSound= content://settings/system/notification_sound
+      mVibration= null
+      mAttributes= AudioAttributes: usage=USAGE_NOTIFICATION content=CONTENT_TYPE_SONIFICATION flags=0x800(FLAG_MUTE_HAPTIC)  tags= bundle=null
+      mLight= null
+      mShowBadge=false
+      mColorized=false
+      mAllowBubble=false
+      isBubble=false
+      mIsInterruptive=false
+      effectiveNotificationChannel=NotificationChannel{mId='kidfocus_alert_channel', mName=Timer Alerts, mDescription=hasDescription , mImportance=4, mBypassDnd=false, mLockscreenVisibility=-1000, mSound=content://settings/system/notification_sound, mLights=false, mLightColor=0, mVibrationPattern=null, mVibrationEffect=null, mUserLockedFields=0, mUserVisibleTaskShown=false, mVibrationEnabled=false, mShowBadge=true, mDeleted=false, mDeletedTimeMs=-1, mGroup='null', mAudioAttributes=AudioAttributes: usage=USAGE_NOTIFICATION content=CONTENT_TYPE_SONIFICATION flags=0x800(FLAG_MUTE_HAPTIC)  tags= bundle=null, mBlockableSystem=false, mAllowBubbles=-1, mImportanceLockedDefaultApp=false, mOriginalImp=4, mParent=null, mConversationId=null, mDemoted=false, mImportantConvo=false, mLastNotificationUpdateTimeMs=1790612230448, isBundle=false, emoji=null}
+      mAdjustments=[]
+      mRuleChannelReason=0
+      mRuleSoundReason=0
+      mRuleLightReason=0
+      shortcut=null found valid? false
+      mUserVisOverride=0
+      hasSummarization=false
+      bundleType=0
+      mShouldBreakthroughAllModes=false
+      mBreakthroughAllModesReason=0
+      mHighestPriorityMatchingRule=0
+  

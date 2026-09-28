@@ -1,5 +1,6 @@
 package com.kidfocus.timer.ui.navigation
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -26,6 +27,7 @@ import com.kidfocus.timer.ui.screens.OnboardingScreen
 import com.kidfocus.timer.ui.screens.ParentSettingsScreen
 import com.kidfocus.timer.ui.screens.PinEntryScreen
 import com.kidfocus.timer.ui.screens.DailyScheduleScreen
+import com.kidfocus.timer.ui.screens.SmartScheduleScreen
 import com.kidfocus.timer.ui.screens.ScheduleScreen
 import com.kidfocus.timer.ui.screens.TaskEditScreen
 import com.kidfocus.timer.ui.screens.SubscriptionScreen
@@ -44,6 +46,13 @@ import com.kidfocus.timer.ui.screens.ChildProfilePickerScreen
 import com.kidfocus.timer.ui.screens.ChildProfileSettingsScreen
 
 /**
+ * Returns the route that must be opened before entering a parent-only destination.
+ * A configured PIN is always verified; a device without a PIN must create one first.
+ */
+internal fun parentGateRoute(hasPinSet: Boolean, destination: String): String =
+    if (hasPinSet) NavRoutes.PinEntry.buildRoute(destination) else NavRoutes.PinSetup.route
+
+/**
  * Root navigation graph for KidFocus Timer.
  *
  * [settingsViewModel] is hoisted from [MainActivity] so the app theme is already applied
@@ -56,6 +65,7 @@ fun AppNavigation(
     settingsViewModel: SettingsViewModel,
     modifier: Modifier = Modifier,
 ) {
+    ParentSessionLifecycle(settingsViewModel)
     val navController = rememberNavController()
     val settings by settingsViewModel.settings.collectAsState()
 
@@ -68,8 +78,12 @@ fun AppNavigation(
     // Shared TimerViewModel scoped to the nav graph so Focus and Break screens share state
     val timerViewModel: TimerViewModel = hiltViewModel()
     val scheduleViewModel: ScheduleViewModel = hiltViewModel()
+    val alarmPermission: com.kidfocus.timer.ui.viewmodel.ScheduleAlarmPermissionViewModel = hiltViewModel()
+    com.kidfocus.timer.ui.components.ScheduleAlarmPermissionLifecycle(alarmPermission)
     val routineViewModel: RoutineViewModel = hiltViewModel()
     val cloudSyncViewModel: CloudSyncViewModel = hiltViewModel()
+    val scheduleAccess: com.kidfocus.timer.ui.viewmodel.ScheduleAccessViewModel = hiltViewModel()
+    val scheduleConfig by scheduleAccess.config.collectAsState()
     val cloudAccount by cloudSyncViewModel.account.collectAsState()
     val cloudSyncStatus by cloudSyncViewModel.syncStatus.collectAsState()
     val childProfileViewModel: ChildProfileViewModel = hiltViewModel()
@@ -211,36 +225,23 @@ fun AppNavigation(
         }
 
         // ---- PIN Entry (gate) ----------------------------------------------------------------
-        composable(
-            route = NavRoutes.PinEntry.route,
-            arguments = listOf(
-                navArgument(NavRoutes.ARG_DESTINATION) { type = NavType.StringType }
-            ),
-        ) { backStack ->
-            val destination = backStack.arguments?.getString(NavRoutes.ARG_DESTINATION)
-                ?: NavRoutes.ParentSettings.route
-            PinEntryScreen(
-                isSetupMode = false,
-                settingsViewModel = settingsViewModel,
-                onSuccess = {
-                    navController.navigate(destination) {
-                        popUpTo(NavRoutes.PinEntry.route) { inclusive = true }
-                    }
-                },
-                onCancel = { navController.popBackStack() },
-            )
-        }
+        parentPinEntry(navController, settingsViewModel)
 
         // ---- Parent Settings -----------------------------------------------------------------
         composable(NavRoutes.ParentSettings.route) {
+            BackHandler {
+                settingsViewModel.lockParentSession()
+                navController.popBackStack()
+            }
             ParentSettingsScreen(
                 settingsViewModel = settingsViewModel,
                 onBack = {
-                    settingsViewModel.resetPinVerification()
+                    settingsViewModel.lockParentSession()
                     navController.popBackStack()
                 },
                 onSetPin = { navController.navigate(NavRoutes.PinSetup.route) },
                 onOpenSchedule = { navController.navigate(NavRoutes.Schedule.route) },
+                onOpenSmartSchedule = { navController.navigate(NavRoutes.SmartSchedule.route) },
                 onOpenRoutineSettings = { navController.navigate(NavRoutes.RoutineSettings.route) },
                 onOpenCloudSync = { navController.navigate(NavRoutes.CloudSync.route) },
                 onOpenSubscription = { navController.navigate(NavRoutes.Subscription.route) },
@@ -264,6 +265,19 @@ fun AppNavigation(
             )
         }
 
+        parentScheduleDestinations(
+            navController = navController,
+            settingsViewModel = settingsViewModel,
+            smartScreen = {
+                SmartScheduleScreen(onBack = { navController.popBackStack() },
+                    onQuickEntry = { navController.navigate(NavRoutes.QuickSchedule.route) }, access = scheduleAccess,
+                    alarmPermission = alarmPermission)
+            },
+            quickScreen = {
+                com.kidfocus.timer.ui.screens.QuickScheduleScreen(onBack = { navController.popBackStack() }, access = scheduleAccess)
+            },
+        )
+
         // ---- Schedule ------------------------------------------------------------------------
         composable(NavRoutes.Schedule.route) {
             ScheduleScreen(
@@ -282,6 +296,9 @@ fun AppNavigation(
         composable(NavRoutes.DailySchedule.route) {
             DailyScheduleScreen(
                 viewModel = scheduleViewModel,
+                alarmPermission = alarmPermission,
+                quickEntryEnabled = scheduleConfig.scheduleEnabled,
+                onQuickEntry = { navController.navigate(parentGateRoute(settings?.hasPinSet == true, NavRoutes.QuickSchedule.route)) },
                 onBack = { navController.popBackStack() },
                 onStartTask = { task ->
                     if (task.taskType == TaskType.LEARNING_GAMES) {

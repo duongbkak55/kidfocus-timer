@@ -1,0 +1,66 @@
+G3 connected session — 2026-09-28
+Branch: feature/smart-schedule-w4
+Code HEAD: ce0220ce466ec33d0d0bd7c9599c505ec29e479c (shared working tree contains pre-existing release/Learning changes)
+
+Build command (empty environment values override local service configuration):
+env JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home FIREBASE_API_KEY= FIREBASE_APP_ID= FIREBASE_DEBUG_APP_ID= FIREBASE_PROJECT_ID= FIREBASE_WEB_CLIENT_ID= REVENUECAT_TEST_API_KEY= REVENUECAT_ANDROID_API_KEY= REQUIRE_RELEASE_SERVICES=false ./gradlew assembleDebug
+
+Generated debug BuildConfig Firebase/billing service values verified empty. No source configuration files changed.
+APK SHA-256: ec0dc83d4546ae4420709c589885ee6179e17d66d0a67d0a46ad230473b8b56b
+
+Build output:
+Calculating task graph as configuration cache cannot be reused because environment variable 'REVENUECAT_TEST_API_KEY' has changed.
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :app:desugarDebugFileDependencies UP-TO-DATE
+> Task :app:javaPreCompileDebug UP-TO-DATE
+> Task :app:mergeDebugShaders UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:extractDebugSupportedLocales UP-TO-DATE
+> Task :app:mergeDebugJniLibFolders UP-TO-DATE
+> Task :app:generateDebugLocaleConfig UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:validateSigningDebug UP-TO-DATE
+> Task :app:writeDebugAppMetadata UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:writeDebugSigningConfigVersions UP-TO-DATE
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:checkDebugDuplicateClasses UP-TO-DATE
+> Task :app:mergeDebugAssets UP-TO-DATE
+> Task :app:compressDebugAssets UP-TO-DATE
+> Task :app:mergeLibDexDebug UP-TO-DATE
+> Task :app:mergeDebugNativeLibs UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:stripDebugDebugSymbols UP-TO-DATE
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :app:processDebugManifest UP-TO-DATE
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+> Task :app:mergeExtDexDebug UP-TO-DATE
+> Task :app:processDebugResources UP-TO-DATE
+> Task :app:generateDebugBuildConfig
+> Task :app:kspDebugKotlin
+> Task :app:compileDebugKotlin
+> Task :app:compileDebugJavaWithJavac
+> Task :app:hiltAggregateDepsDebug UP-TO-DATE
+> Task :app:hiltJavaCompileDebug
+> Task :app:processDebugJavaRes UP-TO-DATE
+> Task :app:mergeDebugJavaResource UP-TO-DATE
+> Task :app:transformDebugClassesWithAsm
+> Task :app:dexBuilderDebug
+> Task :app:mergeDebugGlobalSynthetics UP-TO-DATE
+> Task :app:mergeProjectDexDebug
+> Task :app:packageDebug
+> Task :app:assembleDebug
+> Task :app:createDebugApkListingFileRedirect UP-TO-DATE
+
+BUILD SUCCESSFUL in 18s
+44 actionable tasks: 10 executed, 34 up-to-date
+Configuration cache entry stored.

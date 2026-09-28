@@ -44,54 +44,31 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kidfocus.timer.R
+import com.kidfocus.timer.domain.schedule.*
 import com.kidfocus.timer.domain.model.ScheduledTask
 import com.kidfocus.timer.ui.theme.KidFocusTheme
 import com.kidfocus.timer.ui.components.TaskVisual
 import com.kidfocus.timer.ui.viewmodel.ScheduleViewModel
+import com.kidfocus.timer.ui.viewmodel.ScheduleAlarmPermissionViewModel
+import com.kidfocus.timer.ui.components.ScheduleExactAlarmReminder
 import java.util.Calendar
 
-private sealed class TimelineItem {
-    data class Task(val task: ScheduledTask) : TimelineItem()
-    data class EmptySlot(val hour: Int, val minute: Int) : TimelineItem()
-}
-
-private fun buildTimeline(tasks: List<ScheduledTask>): List<TimelineItem> {
-    if (tasks.isEmpty()) return emptyList()
-    val result = mutableListOf<TimelineItem>()
-    val DAY_START = 6 * 60   // 06:00
-    val DAY_END   = 22 * 60  // 22:00
-    val GAP_MIN   = 60       // show empty slot if gap >= 60 min
-
-    // Gap before first task
-    val firstStart = tasks.first().hour * 60 + tasks.first().minute
-    if (firstStart - DAY_START >= GAP_MIN) {
-        val slotMin = roundUp30(DAY_START + 30)
-        if (slotMin < firstStart) result += TimelineItem.EmptySlot(slotMin / 60, slotMin % 60)
-    }
-
-    tasks.forEachIndexed { i, task ->
-        result += TimelineItem.Task(task)
-        val taskEnd = task.hour * 60 + task.minute + task.focusDurationMinutes + task.breakDurationMinutes
-        val nextStart = if (i + 1 < tasks.size) tasks[i + 1].hour * 60 + tasks[i + 1].minute else DAY_END
-        if (nextStart - taskEnd >= GAP_MIN) {
-            val slotMin = roundUp30(taskEnd + 15)
-            if (slotMin < nextStart) result += TimelineItem.EmptySlot(slotMin / 60, slotMin % 60)
-        }
-    }
-    return result
-}
-
-private fun roundUp30(minutes: Int) = ((minutes + 29) / 30) * 30
+private fun buildTimeline(tasks: List<ScheduledTask>, anchors: ScheduleAnchors, day: java.time.DayOfWeek): List<ScheduleTimelineItem> =
+    buildScheduleTimeline(tasks, anchors, day).items
 
 @Composable
 fun DailyScheduleScreen(
     viewModel: ScheduleViewModel,
     onBack: () -> Unit,
     onStartTask: (ScheduledTask) -> Unit,
+    quickEntryEnabled: Boolean = false,
+    onQuickEntry: () -> Unit = {},
     onAddTaskAtTime: (hour: Int, minute: Int) -> Unit = { _, _ -> },
+    alarmPermission: ScheduleAlarmPermissionViewModel = androidx.hilt.navigation.compose.hiltViewModel(),
 ) {
     val colors = KidFocusTheme.colors
     val tasks by viewModel.tasks.collectAsState()
+    val anchors by viewModel.anchors.collectAsState()
 
     val today = Calendar.getInstance()
     // offset from today: 0=today, -1=yesterday, +1=tomorrow (within the week)
@@ -99,10 +76,6 @@ fun DailyScheduleScreen(
 
     val displayCal = Calendar.getInstance().also { it.add(Calendar.DAY_OF_YEAR, dayOffset) }
     val displayDow = displayCal.get(Calendar.DAY_OF_WEEK) // Calendar.MONDAY..SUNDAY
-
-    val tasksForDay = tasks
-        .filter { it.enabled && displayDow in it.daysOfWeek }
-        .sortedWith(compareBy({ it.hour }, { it.minute }))
 
     val nowHour = today.get(Calendar.HOUR_OF_DAY)
     val nowMin = today.get(Calendar.MINUTE)
@@ -131,6 +104,12 @@ fun DailyScheduleScreen(
                     fontWeight = FontWeight.Bold,
                 )
             }
+
+            if (quickEntryEnabled) androidx.compose.material3.TextButton(onClick = onQuickEntry, modifier = Modifier.padding(horizontal = 16.dp)) {
+                Text(stringResource(R.string.quick_title))
+            }
+
+            ScheduleExactAlarmReminder(alarmPermission)
 
             // Week strip
             WeekStrip(
@@ -173,7 +152,8 @@ fun DailyScheduleScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            if (tasksForDay.isEmpty()) {
+            val timeline = buildTimeline(tasks, anchors, DayCodec.fromCalendar(displayDow))
+            if (timeline.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("🎉", fontSize = 48.sp)
@@ -186,7 +166,6 @@ fun DailyScheduleScreen(
                     }
                 }
             } else {
-                val timeline = buildTimeline(tasksForDay)
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -195,24 +174,33 @@ fun DailyScheduleScreen(
                 ) {
                     items(timeline) { item ->
                         when (item) {
-                            is TimelineItem.Task -> {
+                            is ScheduleTimelineItem.Task -> {
                                 val task = item.task
-                                val taskMinutes = task.hour * 60 + task.minute
+                                val taskMinutes = item.start
                                 val nowMinutes = nowHour * 60 + nowMin
                                 val isPast = isToday && taskMinutes + task.focusDurationMinutes < nowMinutes
                                 val isCurrent = isToday && taskMinutes <= nowMinutes && nowMinutes < taskMinutes + task.focusDurationMinutes
                                 TimelineTaskItem(
                                     task = task,
+                                    timeLabel = timelineTime(item.start),
                                     isPast = isPast,
                                     isCurrent = isCurrent,
                                     onStart = { onStartTask(task) },
                                 )
                             }
-                            is TimelineItem.EmptySlot -> {
+                            is ScheduleTimelineItem.Anchor -> {
+                                Column(Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
+                                    Text(stringResource(if (item.kind == ScheduleTimelineItem.Kind.SLEEP) R.string.smart_sleep_block else R.string.smart_school_title),
+                                        style = MaterialTheme.typography.titleMedium)
+                                    item.label?.let { Text(it) }
+                                    Text(stringResource(R.string.smart_time_range, timelineTime(item.start), timelineTime(item.end)))
+                                }
+                            }
+                            is ScheduleTimelineItem.Gap -> {
                                 EmptySlotItem(
-                                    hour = item.hour,
-                                    minute = item.minute,
-                                    onAdd = { onAddTaskAtTime(item.hour, item.minute) },
+                                    hour = Math.floorMod(item.start, 1440) / 60,
+                                    minute = Math.floorMod(item.start, 1440) % 60,
+                                    onAdd = { onAddTaskAtTime(Math.floorMod(item.start, 1440) / 60, Math.floorMod(item.start, 1440) % 60) },
                                 )
                             }
                         }
@@ -231,7 +219,6 @@ private fun WeekStrip(
     onDaySelected: (Int) -> Unit,
 ) {
     val colors = KidFocusTheme.colors
-    val today = Calendar.getInstance()
 
     LazyRow(
         modifier = Modifier
@@ -287,6 +274,7 @@ private fun WeekStrip(
 @Composable
 private fun TimelineTaskItem(
     task: ScheduledTask,
+    timeLabel: String,
     isPast: Boolean,
     isCurrent: Boolean,
     onStart: () -> Unit,
@@ -302,7 +290,7 @@ private fun TimelineTaskItem(
     ) {
         // Time label
         Text(
-            text = task.timeFormatted,
+            text = timeLabel,
             style = MaterialTheme.typography.labelMedium,
             color = colors.onBackground.copy(alpha = 0.5f * alpha),
             modifier = Modifier
@@ -488,3 +476,13 @@ private fun dowLabel(dow: Int) = java.text.DateFormatSymbols.getInstance().weekd
 
 private fun dowShort(dow: Int) = java.text.DateFormatSymbols.getInstance().shortWeekdays
     .getOrElse(dow) { "" }
+
+@Composable
+private fun timelineTime(minute: Int): String {
+    val time = timeAtMinute(minute).toString()
+    return when {
+        minute >= 1440 -> stringResource(R.string.smart_next_day_time, time)
+        minute < 0 -> stringResource(R.string.smart_previous_day_time, time)
+        else -> time
+    }
+}

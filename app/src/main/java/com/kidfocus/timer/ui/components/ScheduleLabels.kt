@@ -6,7 +6,8 @@ import androidx.compose.ui.res.stringResource
 import com.kidfocus.timer.R
 import com.kidfocus.timer.domain.model.TaskCategory
 import com.kidfocus.timer.domain.model.TaskType
-import java.util.Calendar
+import com.kidfocus.timer.domain.schedule.DayCodec
+import java.time.DayOfWeek
 
 @Composable
 fun taskTypeLabel(type: TaskType): String = stringResource(type.labelResource())
@@ -21,22 +22,22 @@ fun scheduleDaysLabel(days: Set<Int>): String = when (days) {
     TaskType.WEEKEND -> stringResource(R.string.repeat_weekend)
     else -> {
         val labels = mapOf(
-            Calendar.MONDAY to stringResource(R.string.weekday_monday_short),
-            Calendar.TUESDAY to stringResource(R.string.weekday_tuesday_short),
-            Calendar.WEDNESDAY to stringResource(R.string.weekday_wednesday_short),
-            Calendar.THURSDAY to stringResource(R.string.weekday_thursday_short),
-            Calendar.FRIDAY to stringResource(R.string.weekday_friday_short),
-            Calendar.SATURDAY to stringResource(R.string.weekday_saturday_short),
-            Calendar.SUNDAY to stringResource(R.string.weekday_sunday_short),
+            DayCodec.toCalendar(DayOfWeek.MONDAY) to stringResource(R.string.weekday_monday_short),
+            DayCodec.toCalendar(DayOfWeek.TUESDAY) to stringResource(R.string.weekday_tuesday_short),
+            DayCodec.toCalendar(DayOfWeek.WEDNESDAY) to stringResource(R.string.weekday_wednesday_short),
+            DayCodec.toCalendar(DayOfWeek.THURSDAY) to stringResource(R.string.weekday_thursday_short),
+            DayCodec.toCalendar(DayOfWeek.FRIDAY) to stringResource(R.string.weekday_friday_short),
+            DayCodec.toCalendar(DayOfWeek.SATURDAY) to stringResource(R.string.weekday_saturday_short),
+            DayCodec.toCalendar(DayOfWeek.SUNDAY) to stringResource(R.string.weekday_sunday_short),
         )
         listOf(
-            Calendar.MONDAY,
-            Calendar.TUESDAY,
-            Calendar.WEDNESDAY,
-            Calendar.THURSDAY,
-            Calendar.FRIDAY,
-            Calendar.SATURDAY,
-            Calendar.SUNDAY,
+            DayCodec.toCalendar(DayOfWeek.MONDAY),
+            DayCodec.toCalendar(DayOfWeek.TUESDAY),
+            DayCodec.toCalendar(DayOfWeek.WEDNESDAY),
+            DayCodec.toCalendar(DayOfWeek.THURSDAY),
+            DayCodec.toCalendar(DayOfWeek.FRIDAY),
+            DayCodec.toCalendar(DayOfWeek.SATURDAY),
+            DayCodec.toCalendar(DayOfWeek.SUNDAY),
         ).filter(days::contains).joinToString(", ") { labels.getValue(it) }
     }
 }

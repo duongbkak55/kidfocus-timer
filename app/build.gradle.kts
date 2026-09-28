@@ -92,6 +92,10 @@ android {
         )
     }
 
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
+
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.14"
     }
@@ -130,9 +134,11 @@ ksp {
 
 dependencies {
     implementation(libs.androidx.core.ktx)
+    implementation("androidx.exifinterface:exifinterface:1.3.7")
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation("androidx.lifecycle:lifecycle-process:${libs.versions.lifecycleRuntimeKtx.get()}")
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
@@ -178,9 +184,12 @@ dependencies {
     implementation(libs.androidx.webkit)
 
     // Testing
+    testImplementation("org.robolectric:robolectric:4.16.1")
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.androidx.ui.test.junit4)
+    testImplementation("androidx.navigation:navigation-testing:${libs.versions.navigationCompose.get()}")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

@@ -1,0 +1,22 @@
+{
+  "mode": "with_permission",
+  "taskName": "Reading",
+  "targetEpoch": 1790637300,
+  "targetLocal": "2026-09-29T06:15:00+07:00",
+  "saveDesiredEpoch": 1790637120,
+  "preparedEpoch": 1790637046,
+  "exactAppop": "Uid mode: SCHEDULE_EXACT_ALARM: allow",
+  "saveClickEpoch": 1790637123,
+  "savedEpoch": 1790637123,
+  "leadSeconds": 177,
+  "notificationFields": {
+    "mRankingTimeMs": 1790637300016,
+    "mCreationTimeMs": 1790637300019,
+    "mUpdateTimeMs": 1790637300019,
+    "mInterruptionTimeMs": 1790637301161
+  },
+  "notificationFirstObservedEpoch": 1790637301,
+  "notificationUpdatedLocal": "2026-09-29T06:15:00.019000+07:00",
+  "lateMilliseconds": 19,
+  "result": "PASS (<10s)"
+}

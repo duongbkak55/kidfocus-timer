@@ -1,0 +1,28 @@
+G3 retest after a2ba634 — completed 2026-09-28 (Asia/Ho_Chi_Minh).
+Device: Pixel 9 / Android 17 / API 37; wireless adb target adb-4A150DLAQ0013S-aauTsY._adb-tls-connect._tcp.
+Branch: feature/smart-schedule-w4. Code not changed during retest.
+A: earlier PASS retained, not rerun/clear-data.
+B/C/D/F/G/H/I: PASS. C applies to selected Monday night, other nights keep independent findings.
+E: FAIL punctuality, Reading requested 23:15:00, saved 23:12:06 (174 sec lead), notification created 23:17:10.091, 130.091 sec late.
+Notification payload remained Vietnamese in en-GB locale; recorded as low-severity separate finding.
+I: force-stop from Home, fresh launch, PIN entry, both profiles and saved anchors/school/tasks verified. Returned to Home.
+Final fixtures: Child / Grade 1 active, 3-B / Ages 4–5 with empty anchors/school/findings/task schedule.
+Child: wake weekdays 06:15; selected Monday-night bed 00:30 (early Tue), Tue-Fri bed 22:30; weekends unset.
+Child: school 07:00–16:30 weekdays; Homework 21:00 45 focus / 15 break weekdays; Reading 23:15 30 focus / 5 break every day; PIN 2468.
+At start of retest, Reading 22:20 was already visible as a saved task (contrary to historical report's draft observation); kept data, changed its time only for E.
+No code/permissions/timeout/security/data-clear changes, no reboot/login/purchase/OpenRouter/production service/push/merge/deploy.
+Expanded Quick Settings interrupted a prior UI operation; input guard stopped, read-only trust confirmed unlocked, shade collapsed before continuation. Interim evidence 44 is not final status.
+Notification shade screenshot skipped to avoid including unrelated notifications; dumpsys evidence filters only KidFocus record.
+Historical raw log preserved unchanged as 89-before-fix-logcat-crash.txt; current logcat-crash.txt is this retest.
+Baseline hashes for 19 pre-existing tracked dirty files unchanged.
+
+Read-only final device settings / permissions:
+font_scale=1.0
+accelerometer_rotation=0
+user_rotation=0
+device locale=en-GB
+SCHEDULE_EXACT_ALARM appop=No operations.
+Default mode: default
+android.permission.POST_NOTIFICATIONS: granted=true, flags=[ USER_SET|USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]
+
+Crash buffer bytes: 0; general filter lines: 85

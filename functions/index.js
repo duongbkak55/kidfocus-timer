@@ -3,14 +3,17 @@ const {initializeApp} = require("firebase-admin/app");
 const {getAuth} = require("firebase-admin/auth");
 const {getFirestore, FieldValue} = require("firebase-admin/firestore");
 const {getRemoteConfig} = require("firebase-admin/remote-config");
-const {defineSecret} = require("firebase-functions/params");
+const {defineSecret, defineBoolean} = require("firebase-functions/params");
 const {onCall, onRequest, HttpsError} = require("firebase-functions/v2/https");
+
+const schedule = require("./schedule");
 
 initializeApp();
 
 const db = getFirestore();
 const openRouterKey = defineSecret("OPENROUTER_API_KEY");
 const revenueCatWebhookAuth = defineSecret("REVENUECAT_WEBHOOK_AUTH");
+const enforceAppCheck = defineBoolean("ENFORCE_APP_CHECK", {default: true});
 const REGION = "asia-southeast1";
 const TIME_ZONE = "Asia/Ho_Chi_Minh";
 const SYSTEM_PROMPT = `Bạn là trợ lý học tập thân thiện tên Cú học, dành cho học sinh tiểu học và THCS Việt Nam.
@@ -23,7 +26,20 @@ const DEFAULT_CONFIG = {
   guestDailyLimit: 10,
   freeDailyLimit: 10,
   premiumDailyCredits: 60,
-  globalDailyCredits: 200,
+  globalDailyCredits: 500,
+  earlyAccessOpen: false,
+  earlyAccessDays: 60,
+  earlyDailyCredits: 15,
+  scheduleEnabled: false,
+  scheduleGuestEnabled: false,
+  scheduleModel: "google/gemini-2.5-flash-lite",
+  scheduleParseCost: 1,
+  scheduleAdviseCost: 2,
+  scheduleAdviseModel: "", // Fall back to the configured PARSE model.
+  scheduleVisionModel: "google/gemini-2.5-flash-lite",
+  scheduleImageCost: 3,
+  scheduleImageTiers: ["early", "premium"],
+  scheduleFreeDailyParses: 0, // 0 preserves W2: no additional PARSE cap.
   maxHistoryMessages: 12,
   maxInputChars: 1500,
   maxOutputTokens: 600,
@@ -141,6 +157,20 @@ exports.aiChat = onCall(
     },
 );
 
+exports.aiSchedule = onCall(
+    {region: REGION, timeoutSeconds: 60, memory: "256MiB", minInstances: 0,
+      maxInstances: 2, concurrency: 20, secrets: [openRouterKey], enforceAppCheck},
+    schedule.createScheduleHandler({loadConfig, resolveIdentity, quotaDay, reserveQuota, completeReservation, refundReservation,
+      fetch: (...args) => fetch(...args), key: () => openRouterKey.value(),
+      error: (code, message) => new HttpsError(code, message), log: (code) => console.error(code)}),
+);
+
+exports.claimEarlyAccess = onCall(
+    {region: REGION, maxInstances: 2, enforceAppCheck},
+    async (request) => schedule.claimEarlyAccess({db, uid: request.auth && request.auth.uid,
+      config: await loadConfig(), now: Date.now(), error: (code, message) => new HttpsError(code, message)}),
+);
+
 exports.revenueCatWebhook = onRequest(
     {region: REGION, maxInstances: 1, secrets: [revenueCatWebhookAuth]},
     async (request, response) => {
@@ -203,6 +233,21 @@ async function loadConfig() {
     next.maxHistoryMessages = parseIntSafe(value("ai_max_history_messages"), next.maxHistoryMessages, 2, 30);
     next.maxInputChars = parseIntSafe(value("ai_max_input_chars"), next.maxInputChars, 100, 4000);
     next.maxOutputTokens = parseIntSafe(value("ai_max_output_tokens"), next.maxOutputTokens, 100, 2000);
+    next.earlyAccessOpen = parseBoolean(value("early_access_open"), next.earlyAccessOpen);
+    next.earlyAccessDays = parseIntSafe(value("ai_early_access_days"), next.earlyAccessDays, 1, 365);
+    next.earlyDailyCredits = parseIntSafe(value("ai_early_daily_credits"), next.earlyDailyCredits, 0, 1000);
+    next.scheduleEnabled = parseBoolean(value("ai_schedule_enabled"), next.scheduleEnabled);
+    next.scheduleGuestEnabled = parseBoolean(value("ai_schedule_guest_enabled"), next.scheduleGuestEnabled);
+    next.scheduleModel = safeString(value("ai_schedule_model"), 120) || next.scheduleModel;
+    next.scheduleParseCost = parseIntSafe(value("ai_schedule_parse_cost"), next.scheduleParseCost, 1, 100);
+    next.scheduleAdviseCost = parseIntSafe(value("ai_schedule_advise_cost"), next.scheduleAdviseCost, 1, 100);
+    next.scheduleAdviseModel = safeString(value("ai_schedule_advise_model"), 120) || next.scheduleModel;
+    next.scheduleVisionModel = safeString(value("ai_schedule_vision_model"), 120) || next.scheduleVisionModel;
+    next.scheduleImageCost = parseIntSafe(value("ai_schedule_image_cost"), next.scheduleImageCost, 1, 100);
+    const imageTiers = value("ai_schedule_image_tiers");
+    if (typeof imageTiers === "string") next.scheduleImageTiers = imageTiers.split(",").map((tier) => tier.trim())
+        .filter((tier) => ["free", "early", "premium", "guest"].includes(tier));
+    next.scheduleFreeDailyParses = parseIntSafe(value("ai_schedule_free_daily_parses"), next.scheduleFreeDailyParses, 0, 100);
     const remoteModels = JSON.parse(value("ai_models_json") || "null");
     if (Array.isArray(remoteModels) && remoteModels.length) {
       next.models = remoteModels.map(normalizeModel).filter(Boolean);
@@ -219,7 +264,7 @@ async function resolveIdentity(request) {
   const uid = request.auth && request.auth.uid;
   if (uid) {
     const entitlement = await db.collection("entitlements").doc(uid).get();
-    return {subject: `uid_${uid}`, premium: entitlement.get("premium") === true, signedIn: true};
+    return identityFromEntitlement(uid, entitlement.data() || {}, Date.now());
   }
   const guestId = safeString(request.data && request.data.guestId, 80);
   if (!/^[a-zA-Z0-9-]{16,80}$/.test(guestId)) {
@@ -229,12 +274,24 @@ async function resolveIdentity(request) {
   return {subject: `guest_${hash}`, premium: false, signedIn: false};
 }
 
-function quotaRef(identity) {
-  return db.collection("internalAiQuota").doc(identity.subject).collection("days").doc(quotaDay());
+function identityFromEntitlement(uid, entitlement, now) {
+  const premium = entitlement.premium === true;
+  const earlyAccessUntil = Number(entitlement.earlyAccessUntil || 0);
+  return {subject: `uid_${uid}`, premium, signedIn: true, earlyAccessUntil,
+    tier: premium ? "premium" : earlyAccessUntil > now ? "early" : "free"};
 }
 
-function globalQuotaRef() {
-  return db.collection("internalAiQuota").doc("_global").collection("days").doc(quotaDay());
+function dailyCredits(identity, config) {
+  return identity.premium ? config.premiumDailyCredits : identity.tier === "early" ? config.earlyDailyCredits :
+    (identity.signedIn ? config.freeDailyLimit : config.guestDailyLimit);
+}
+
+function quotaRef(identity, quotaDb = db) {
+  return quotaDb.collection("internalAiQuota").doc(identity.subject).collection("days").doc(identity.quotaDate || quotaDay());
+}
+
+function globalQuotaRef(quotaDb = db, day = quotaDay()) {
+  return quotaDb.collection("internalAiQuota").doc("_global").collection("days").doc(day);
 }
 
 function quotaDay() {
@@ -253,19 +310,22 @@ async function readUsage(identity, config) {
 function usageFromData(identity, config, data) {
   const questions = Number(data.questions || 0);
   const credits = Number(data.credits || 0);
-  const limit = identity.premium ? config.premiumDailyCredits :
-    (identity.signedIn ? config.freeDailyLimit : config.guestDailyLimit);
+  const limit = dailyCredits(identity, config);
+  const freeScheduleCap = identity.signedIn && !identity.premium && identity.tier !== "early" && config.scheduleFreeDailyParses > 0;
   return {
+    ...(freeScheduleCap ? {remainingScheduleParses: Math.max(0, config.scheduleFreeDailyParses - Number(data.scheduleParses || 0))} : {}),
     premium: identity.premium,
+    tier: identity.tier || (identity.premium ? "premium" : identity.signedIn ? "free" : "guest"),
+    earlyAccessUntil: identity.earlyAccessUntil || null,
     remainingQuestions: Math.max(0, limit - questions),
     remainingCredits: Math.max(0, limit - credits),
   };
 }
 
-async function reserveQuota(identity, config, model, requestId) {
-  const ref = quotaRef(identity);
-  const globalRef = globalQuotaRef();
-  return db.runTransaction(async (transaction) => {
+async function reserveQuota(identity, config, model, requestId, quotaDb = db) {
+  const ref = quotaRef(identity, quotaDb);
+  const globalRef = globalQuotaRef(quotaDb, identity.quotaDate || quotaDay());
+  return quotaDb.runTransaction(async (transaction) => {
     const [snapshot, globalSnapshot] = await Promise.all([
       transaction.get(ref), transaction.get(globalRef),
     ]);
@@ -279,9 +339,13 @@ async function reserveQuota(identity, config, model, requestId) {
     const credits = Number(data.credits || 0);
     const modelCounts = data.modelCounts || {};
     const modelCount = Number(modelCounts[model.id] || 0);
-    const maxCredits = identity.premium ? config.premiumDailyCredits :
-      (identity.signedIn ? config.freeDailyLimit : config.guestDailyLimit);
+    const maxCredits = dailyCredits(identity, config);
     const globalCredits = Number(globalData.credits || 0);
+    const scheduleParses = Number(data.scheduleParses || 0);
+    if (model.scheduleParse && identity.signedIn && !identity.premium && identity.tier !== "early" &&
+        config.scheduleFreeDailyParses > 0 && scheduleParses >= config.scheduleFreeDailyParses) {
+      throw new HttpsError("resource-exhausted", "SCHEDULE_DAILY_LIMIT_REACHED");
+    }
     if (questions >= maxCredits || credits + model.creditCost > maxCredits || modelCount >= model.dailyLimit) {
       throw new HttpsError("resource-exhausted", "DAILY_LIMIT_REACHED");
     }
@@ -289,10 +353,11 @@ async function reserveQuota(identity, config, model, requestId) {
       throw new HttpsError("resource-exhausted", "GLOBAL_DAILY_LIMIT_REACHED");
     }
     transaction.set(ref, {
+      ...(model.scheduleParse ? {scheduleParses: scheduleParses + 1} : {}),
       questions: questions + 1,
       credits: credits + model.creditCost,
       modelCounts: {...modelCounts, [model.id]: modelCount + 1},
-      requests: {...requests, [requestId]: {state: "reserved", modelId: model.id}},
+      requests: {...requests, [requestId]: {state: "reserved", modelId: model.id, ...(model.scheduleParse ? {scheduleParse: true} : {})}},
       updatedAt: FieldValue.serverTimestamp(),
     }, {merge: true});
     transaction.set(globalRef, {
@@ -300,14 +365,14 @@ async function reserveQuota(identity, config, model, requestId) {
       credits: globalCredits + model.creditCost,
       updatedAt: FieldValue.serverTimestamp(),
     }, {merge: true});
-    const reserved = {...data, questions: questions + 1, credits: credits + model.creditCost};
+    const reserved = {...data, ...(model.scheduleParse ? {scheduleParses: scheduleParses + 1} : {}), questions: questions + 1, credits: credits + model.creditCost};
     return {usage: usageFromData(identity, config, reserved)};
   });
 }
 
-async function completeReservation(identity, config, requestId) {
-  const ref = quotaRef(identity);
-  return db.runTransaction(async (transaction) => {
+async function completeReservation(identity, config, requestId, quotaDb = db) {
+  const ref = quotaRef(identity, quotaDb);
+  return quotaDb.runTransaction(async (transaction) => {
     const snapshot = await transaction.get(ref);
     const data = snapshot.data() || {};
     const requests = data.requests || {};
@@ -318,10 +383,10 @@ async function completeReservation(identity, config, requestId) {
   });
 }
 
-async function refundReservation(identity, model, requestId) {
-  const ref = quotaRef(identity);
-  const globalRef = globalQuotaRef();
-  await db.runTransaction(async (transaction) => {
+async function refundReservation(identity, model, requestId, quotaDb = db) {
+  const ref = quotaRef(identity, quotaDb);
+  const globalRef = globalQuotaRef(quotaDb, identity.quotaDate || quotaDay());
+  await quotaDb.runTransaction(async (transaction) => {
     const [snapshot, globalSnapshot] = await Promise.all([
       transaction.get(ref), transaction.get(globalRef),
     ]);
@@ -330,13 +395,16 @@ async function refundReservation(identity, model, requestId) {
     const requests = data.requests || {};
     if (!requests[requestId] || requests[requestId].state !== "reserved") return;
     const modelCounts = data.modelCounts || {};
+    const wasScheduleParse = requests[requestId].scheduleParse === true;
     delete requests[requestId];
     transaction.set(ref, {
+      ...data,
+      ...(wasScheduleParse ? {scheduleParses: Math.max(0, Number(data.scheduleParses || 0) - 1)} : {}),
       questions: Math.max(0, Number(data.questions || 0) - 1),
       credits: Math.max(0, Number(data.credits || 0) - model.creditCost),
       modelCounts: {...modelCounts, [model.id]: Math.max(0, Number(modelCounts[model.id] || 0) - 1)},
       requests,
-    }, {merge: true});
+    });
     transaction.set(globalRef, {
       questions: Math.max(0, Number(globalData.questions || 0) - 1),
       credits: Math.max(0, Number(globalData.credits || 0) - model.creditCost),
@@ -346,7 +414,11 @@ async function refundReservation(identity, model, requestId) {
 }
 
 function publicConfig(config, usage) {
-  return {enabled: config.enabled, models: config.models, usage};
+  return {enabled: config.enabled, models: config.models, usage,
+    ai_schedule_enabled: config.scheduleEnabled && config.enabled, early_access_open: config.earlyAccessOpen,
+    ai_schedule_parse_cost: config.scheduleParseCost, ai_schedule_advise_cost: config.scheduleAdviseCost,
+    ai_schedule_image_tiers: config.scheduleImageTiers, ai_schedule_image_cost: config.scheduleImageCost,
+    ai_schedule_free_daily_parses: config.scheduleFreeDailyParses};
 }
 
 function sanitizeMessages(raw, config) {
@@ -385,4 +457,4 @@ function parseIntSafe(value, fallback, min, max) {
   return Number.isFinite(parsed) ? Math.min(max, Math.max(min, parsed)) : fallback;
 }
 
-module.exports._test = {normalizeModel, parseBoolean, parseIntSafe, sanitizeMessages, usageFromData};
+module.exports._test = {DEFAULT_CONFIG, publicConfig, normalizeModel, parseBoolean, parseIntSafe, sanitizeMessages, usageFromData, identityFromEntitlement, dailyCredits, reserveQuota, completeReservation, refundReservation};

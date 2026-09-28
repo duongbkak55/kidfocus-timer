@@ -4,7 +4,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 
-import android.app.AlarmManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -66,6 +65,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kidfocus.timer.R
+import com.kidfocus.timer.alarm.ExactAlarmPermission
 import com.kidfocus.timer.data.database.RoutineEntity
 import com.kidfocus.timer.domain.model.RoutineTime
 import com.kidfocus.timer.ui.components.RepeatPreset
@@ -89,14 +89,15 @@ fun RoutineSettingsScreen(
 ) {
     val colors = KidFocusTheme.colors
     val context = LocalContext.current
+    val exactPermission = remember(context) { ExactAlarmPermission(context) }
     val routines by viewModel.allRoutines.collectAsState()
     var pendingDelete by remember { mutableStateOf<RoutineEntity?>(null) }
-    var exactAlarmAllowed by remember { mutableStateOf(canScheduleExactAlarms(context)) }
+    var exactAlarmAllowed by remember { mutableStateOf(exactPermission.isAllowed()) }
     var showPresetPicker by remember { mutableStateOf(false) }
     var presetResultCount by remember { mutableStateOf<Int?>(null) }
 
     LifecycleResumeEffect(Unit) {
-        exactAlarmAllowed = canScheduleExactAlarms(context)
+        exactAlarmAllowed = exactPermission.isAllowed()
         if (exactAlarmAllowed) viewModel.rescheduleAll()
         onPauseOrDispose { }
     }
@@ -140,13 +141,7 @@ fun RoutineSettingsScreen(
                         )
                         Spacer(Modifier.height(8.dp))
                         OutlinedButton(onClick = {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                context.startActivity(
-                                    Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
-                                        data = Uri.parse("package:${context.packageName}")
-                                    }
-                                )
-                            }
+                            exactPermission.openSettings()
                         }) { Text(stringResource(R.string.routine_open_settings)) }
                     }
                 }
@@ -810,7 +805,3 @@ internal fun formatRepeatDays(mask: Int): String {
             .joinToString(", ") { shortLabels.getValue(it) }
     }
 }
-
-private fun canScheduleExactAlarms(context: Context): Boolean =
-    Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
-        context.getSystemService(AlarmManager::class.java).canScheduleExactAlarms()

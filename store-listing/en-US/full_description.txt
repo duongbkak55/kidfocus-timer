@@ -26,6 +26,8 @@ KidFocus brings learning, healthy routines, and focus time together in one famil
 👨‍👩‍👧 BUILT FOR FAMILIES
 
 • Protect parent settings with a PIN
+• Quick schedule entry by typing or voice: parents review a draft and tap Apply to save (requires sign-in and enabled AI).
+• Offline weekly schedule advice highlights overlaps and sleep timing by age band for parents to review.
 • Create a separate profile for each child
 • Choose a color theme your child enjoys
 • No ads and no sale of personal data

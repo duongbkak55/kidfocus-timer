@@ -23,9 +23,19 @@ data class AiUsage(
     val remainingQuestions: Int,
     val remainingCredits: Int,
     val premium: Boolean,
+    val tier: String = if (premium) "premium" else "free",
+    val earlyAccessUntil: Long? = null,
+    val remainingScheduleParses: Int? = null,
 )
 
 data class AiConfig(
+    val scheduleEnabled: Boolean = false,
+    val earlyAccessOpen: Boolean = false,
+    val scheduleParseCost: Int = 1,
+    val scheduleAdviseCost: Int = 2,
+    val scheduleImageCost: Int = 3,
+    val scheduleImageTiers: Set<String> = emptySet(),
+    val scheduleFreeDailyParses: Int = 0,
     val enabled: Boolean = true,
     val models: List<AiModelOption> = listOf(
         AiModelOption(
@@ -96,6 +106,13 @@ private fun Any?.asStringMap(): Map<String, Any?> =
     (this as? Map<*, *>)?.entries?.associate { it.key.toString() to it.value }.orEmpty()
 
 private fun Map<String, Any?>.toAiConfig(): AiConfig = AiConfig(
+    scheduleEnabled = this["ai_schedule_enabled"] as? Boolean ?: false,
+    earlyAccessOpen = this["early_access_open"] as? Boolean ?: false,
+    scheduleAdviseCost = (this["ai_schedule_advise_cost"] as? Number)?.toInt() ?: 2,
+    scheduleParseCost = (this["ai_schedule_parse_cost"] as? Number)?.toInt() ?: 1,
+    scheduleImageCost = (this["ai_schedule_image_cost"] as? Number)?.toInt() ?: 3,
+    scheduleImageTiers = (this["ai_schedule_image_tiers"] as? List<*>)?.filterIsInstance<String>()?.toSet().orEmpty(),
+    scheduleFreeDailyParses = (this["ai_schedule_free_daily_parses"] as? Number)?.toInt() ?: 0,
     enabled = this["enabled"] as? Boolean ?: true,
     models = (this["models"] as? List<*>).orEmpty().mapNotNull { raw ->
         val model = raw.asStringMap()
@@ -115,5 +132,10 @@ private fun Map<String, Any?>.toAiConfig(): AiConfig = AiConfig(
 private fun Map<String, Any?>.toAiUsage(): AiUsage = AiUsage(
     remainingQuestions = (this["remainingQuestions"] as? Number)?.toInt() ?: 0,
     remainingCredits = (this["remainingCredits"] as? Number)?.toInt() ?: 0,
+    tier = this["tier"] as? String ?: if (this["premium"] == true) "premium" else "free",
+    earlyAccessUntil = (this["earlyAccessUntil"] as? Number)?.toLong(),
     premium = this["premium"] as? Boolean ?: false,
+    remainingScheduleParses = (this["remainingScheduleParses"] as? Number)?.toInt(),
 )
+
+fun AiConfig.canImportImage(signedIn: Boolean): Boolean = signedIn && scheduleEnabled && enabled && usage.tier in scheduleImageTiers

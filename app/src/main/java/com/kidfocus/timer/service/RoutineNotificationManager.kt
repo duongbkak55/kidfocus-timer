@@ -4,6 +4,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import androidx.core.app.NotificationCompat
 import com.kidfocus.timer.KidFocusApp
 import com.kidfocus.timer.MainActivity
@@ -29,15 +30,18 @@ class RoutineNotificationManager @Inject constructor(
     ) {
         val openApp = PendingIntent.getActivity(
             context,
-            routineId.toInt(),
-            Intent(context, MainActivity::class.java),
+            requestCode(routineId),
+            Intent(context, MainActivity::class.java).apply {
+                data = Uri.parse("kidfocus://routine/$routineId/$occurrenceDate/open")
+            },
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
         val complete = PendingIntent.getBroadcast(
             context,
-            routineId.toInt(),
+            requestCode(routineId),
             Intent(context, RoutineCompleteReceiver::class.java).apply {
                 action = RoutineCompleteReceiver.ACTION_COMPLETE_ROUTINE
+                data = Uri.parse("kidfocus://routine/$routineId/$occurrenceDate/complete")
                 putExtra(RoutineAlarmScheduler.EXTRA_ROUTINE_ID, routineId)
                 putExtra(RoutineAlarmScheduler.EXTRA_OCCURRENCE_DATE, occurrenceDate)
             },
@@ -46,23 +50,25 @@ class RoutineNotificationManager @Inject constructor(
         val hour = deadlineMinutes / 60
         val minute = deadlineMinutes % 60
         val deadline = String.format(Locale.getDefault(), "%02d:%02d", hour, minute)
-        val timerHint = linkedTimerMinutes?.let { " • Có timer $it phút" }.orEmpty()
+        val timerHint = linkedTimerMinutes?.let { context.getString(R.string.routine_notification_timer_hint, it) }.orEmpty()
 
         val notification = NotificationCompat.Builder(context, KidFocusApp.ROUTINE_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_timer_notification)
             .setContentTitle("$emoji $title")
-            .setContentText("Cần hoàn thành trước $deadline$timerHint")
+            .setContentText(context.getString(R.string.routine_notification_deadline, deadline, timerHint))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setAutoCancel(true)
             .setContentIntent(openApp)
-            .addAction(R.drawable.ic_timer_notification, "Đã xong", complete)
+            .addAction(R.drawable.ic_timer_notification, context.getString(R.string.routine_notification_done), complete)
             .build()
 
         manager.notify(notificationId(routineId), notification)
     }
 
     fun cancel(routineId: Long) = manager.cancel(notificationId(routineId))
+
+    private fun requestCode(id: Long): Int = (id xor (id ushr 32)).toInt() and Int.MAX_VALUE
 
     private fun notificationId(routineId: Long): Int =
         200_000 + ((routineId xor (routineId ushr 32)).toInt() and 0xFFFF)

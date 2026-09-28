@@ -26,10 +26,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.kidfocus.timer.R
 import com.kidfocus.timer.ui.components.PinDotRow
 import com.kidfocus.timer.ui.components.PinKeyboard
 import com.kidfocus.timer.ui.theme.KidFocusTheme
@@ -69,17 +71,17 @@ fun PinEntryScreen(
     }
 
     val title = when {
-        isSetupMode && isConfirmStep -> "Nhập lại PIN"
-        isSetupMode -> "Tạo PIN mới"
-        else -> "Nhập PIN phụ huynh"
+        isSetupMode && isConfirmStep -> stringResource(R.string.pin_confirm_title)
+        isSetupMode -> stringResource(R.string.pin_create_title)
+        else -> stringResource(R.string.pin_verify_title)
     }
 
     val subtitle = when {
-        setupMismatch -> "PIN không khớp, thử lại"
-        pinError -> "PIN không đúng"
-        isSetupMode && isConfirmStep -> "Nhập lại PIN vừa tạo để xác nhận"
-        isSetupMode -> "Tạo mã PIN 4 chữ số để bảo vệ cài đặt"
-        else -> "Vui lòng nhập PIN để tiếp tục"
+        setupMismatch -> stringResource(R.string.pin_mismatch)
+        pinError -> stringResource(R.string.pin_error)
+        isSetupMode && isConfirmStep -> stringResource(R.string.pin_confirm_subtitle)
+        isSetupMode -> stringResource(R.string.pin_create_subtitle)
+        else -> stringResource(R.string.pin_verify_subtitle)
     }
 
     val subtitleColor = when {
@@ -104,7 +106,7 @@ fun PinEntryScreen(
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Quay lại",
+                contentDescription = stringResource(R.string.back),
                 tint = colors.onBackground,
             )
         }

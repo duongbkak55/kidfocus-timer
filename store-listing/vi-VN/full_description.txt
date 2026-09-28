@@ -26,6 +26,8 @@ KidFocus giúp bé vừa học, vừa xây dựng thói quen tốt và tập tru
 👨‍👩‍👧 DÀNH CHO PHỤ HUYNH
 
 • PIN bảo vệ khu vực cài đặt phụ huynh
+• Nhập nhanh lịch bằng gõ hoặc giọng nói: phụ huynh kiểm tra bản nháp rồi bấm Áp dụng để lưu (cần đăng nhập và AI được bật).
+• Góp ý lịch tuần hoạt động offline, nhắc lịch chồng chéo và giờ ngủ theo nhóm tuổi để phụ huynh xem lại.
 • Hồ sơ riêng cho từng bé
 • Đổi màu giao diện phù hợp sở thích
 • Không quảng cáo và không bán dữ liệu cá nhân

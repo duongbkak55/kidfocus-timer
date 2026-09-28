@@ -1,0 +1,19 @@
+G3 resumed session — 2026-09-28, about 22:04–22:18 (Asia/Ho_Chi_Minh).
+Session notes, not a reconstructed raw adb transcript.
+
+Device unlocked by Duong; resumed Child profiles without reinstalling/clearing debug data.
+Changed Child profile age to Grade 1 and saved.
+Smart weekly schedule entry repeatedly returns to parent PIN entry after correct PIN 2468; parent settings itself remains accessible with the same PIN.
+Created Homework at 21:00, Weekdays, 45 minutes focus / 15 minutes break; verified saved schedule and Daily schedule timeline. No sleep/school anchors could be configured because of the PIN loop.
+Created second profile named 3-B / Ages 4–5. Switched to 3-B: Homework is an unsaved template (17:30 / 60 minutes, Add). Switched back to Child: Homework is saved at 21:00 / 45 minutes with Edit action. Anchors/findings isolation not tested.
+
+Font/rotation exercise: set font_scale 1.3; UI dump showed larger text; user_rotation 1 produced landscape UI bounds. Captures 17 and 18 were taken during the change/rotation animation and are explicitly marked transition captures; stable layout acceptance is not claimed. Could not capture Advice because of the PIN loop.
+Original display settings: {"font_scale": "0.85", "accelerometer_rotation": "0", "user_rotation": "0"}
+Final verified display settings: {"font_scale": "1.0", "accelerometer_rotation": "0", "user_rotation": "0"}
+font_scale 1.0 is the task-mandated final value; original was 0.85. Rotation values match the original.
+
+Notifications: initial POST_NOTIFICATIONS granted=false. Opened existing Manage daily routines > Enable notifications > Allow system prompt. The reminder notification banner disappeared. Did not enable exact alarms or change the manifest.
+Prepared Reading at 22:20, 30 minutes focus / 5 minutes break; intended to save at 22:17 for a 3-minute lead. A fresh UI dump before save at 22:17 no longer showed KidFocus/Save schedule, so no save tap was sent. A wake command at the end showed fingerprint lock; stopped all device commands. Reading remains an unsaved editor draft. No E alarm URI/delivery assertion is possible.
+
+Collected adb logcat -d -b crash and general logcat filtered FATAL|AndroidRuntime|ANR before the final wake check; see logcat-crash.txt. Two fatal stacks are from com.android.commands.uiautomator, not KidFocus: earlier overlapping dump invocations registered UiAutomation twice. Subsequent UI actions were serialized. No KidFocus crash/ANR was found in captured output; this does not establish coverage for skipped scenarios.
+No force-stop/persistence test, reboot, Google login, purchase, production AI/Firebase request, code change, push/merge/deploy.
