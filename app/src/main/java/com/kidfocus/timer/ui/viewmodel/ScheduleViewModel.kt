@@ -19,6 +19,7 @@ class ScheduleViewModel @Inject constructor(
     private val repository: ScheduledTaskRepository,
     private val alarmScheduler: AlarmScheduler,
     childProfileRepository: ChildProfileRepository,
+    anchorsRepository: com.kidfocus.timer.data.schedule.ScheduleAnchorsRepository,
 ) : ViewModel() {
 
     private val activeProfileId = childProfileRepository.activeProfileId.stateIn(
@@ -26,6 +27,10 @@ class ScheduleViewModel @Inject constructor(
         SharingStarted.Eagerly,
         "default",
     )
+
+    val anchors = kotlinx.coroutines.flow.combine(activeProfileId, anchorsRepository.all) { profileId, rows ->
+        rows[profileId] ?: com.kidfocus.timer.domain.schedule.ScheduleAnchors()
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), com.kidfocus.timer.domain.schedule.ScheduleAnchors())
 
     val tasks = combine(repository.allTasks, activeProfileId) { rows, profileId ->
         rows.filter { it.childProfileId == profileId }

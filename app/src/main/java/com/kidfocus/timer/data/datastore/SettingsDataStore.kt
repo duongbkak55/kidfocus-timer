@@ -45,6 +45,29 @@ class SettingsDataStore @Inject constructor(
         val ACTIVE_CHILD_PROFILE_ID = stringPreferencesKey("active_child_profile_id")
     }
 
+    val scheduleAnchorsJson: Flow<Map<String, String>> = context.dataStore.data.map { prefs ->
+        prefs.asMap().entries.mapNotNull { (key, value) ->
+            if (key.name.startsWith("schedule_anchors_") && value is String)
+                key.name.removePrefix("schedule_anchors_") to value else null
+        }.toMap()
+    }
+
+    suspend fun saveScheduleAnchorsJson(rows: Map<String, String>) {
+        context.dataStore.edit { prefs -> rows.forEach { (profile, json) ->
+            prefs[stringPreferencesKey("schedule_anchors_$profile")] = json
+        } }
+    }
+
+    suspend fun getScheduleSnapshotJson(profileId: String): String? =
+        context.dataStore.data.first()[stringPreferencesKey("schedule_snapshot_$profileId")]
+
+    suspend fun saveScheduleSnapshotJson(profileId: String, json: String?) {
+        context.dataStore.edit { prefs ->
+            val key = stringPreferencesKey("schedule_snapshot_$profileId")
+            if (json == null) prefs.remove(key) else prefs[key] = json
+        }
+    }
+
     /** Emits [TimerSettings] whenever any preference value changes. */
     val settingsFlow: Flow<TimerSettings> = context.dataStore.data.map { prefs ->
         TimerSettings(

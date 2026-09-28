@@ -26,6 +26,7 @@ import com.kidfocus.timer.ui.screens.OnboardingScreen
 import com.kidfocus.timer.ui.screens.ParentSettingsScreen
 import com.kidfocus.timer.ui.screens.PinEntryScreen
 import com.kidfocus.timer.ui.screens.DailyScheduleScreen
+import com.kidfocus.timer.ui.screens.SmartScheduleScreen
 import com.kidfocus.timer.ui.screens.ScheduleScreen
 import com.kidfocus.timer.ui.screens.TaskEditScreen
 import com.kidfocus.timer.ui.screens.SubscriptionScreen
@@ -241,6 +242,7 @@ fun AppNavigation(
                 },
                 onSetPin = { navController.navigate(NavRoutes.PinSetup.route) },
                 onOpenSchedule = { navController.navigate(NavRoutes.Schedule.route) },
+                onOpenSmartSchedule = { navController.navigate(NavRoutes.SmartSchedule.route) },
                 onOpenRoutineSettings = { navController.navigate(NavRoutes.RoutineSettings.route) },
                 onOpenCloudSync = { navController.navigate(NavRoutes.CloudSync.route) },
                 onOpenSubscription = { navController.navigate(NavRoutes.Subscription.route) },
@@ -262,6 +264,19 @@ fun AppNavigation(
                 onBack = { navController.popBackStack() },
                 onOpenLogin = { navController.navigate(NavRoutes.CloudSync.route) },
             )
+        }
+
+        composable(NavRoutes.SmartSchedule.route) {
+            val pinVerified by settingsViewModel.pinVerified.collectAsState()
+            if (pinVerified && settings?.hasPinSet == true) {
+                SmartScheduleScreen(onBack = { navController.popBackStack() })
+            } else {
+                androidx.compose.runtime.LaunchedEffect(Unit) {
+                    navController.navigate(smartScheduleGateRoute(settings?.hasPinSet == true)) {
+                        popUpTo(NavRoutes.SmartSchedule.route) { inclusive = true }
+                    }
+                }
+            }
         }
 
         // ---- Schedule ------------------------------------------------------------------------

@@ -52,6 +52,7 @@ fun ParentSettingsScreen(
     onBack: () -> Unit,
     onSetPin: () -> Unit,
     onOpenSchedule: () -> Unit = {},
+    onOpenSmartSchedule: () -> Unit = {},
     onOpenRoutineSettings: () -> Unit = {},
     onOpenCloudSync: () -> Unit = {},
     onOpenSubscription: () -> Unit = {},
@@ -132,6 +133,14 @@ fun ParentSettingsScreen(
                 )
             }
 
+            Spacer(modifier = Modifier.height(24.dp))
+
+            androidx.compose.material3.OutlinedCard(onClick = onOpenSmartSchedule, modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp)) {
+                    Text(stringResource(R.string.smart_hours_title), style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.smart_advice_title), style = MaterialTheme.typography.bodyMedium)
+                }
+            }
             Spacer(modifier = Modifier.height(24.dp))
 
             // Section: Timer durations

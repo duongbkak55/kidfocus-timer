@@ -69,6 +69,7 @@ class CloudSyncManager @Inject constructor(
     private val alarmScheduler: AlarmScheduler,
     private val routineAlarmScheduler: RoutineAlarmScheduler,
     private val childProfileDao: ChildProfileDao,
+    private val scheduleAnchors: com.kidfocus.timer.data.schedule.ScheduleAnchorsRepository,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val syncMutex = Mutex()
@@ -152,8 +153,8 @@ class CloudSyncManager @Inject constructor(
             ).hashCode()
         }
 
-    private val localRevision = combine(coreRevision, childProfileDao.observeAll()) { core, profiles ->
-        31 * core + profiles.hashCode()
+    private val localRevision = combine(coreRevision, childProfileDao.observeAll(), scheduleAnchors.all) { core, profiles, anchors ->
+        31 * (31 * core + profiles.hashCode()) + anchors.hashCode()
     }.stateIn(scope, SharingStarted.Eagerly, 0)
 
     private fun observeLocalChanges() {
@@ -232,7 +233,8 @@ class CloudSyncManager @Inject constructor(
                     "routines" to routineDao.getAllForSync().map(RoutineEntity::toCloudMap),
                     "routineCompletions" to routineDao.getAllCompletionsForSync().map(RoutineCompletionEntity::toCloudMap),
                     "childProfiles" to childProfileDao.getAllForSync().map(ChildProfileEntity::toCloudMap),
-                    "settings" to settings.toCloudMap(),
+                    "settings" to (settings.toCloudMap() + mapOf("scheduleAnchors" to scheduleAnchors.all.first()
+                        .mapValues { com.kidfocus.timer.data.schedule.ScheduleJson.anchorsMap(it.value) })),
                 )
                 document(uid).set(payload).await()
                 lastAppliedRemoteMillis = now
@@ -285,6 +287,7 @@ class CloudSyncManager @Inject constructor(
 
             val cloudSettings = snapshot.get("settings") as? Map<*, *>
             if (cloudSettings != null) {
+                scheduleAnchors.applyRemote(cloudSettings["scheduleAnchors"])
                 val local = settingsDataStore.settingsFlow.first()
                 settingsDataStore.saveSettings(
                     local.copy(
@@ -302,6 +305,7 @@ class CloudSyncManager @Inject constructor(
                 )
             }
 
+            localTasks.values.forEach { alarmScheduler.cancelTask(it.toDomain()) }
             alarmScheduler.scheduleAll(tasks.map { it.toDomain() })
             routines.forEach(routineAlarmScheduler::schedule)
             lastAppliedRemoteMillis = snapshot.long("updatedAtMillis")

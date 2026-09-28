@@ -2,6 +2,7 @@ package com.kidfocus.timer.data.repository
 
 import com.kidfocus.timer.data.database.ScheduledTaskDao
 import com.kidfocus.timer.data.database.ScheduledTaskEntity
+import com.kidfocus.timer.domain.schedule.ScheduleIds
 import com.kidfocus.timer.domain.model.ScheduledTask
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -20,7 +21,7 @@ class ScheduledTaskRepository @Inject constructor(
         dao.getAllEnabled().map { it.toDomain() }
 
     suspend fun save(task: ScheduledTask): Long =
-        dao.insert(ScheduledTaskEntity.fromDomain(task))
+        dao.insert(ScheduledTaskEntity.fromDomain(if (task.id == 0L) task.copy(id = ScheduleIds.newId()) else task))
 
     suspend fun update(task: ScheduledTask) =
         dao.update(ScheduledTaskEntity.fromDomain(task))

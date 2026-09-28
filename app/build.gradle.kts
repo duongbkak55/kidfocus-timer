@@ -92,6 +92,10 @@ android {
         )
     }
 
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
+
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.14"
     }
@@ -178,6 +182,7 @@ dependencies {
     implementation(libs.androidx.webkit)
 
     // Testing
+    testImplementation("org.robolectric:robolectric:4.16.1")
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)

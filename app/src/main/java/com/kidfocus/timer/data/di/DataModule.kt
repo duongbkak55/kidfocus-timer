@@ -18,6 +18,11 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DataModule {
+    @Provides
+    @Singleton
+    fun provideApplyScheduleUseCase(store: com.kidfocus.timer.data.schedule.RoomScheduleStore) =
+        com.kidfocus.timer.domain.schedule.ApplyScheduleUseCase(store)
+
 
     @Provides
     @Singleton

@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import com.kidfocus.timer.domain.model.ScheduledTask
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -25,6 +26,7 @@ class AlarmScheduler @Inject constructor(
     }
 
     fun scheduleTask(task: ScheduledTask) {
+        cancelTask(task)
         if (!task.enabled || task.daysOfWeek.isEmpty()) return
 
         task.daysOfWeek.forEach { dayOfWeek ->
@@ -34,23 +36,29 @@ class AlarmScheduler @Inject constructor(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
                 alarmManager.set(AlarmManager.RTC_WAKEUP, triggerMs, pendingIntent)
             } else {
-                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerMs, pendingIntent)
+                try {
+                    alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerMs, pendingIntent)
+                } catch (_: SecurityException) {
+                    alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerMs, pendingIntent)
+                }
             }
         }
     }
 
     fun cancelTask(task: ScheduledTask) {
-        task.daysOfWeek.forEach { dayOfWeek ->
-            buildPendingIntent(task, dayOfWeek)?.let { alarmManager.cancel(it) }
-        }
-        // Also cancel for all possible days in case days changed
         (1..7).forEach { day ->
-            buildPendingIntent(task, day)?.let { alarmManager.cancel(it) }
+            listOf(false, true).forEach { legacy ->
+                buildPendingIntent(task, day, legacy, cancel = true)?.let {
+                    alarmManager.cancel(it)
+                    it.cancel()
+                }
+            }
         }
     }
 
-    private fun buildPendingIntent(task: ScheduledTask, dayOfWeek: Int): PendingIntent? {
+    private fun buildPendingIntent(task: ScheduledTask, dayOfWeek: Int, legacy: Boolean = false, cancel: Boolean = false): PendingIntent? {
         val intent = Intent(context, TaskAlarmReceiver::class.java).apply {
+            if (!legacy) data = Uri.parse("kidfocus://task/${task.id}/$dayOfWeek")
             putExtra(TaskAlarmReceiver.EXTRA_TASK_ID, task.id)
             putExtra(TaskAlarmReceiver.EXTRA_TASK_NAME, task.name)
             putExtra(TaskAlarmReceiver.EXTRA_TASK_EMOJI, task.emoji)
@@ -58,12 +66,13 @@ class AlarmScheduler @Inject constructor(
             putExtra(TaskAlarmReceiver.EXTRA_DAY_OF_WEEK, dayOfWeek)
         }
         // Unique request code per task + day
-        val requestCode = (task.id * 10 + dayOfWeek).toInt()
+        val requestCode = if (legacy) (task.id * 10 + dayOfWeek).toInt()
+            else ((task.id xor (task.id ushr 32)).toInt() and Int.MAX_VALUE)
         return PendingIntent.getBroadcast(
             context,
             requestCode,
             intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            (if (cancel) PendingIntent.FLAG_NO_CREATE else PendingIntent.FLAG_UPDATE_CURRENT) or PendingIntent.FLAG_IMMUTABLE,
         )
     }
 
