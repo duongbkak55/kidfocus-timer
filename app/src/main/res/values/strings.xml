@@ -468,4 +468,35 @@
     <string name="smart_previous_day_time">%1$s (ngày trước)</string>
     <string name="smart_suggest_resize">Gợi ý rút phiên tập trung xuống %1$d phút cho ngày này.</string>
     <string name="smart_school_label">Tên ca học</string>
+
+    <!-- Smart Weekly Schedule W2 -->
+    <string name="quick_title">Nhập nhanh</string>
+    <string name="quick_privacy">Chỉ nhập việc và giờ giấc, không kèm tên bé hoặc trường. Khi bấm Tạo bản nháp, chữ sẽ được gửi tới Firebase Functions và OpenRouter để xử lý. Giọng nói dùng trình nhận giọng của máy/Google.</string>
+    <string name="quick_disabled">Nhập nhanh hiện chưa được bật. Bạn vẫn có thể nhập lịch bằng tay.</string>
+    <string name="quick_retry">Kiểm tra lại</string>
+    <string name="quick_sign_in_help">Đăng nhập Google để dùng AI nhập lịch. Người đăng ký sớm được dùng thử khi chương trình đang mở.</string>
+    <string name="quick_sign_in">Đăng nhập Google</string>
+    <string name="quick_sign_in_failed">Chưa đăng nhập được. Vui lòng thử lại.</string>
+    <string name="quick_input">Bạn muốn thêm gì vào lịch tuần?</string>
+    <string name="quick_mic">🎤 Nói để nhập</string>
+    <string name="quick_examples">Bấm một ví dụ để điền</string>
+    <string name="quick_example_one">Thứ 3, thứ 5 học tiếng Anh 6 giờ tối 1 tiếng.</string>
+    <string name="quick_example_two">Mỗi ngày ngủ lúc 9 rưỡi tối, dậy lúc 6h15 sáng.</string>
+    <string name="quick_example_three">Ngày thường học ở trường từ 7h15 đến 11h30, chiều từ 13h30 đến 16h30.</string>
+    <string name="quick_parse">Tạo bản nháp</string>
+    <string name="quick_wait">Đang xử lý…</string>
+    <string name="quick_error_quota">Hôm nay đã hết lượt AI hoặc hệ thống đang đạt hạn mức. Chữ bạn nhập vẫn được giữ; hãy thử lại sau.</string>
+    <string name="quick_error_parse">Chưa hiểu được lịch này. Hãy ghi rõ ngày, giờ và thời lượng rồi thử lại. Chữ bạn nhập vẫn được giữ.</string>
+    <string name="quick_error_network">Chưa kết nối được AI. Kiểm tra mạng và thử lại; chữ bạn nhập vẫn được giữ.</string>
+    <string name="quick_error_stale">Lịch đã thay đổi. Hãy tạo lại bản nháp trước khi áp dụng.</string>
+    <string name="quick_preview">Kiểm tra bản nháp</string>
+    <string name="quick_review_help">Chọn các mục muốn lưu, sửa ngày/giờ nếu cần. Bấm Áp dụng sẽ lưu ngay. Cảnh báo không tự bỏ mục đã chọn; phụ huynh quyết định.</string>
+    <string name="quick_check">Cần kiểm tra</string>
+    <string name="quick_duration">Thời lượng (5–120 phút)</string>
+    <string name="quick_invalid_item">Chọn ít nhất một ngày và kiểm tra giờ/thời lượng.</string>
+    <string name="quick_warn_overlap">⚠ Mục này tạo thêm lịch chồng chéo.</string>
+    <string name="quick_warn_sleep">⚠ Mục này tạo thêm cảnh báo ngủ thiếu.</string>
+    <string name="quick_usage_early">Dùng thử AI: còn %1$d ngày · hôm nay còn %2$d lượt</string>
+    <string name="quick_usage">AI: hôm nay còn %1$d lượt</string>
+    <string name="quick_duplicate_hours">Có giờ thức/ngủ khác nhau cho cùng một ngày. Hãy sửa ngày hoặc bỏ chọn một mục.</string>
 </resources>

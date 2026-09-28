@@ -71,6 +71,8 @@ fun AppNavigation(
     val scheduleViewModel: ScheduleViewModel = hiltViewModel()
     val routineViewModel: RoutineViewModel = hiltViewModel()
     val cloudSyncViewModel: CloudSyncViewModel = hiltViewModel()
+    val scheduleAccess: com.kidfocus.timer.ui.viewmodel.ScheduleAccessViewModel = hiltViewModel()
+    val scheduleConfig by scheduleAccess.config.collectAsState()
     val cloudAccount by cloudSyncViewModel.account.collectAsState()
     val cloudSyncStatus by cloudSyncViewModel.syncStatus.collectAsState()
     val childProfileViewModel: ChildProfileViewModel = hiltViewModel()
@@ -269,11 +271,25 @@ fun AppNavigation(
         composable(NavRoutes.SmartSchedule.route) {
             val pinVerified by settingsViewModel.pinVerified.collectAsState()
             if (pinVerified && settings?.hasPinSet == true) {
-                SmartScheduleScreen(onBack = { navController.popBackStack() })
+                SmartScheduleScreen(onBack = { navController.popBackStack() },
+                    onQuickEntry = { navController.navigate(NavRoutes.QuickSchedule.route) }, access = scheduleAccess)
             } else {
                 androidx.compose.runtime.LaunchedEffect(Unit) {
                     navController.navigate(smartScheduleGateRoute(settings?.hasPinSet == true)) {
                         popUpTo(NavRoutes.SmartSchedule.route) { inclusive = true }
+                    }
+                }
+            }
+        }
+
+        composable(NavRoutes.QuickSchedule.route) {
+            val pinVerified by settingsViewModel.pinVerified.collectAsState()
+            if (pinVerified && settings?.hasPinSet == true) {
+                com.kidfocus.timer.ui.screens.QuickScheduleScreen(onBack = { navController.popBackStack() }, access = scheduleAccess)
+            } else {
+                androidx.compose.runtime.LaunchedEffect(Unit) {
+                    navController.navigate(parentGateRoute(settings?.hasPinSet == true, NavRoutes.QuickSchedule.route)) {
+                        popUpTo(NavRoutes.QuickSchedule.route) { inclusive = true }
                     }
                 }
             }
@@ -297,6 +313,8 @@ fun AppNavigation(
         composable(NavRoutes.DailySchedule.route) {
             DailyScheduleScreen(
                 viewModel = scheduleViewModel,
+                quickEntryEnabled = scheduleConfig.scheduleEnabled,
+                onQuickEntry = { navController.navigate(parentGateRoute(settings?.hasPinSet == true, NavRoutes.QuickSchedule.route)) },
                 onBack = { navController.popBackStack() },
                 onStartTask = { task ->
                     if (task.taskType == TaskType.LEARNING_GAMES) {

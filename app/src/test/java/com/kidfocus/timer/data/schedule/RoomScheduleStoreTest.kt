@@ -102,4 +102,19 @@ class RoomScheduleStoreTest {
         assertEquals(anchors, anchorsRepository.get("default"))
         assertEquals(remote, anchorsRepository.get("other"))
     }
+    @Test fun `W2 add with real Room assigns no new database id and undo retains other profile`() = runTest {
+        val other = task.copy(id = 99, childProfileId = "other")
+        database.scheduledTaskDao().insert(ScheduledTaskEntity.fromDomain(other))
+        val before = store.read("default")
+        val added = task.copy(id = ScheduleIds.newId(), breakDurationMinutes = 0, photoUri = null)
+        val useCase = ApplyScheduleUseCase(store)
+        useCase.apply("default", before, listOf(ScheduleChange.AddTask(added), ScheduleChange.SetAnchors(anchors)), "l1")
+        assertEquals(added, store.read("default").tasks.single())
+        assertEquals(anchors, store.read("default").anchors)
+        useCase.undo("default")
+        assertEquals(before, store.read("default"))
+        assertEquals(other, store.read("other").tasks.single())
+        verify(exactly = 1) { alarms.cancelTask(added) }
+    }
+
 }

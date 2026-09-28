@@ -59,6 +59,8 @@ fun DailyScheduleScreen(
     viewModel: ScheduleViewModel,
     onBack: () -> Unit,
     onStartTask: (ScheduledTask) -> Unit,
+    quickEntryEnabled: Boolean = false,
+    onQuickEntry: () -> Unit = {},
     onAddTaskAtTime: (hour: Int, minute: Int) -> Unit = { _, _ -> },
 ) {
     val colors = KidFocusTheme.colors
@@ -98,6 +100,10 @@ fun DailyScheduleScreen(
                     color = colors.onBackground,
                     fontWeight = FontWeight.Bold,
                 )
+            }
+
+            if (quickEntryEnabled) androidx.compose.material3.TextButton(onClick = onQuickEntry, modifier = Modifier.padding(horizontal = 16.dp)) {
+                Text(stringResource(R.string.quick_title))
             }
 
             // Week strip

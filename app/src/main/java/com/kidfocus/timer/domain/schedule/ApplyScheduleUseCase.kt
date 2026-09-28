@@ -27,6 +27,13 @@ class ApplyScheduleUseCase(private val store: ScheduleStore, private val now: ()
         var anchors = current.anchors
         changes.forEach { change ->
             when (change) {
+                is ScheduleChange.AddTask -> {
+                    require(change.task.id > 0 && tasks.none { it.id == change.task.id })
+                    require(change.task.name.isNotBlank() && change.task.name.length <= 60)
+                    require(change.task.focusDurationMinutes in 5..120 && change.task.breakDurationMinutes == 0)
+                    tasks = tasks + change.task
+                }
+                is ScheduleChange.SetAnchors -> anchors = change.anchors
                 is ScheduleChange.SetBed -> anchors = anchors.copy(bed = anchors.bed + change.times)
                 is ScheduleChange.TaskChange -> {
                     val task = tasks.single { it.id == change.taskId }
@@ -44,6 +51,11 @@ class ApplyScheduleUseCase(private val store: ScheduleStore, private val now: ()
         }
         val updated = ScheduleState(tasks.sortedBy { it.id }, anchors)
         validate(profileId, updated)
+        // W2 imports are parent-reviewed in preview. AddTask/SetAnchors may introduce
+        // high findings; display warnings there and let the parent choose. W1 offline
+        // suggestions still enforce the original guard. Never mix the two flows.
+        val importOnly = changes.all { it is ScheduleChange.AddTask || it is ScheduleChange.SetAnchors }
+        require(importOnly || changes.none { it is ScheduleChange.AddTask || it is ScheduleChange.SetAnchors })
         // Offline proposals must not add high-severity violations.
         val advisor = ScheduleAdvisor()
         fun highCounts(state: ScheduleState) = advisor.advise(state.tasks, state.anchors, ageBand)
@@ -51,7 +63,7 @@ class ApplyScheduleUseCase(private val store: ScheduleStore, private val now: ()
             .groupingBy { it }.eachCount()
         val beforeHigh = highCounts(current)
         val afterHigh = highCounts(updated)
-        require(afterHigh.all { (key, count) -> count <= (beforeHigh[key] ?: 0) }) { "Suggestion introduces a high-severity conflict" }
+        require(importOnly || afterHigh.all { (key, count) -> count <= (beforeHigh[key] ?: 0) }) { "Suggestion introduces a high-severity conflict" }
         commit(profileId, current, updated, takeSnapshot = true)
     }
 

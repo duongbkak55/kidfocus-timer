@@ -1,0 +1,641 @@
+{
+  "today": "2026-09-28",
+  "ageBand": "l1",
+  "locale": "vi-VN",
+  "cases": [
+    {
+      "text": "Thứ 3, thứ 5 học tiếng Anh 6 giờ tối 1 tiếng.",
+      "expected": {
+        "anchors": {
+          "wake": {},
+          "bed": {},
+          "school": []
+        },
+        "tasks": [
+          {
+            "name": "Học tiếng Anh",
+            "taskType": "CUSTOM",
+            "emoji": "⭐",
+            "days": [
+              "TUE",
+              "THU"
+            ],
+            "start": "18:00",
+            "durationMin": 60,
+            "confidence": 0.95,
+            "source": "Thứ 3, thứ 5 học tiếng Anh 6 giờ tối 1 tiếng."
+          }
+        ],
+        "questions": []
+      }
+    },
+    {
+      "text": "Tối thứ 3 đọc sách lúc 7h15 trong 20 phút.",
+      "expected": {
+        "anchors": {
+          "wake": {},
+          "bed": {},
+          "school": []
+        },
+        "tasks": [
+          {
+            "name": "Đọc sách",
+            "taskType": "READING",
+            "emoji": "⭐",
+            "days": [
+              "TUE"
+            ],
+            "start": "19:15",
+            "durationMin": 20,
+            "confidence": 0.95,
+            "source": "Tối thứ 3 đọc sách lúc 7h15 trong 20 phút."
+          }
+        ],
+        "questions": []
+      }
+    },
+    {
+      "text": "Chiều T5 tập đàn 4 giờ 30 phút, học 45 phút.",
+      "expected": {
+        "anchors": {
+          "wake": {},
+          "bed": {},
+          "school": []
+        },
+        "tasks": [
+          {
+            "name": "Tập đàn",
+            "taskType": "MUSIC_PRACTICE",
+            "emoji": "⭐",
+            "days": [
+              "THU"
+            ],
+            "start": "16:30",
+            "durationMin": 45,
+            "confidence": 0.95,
+            "source": "Chiều T5 tập đàn 4 giờ 30 phút, học 45 phút."
+          }
+        ],
+        "questions": []
+      }
+    },
+    {
+      "text": "Thứ hai tập thể dục 6 rưỡi sáng trong 15 phút.",
+      "expected": {
+        "anchors": {
+          "wake": {},
+          "bed": {},
+          "school": []
+        },
+        "tasks": [
+          {
+            "name": "Tập thể dục",
+            "taskType": "EXERCISE",
+            "emoji": "⭐",
+            "days": [
+              "MON"
+            ],
+            "start": "06:30",
+            "durationMin": 15,
+            "confidence": 0.95,
+            "source": "Thứ hai tập thể dục 6 rưỡi sáng trong 15 phút."
+          }
+        ],
+        "questions": []
+      }
+    },
+    {
+      "text": "Mỗi ngày đánh răng lúc 19:30 trong 5 phút.",
+      "expected": {
+        "anchors": {
+          "wake": {},
+          "bed": {},
+          "school": []
+        },
+        "tasks": [
+          {
+            "name": "Đánh răng",
+            "taskType": "BRUSH_TEETH",
+            "emoji": "⭐",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT",
+              "SUN"
+            ],
+            "start": "19:30",
+            "durationMin": 5,
+            "confidence": 0.95,
+            "source": "Mỗi ngày đánh răng lúc 19:30 trong 5 phút."
+          }
+        ],
+        "questions": []
+      }
+    },
+    {
+      "text": "Ngày thường làm bài tập từ 18h trong 30 phút.",
+      "expected": {
+        "anchors": {
+          "wake": {},
+          "bed": {},
+          "school": []
+        },
+        "tasks": [
+          {
+            "name": "Làm bài tập",
+            "taskType": "HOMEWORK",
+            "emoji": "⭐",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "start": "18:00",
+            "durationMin": 30,
+            "confidence": 0.95,
+            "source": "Ngày thường làm bài tập từ 18h trong 30 phút."
+          }
+        ],
+        "questions": []
+      }
+    },
+    {
+      "text": "Cuối tuần vẽ tranh lúc 9h sáng trong 40 phút.",
+      "expected": {
+        "anchors": {
+          "wake": {},
+          "bed": {},
+          "school": []
+        },
+        "tasks": [
+          {
+            "name": "Vẽ tranh",
+            "taskType": "ART",
+            "emoji": "⭐",
+            "days": [
+              "SAT",
+              "SUN"
+            ],
+            "start": "09:00",
+            "durationMin": 40,
+            "confidence": 0.95,
+            "source": "Cuối tuần vẽ tranh lúc 9h sáng trong 40 phút."
+          }
+        ],
+        "questions": []
+      }
+    },
+    {
+      "text": "Mỗi ngày trừ chủ nhật ăn sáng lúc 7h15 trong 20 phút.",
+      "expected": {
+        "anchors": {
+          "wake": {},
+          "bed": {},
+          "school": []
+        },
+        "tasks": [
+          {
+            "name": "Ăn sáng",
+            "taskType": "BREAKFAST",
+            "emoji": "⭐",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT"
+            ],
+            "start": "07:15",
+            "durationMin": 20,
+            "confidence": 0.95,
+            "source": "Mỗi ngày trừ chủ nhật ăn sáng lúc 7h15 trong 20 phút."
+          }
+        ],
+        "questions": []
+      }
+    },
+    {
+      "text": "Thứ 4 học thêm toán 1 tiếng lúc 17h.",
+      "expected": {
+        "anchors": {
+          "wake": {},
+          "bed": {},
+          "school": []
+        },
+        "tasks": [
+          {
+            "name": "Học thêm toán",
+            "taskType": "CUSTOM",
+            "emoji": "⭐",
+            "days": [
+              "WED"
+            ],
+            "start": "17:00",
+            "durationMin": 60,
+            "confidence": 0.95,
+            "source": "Thứ 4 học thêm toán 1 tiếng lúc 17h."
+          }
+        ],
+        "questions": []
+      }
+    },
+    {
+      "text": "Mỗi ngày ngủ lúc 9 rưỡi tối, dậy 6h15 sáng.",
+      "expected": {
+        "anchors": {
+          "wake": {
+            "MON": "06:15",
+            "TUE": "06:15",
+            "WED": "06:15",
+            "THU": "06:15",
+            "FRI": "06:15",
+            "SAT": "06:15",
+            "SUN": "06:15"
+          },
+          "bed": {
+            "MON": "21:30",
+            "TUE": "21:30",
+            "WED": "21:30",
+            "THU": "21:30",
+            "FRI": "21:30",
+            "SAT": "21:30",
+            "SUN": "21:30"
+          },
+          "school": []
+        },
+        "tasks": [],
+        "questions": []
+      }
+    },
+    {
+      "text": "Ngày thường ngủ 20h45, dậy 6h30 sáng.",
+      "expected": {
+        "anchors": {
+          "wake": {
+            "MON": "06:30",
+            "TUE": "06:30",
+            "WED": "06:30",
+            "THU": "06:30",
+            "FRI": "06:30"
+          },
+          "bed": {
+            "MON": "20:45",
+            "TUE": "20:45",
+            "WED": "20:45",
+            "THU": "20:45",
+            "FRI": "20:45"
+          },
+          "school": []
+        },
+        "tasks": [],
+        "questions": []
+      }
+    },
+    {
+      "text": "Cuối tuần dậy 7 giờ sáng, ngủ 21h tối.",
+      "expected": {
+        "anchors": {
+          "wake": {
+            "SAT": "07:00",
+            "SUN": "07:00"
+          },
+          "bed": {
+            "SAT": "21:00",
+            "SUN": "21:00"
+          },
+          "school": []
+        },
+        "tasks": [],
+        "questions": []
+      }
+    },
+    {
+      "text": "Ngày thường học ở trường từ 7h15 đến 11h30.",
+      "expected": {
+        "anchors": {
+          "wake": {},
+          "bed": {},
+          "school": [
+            {
+              "days": [
+                "MON",
+                "TUE",
+                "WED",
+                "THU",
+                "FRI"
+              ],
+              "start": "07:15",
+              "end": "11:30",
+              "label": "Ở trường"
+            }
+          ]
+        },
+        "tasks": [],
+        "questions": []
+      }
+    },
+    {
+      "text": "Ngày thường ca sáng 7h15 đến 11h30, ca chiều 13h30 đến 16h30 ở trường.",
+      "expected": {
+        "anchors": {
+          "wake": {},
+          "bed": {},
+          "school": [
+            {
+              "days": [
+                "MON",
+                "TUE",
+                "WED",
+                "THU",
+                "FRI"
+              ],
+              "start": "07:15",
+              "end": "11:30",
+              "label": "Ở trường"
+            },
+            {
+              "days": [
+                "MON",
+                "TUE",
+                "WED",
+                "THU",
+                "FRI"
+              ],
+              "start": "13:30",
+              "end": "16:30",
+              "label": "Ở trường"
+            }
+          ]
+        },
+        "tasks": [],
+        "questions": []
+      }
+    },
+    {
+      "text": "Thứ 7 học ở trường từ 8h đến 10h.",
+      "expected": {
+        "anchors": {
+          "wake": {},
+          "bed": {},
+          "school": [
+            {
+              "days": [
+                "SAT"
+              ],
+              "start": "08:00",
+              "end": "10:00",
+              "label": "Ở trường"
+            }
+          ]
+        },
+        "tasks": [],
+        "questions": []
+      }
+    },
+    {
+      "text": "Chủ nhật chơi ngoài trời 4 giờ chiều trong 1 tiếng.",
+      "expected": {
+        "anchors": {
+          "wake": {},
+          "bed": {},
+          "school": []
+        },
+        "tasks": [
+          {
+            "name": "Chơi ngoài trời",
+            "taskType": "OUTDOOR_PLAY",
+            "emoji": "⭐",
+            "days": [
+              "SUN"
+            ],
+            "start": "16:00",
+            "durationMin": 60,
+            "confidence": 0.95,
+            "source": "Chủ nhật chơi ngoài trời 4 giờ chiều trong 1 tiếng."
+          }
+        ],
+        "questions": []
+      }
+    },
+    {
+      "text": "T2 T4 T6 tắm lúc 18:15 trong 15 phút.",
+      "expected": {
+        "anchors": {
+          "wake": {},
+          "bed": {},
+          "school": []
+        },
+        "tasks": [
+          {
+            "name": "Tắm",
+            "taskType": "BATH",
+            "emoji": "⭐",
+            "days": [
+              "MON",
+              "WED",
+              "FRI"
+            ],
+            "start": "18:15",
+            "durationMin": 15,
+            "confidence": 0.95,
+            "source": "T2 T4 T6 tắm lúc 18:15 trong 15 phút."
+          }
+        ],
+        "questions": []
+      }
+    },
+    {
+      "text": "Ngày thường trừ thứ 4 đọc sách 20h trong 25 phút.",
+      "expected": {
+        "anchors": {
+          "wake": {},
+          "bed": {},
+          "school": []
+        },
+        "tasks": [
+          {
+            "name": "Đọc sách",
+            "taskType": "READING",
+            "emoji": "⭐",
+            "days": [
+              "MON",
+              "TUE",
+              "THU",
+              "FRI"
+            ],
+            "start": "20:00",
+            "durationMin": 25,
+            "confidence": 0.95,
+            "source": "Ngày thường trừ thứ 4 đọc sách 20h trong 25 phút."
+          }
+        ],
+        "questions": []
+      }
+    },
+    {
+      "text": "Thứ 7 dọn phòng lúc 9:00 trong 30 phút và đọc sách 19:30 trong 20 phút.",
+      "expected": {
+        "anchors": {
+          "wake": {},
+          "bed": {},
+          "school": []
+        },
+        "tasks": [
+          {
+            "name": "Dọn phòng",
+            "taskType": "CLEAN_ROOM",
+            "emoji": "⭐",
+            "days": [
+              "SAT"
+            ],
+            "start": "09:00",
+            "durationMin": 30,
+            "confidence": 0.95,
+            "source": "Thứ 7 dọn phòng lúc 9:00 trong 30 phút và đọc sách 19:30 trong 20 phút."
+          },
+          {
+            "name": "Đọc sách",
+            "taskType": "READING",
+            "emoji": "⭐",
+            "days": [
+              "SAT"
+            ],
+            "start": "19:30",
+            "durationMin": 20,
+            "confidence": 0.95,
+            "source": "Thứ 7 dọn phòng lúc 9:00 trong 30 phút và đọc sách 19:30 trong 20 phút."
+          }
+        ],
+        "questions": []
+      }
+    },
+    {
+      "text": "Tối thứ hai làm bài tập lúc 8 rưỡi trong 30 phút.",
+      "expected": {
+        "anchors": {
+          "wake": {},
+          "bed": {},
+          "school": []
+        },
+        "tasks": [
+          {
+            "name": "Làm bài tập",
+            "taskType": "HOMEWORK",
+            "emoji": "⭐",
+            "days": [
+              "MON"
+            ],
+            "start": "20:30",
+            "durationMin": 30,
+            "confidence": 0.95,
+            "source": "Tối thứ hai làm bài tập lúc 8 rưỡi trong 30 phút."
+          }
+        ],
+        "questions": []
+      }
+    },
+    {
+      "text": "Chủ nhật ngủ lúc 00:30 đêm và thứ hai dậy 7h.",
+      "expected": {
+        "anchors": {
+          "wake": {
+            "MON": "07:00"
+          },
+          "bed": {
+            "SUN": "00:30"
+          },
+          "school": []
+        },
+        "tasks": [],
+        "questions": []
+      }
+    },
+    {
+      "text": "Thứ 5 học toán một tiếng.",
+      "expected": {
+        "anchors": {
+          "wake": {},
+          "bed": {},
+          "school": []
+        },
+        "tasks": [],
+        "questions": [
+          "Thứ 5 học toán bắt đầu lúc mấy giờ?"
+        ]
+      }
+    },
+    {
+      "text": "Đọc sách lúc 7h tối trong 20 phút.",
+      "expected": {
+        "anchors": {
+          "wake": {},
+          "bed": {},
+          "school": []
+        },
+        "tasks": [],
+        "questions": [
+          "Đọc sách vào những ngày nào?"
+        ]
+      }
+    },
+    {
+      "text": "Thứ 3 học tiếng Anh lúc 6 rưỡi, trong 1 tiếng.",
+      "expected": {
+        "anchors": {
+          "wake": {},
+          "bed": {},
+          "school": []
+        },
+        "tasks": [],
+        "questions": [
+          "6 rưỡi sáng hay tối thứ 3?"
+        ]
+      }
+    },
+    {
+      "text": "Thứ 6 đọc sách lúc 19h.",
+      "expected": {
+        "anchors": {
+          "wake": {},
+          "bed": {},
+          "school": []
+        },
+        "tasks": [],
+        "questions": [
+          "Thứ 6 đọc sách trong bao nhiêu phút?"
+        ]
+      }
+    },
+    {
+      "text": "Mai tập thể dục lúc 6h30 sáng trong 20 phút.",
+      "expected": {
+        "anchors": {
+          "wake": {},
+          "bed": {},
+          "school": []
+        },
+        "tasks": [
+          {
+            "name": "Tập thể dục",
+            "taskType": "EXERCISE",
+            "emoji": "⭐",
+            "days": [
+              "TUE"
+            ],
+            "start": "06:30",
+            "durationMin": 20,
+            "confidence": 0.95,
+            "source": "Mai tập thể dục lúc 6h30 sáng trong 20 phút."
+          }
+        ],
+        "questions": []
+      }
+    }
+  ]
+}

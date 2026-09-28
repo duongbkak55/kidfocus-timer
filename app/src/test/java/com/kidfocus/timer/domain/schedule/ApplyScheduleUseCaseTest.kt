@@ -113,4 +113,42 @@ class ApplyScheduleUseCaseTest {
         assertTrue(runCatching { ApplyScheduleUseCase(store).saveAnchors("another", initial, anchors) }.isFailure)
         assertNull(store.saved)
     }
+    @Test fun `W2 imported tasks and anchors may warn high findings and undo removes additions`() = runTest {
+        val before = ScheduleState(emptyList(), ScheduleAnchors())
+        val store = FakeStore(before)
+        val useCase = ApplyScheduleUseCase(store) { 10_000 }
+        val first = task.copy(id = 100, breakDurationMinutes = 0)
+        val second = first.copy(id = 101)
+        useCase.apply("default", before, listOf(ScheduleChange.AddTask(first), ScheduleChange.AddTask(second), ScheduleChange.SetAnchors(anchors)), "l1")
+        assertEquals(2, store.state.tasks.size)
+        assertEquals(anchors, store.state.anchors)
+        assertTrue(ScheduleAdvisor().advise(store.state.tasks, anchors, "l1").any { it.severity == Severity.HIGH })
+        assertEquals(before, store.saved!!.state)
+        assertEquals(1, store.transactions)
+        useCase.undo("default")
+        assertEquals(before, store.state)
+        assertNull(store.saved)
+    }
+    @Test fun `W2 import failure and invalid additions preserve previous state and alarms`() = runTest {
+        val before = ScheduleState(emptyList(), ScheduleAnchors())
+        val store = FakeStore(before)
+        val useCase = ApplyScheduleUseCase(store)
+        for (invalid in listOf(task.copy(breakDurationMinutes = 5), task.copy(breakDurationMinutes = 0, focusDurationMinutes = 4),
+            task.copy(breakDurationMinutes = 0, childProfileId = "other"))) {
+            assertTrue(runCatching { useCase.apply("default", before, listOf(ScheduleChange.AddTask(invalid)), "l1") }.isFailure)
+        }
+        store.failInsideTransaction = true
+        assertTrue(runCatching { useCase.apply("default", before, listOf(ScheduleChange.AddTask(task.copy(breakDurationMinutes = 0))), "l1") }.isFailure)
+        assertEquals(before, store.state)
+        assertNull(store.saved)
+        assertEquals(0, store.alarms)
+    }
+    @Test fun `W2 additions cannot be mixed with W1 suggestions to bypass guard`() = runTest {
+        val store = FakeStore(initial)
+        assertTrue(runCatching { ApplyScheduleUseCase(store).apply("default", initial,
+            listOf(ScheduleChange.AddTask(task.copy(id = 100, breakDurationMinutes = 0)), ScheduleChange.MoveTask(task.id, days, LocalTime.of(19, 0))), "l1") }.isFailure)
+        assertNull(store.saved)
+        assertEquals(initial, store.state)
+    }
+
 }

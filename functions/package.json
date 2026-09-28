@@ -7,7 +7,8 @@
   },
   "scripts": {
     "lint": "eslint .",
-    "test": "node --test"
+    "test": "node --test",
+    "eval:schedule": "node scripts/eval-schedule.js"
   },
   "dependencies": {
     "firebase-admin": "^14.2.0",

@@ -24,7 +24,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun SmartScheduleScreen(onBack: () -> Unit, viewModel: SmartScheduleViewModel = hiltViewModel()) {
+fun SmartScheduleScreen(onBack: () -> Unit, onQuickEntry: () -> Unit = {}, access: com.kidfocus.timer.ui.viewmodel.ScheduleAccessViewModel = hiltViewModel(), viewModel: SmartScheduleViewModel = hiltViewModel()) {
+    val config by access.config.collectAsState()
+    val account by access.account.collectAsState()
+    LaunchedEffect(Unit) { access.refresh() }
     val state by viewModel.state.collectAsState()
     val busy by viewModel.busy.collectAsState()
     val snackbar = remember { SnackbarHostState() }
@@ -56,6 +59,10 @@ fun SmartScheduleScreen(onBack: () -> Unit, viewModel: SmartScheduleViewModel = 
         if (current == null) { CircularProgressIndicator(Modifier.padding(padding)); return@Scaffold }
         Column(Modifier.padding(padding).fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(current.profile.name, style = MaterialTheme.typography.titleLarge)
+            if (config.scheduleEnabled) {
+                Button(onClick = onQuickEntry, enabled = !busy) { Text(stringResource(R.string.quick_title)) }
+                if (account.isSignedIn) ScheduleUsage(config.usage, config.scheduleParseCost)
+            }
             AnchorsEditor(current.profile.id, current.schedule.anchors, busy, viewModel::saveAnchors)
             if (current.canUndo) OutlinedButton(onClick = viewModel::undo, enabled = !busy) { Text(stringResource(R.string.smart_restore_previous)) }
             Text(stringResource(R.string.smart_advice_title), style = MaterialTheme.typography.titleLarge)
@@ -75,6 +82,7 @@ fun SmartScheduleScreen(onBack: () -> Unit, viewModel: SmartScheduleViewModel = 
                         current.schedule.tasks.filter { it.id in finding.taskIds }.forEach { Text(it.name) }
                         finding.suggestion?.let { suggestion ->
                             Text(when (suggestion) {
+                                is ScheduleChange.AddTask, is ScheduleChange.SetAnchors -> stringResource(R.string.quick_preview)
                                 is ScheduleChange.SetBed -> stringResource(R.string.smart_suggest_bed, suggestion.times.values.first().toString())
                                 is ScheduleChange.MoveTask -> stringResource(R.string.smart_suggest_move, suggestion.start.toString())
                                 is ScheduleChange.ResizeTask -> stringResource(R.string.smart_suggest_resize, suggestion.durationMinutes)

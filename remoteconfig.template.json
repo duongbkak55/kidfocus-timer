@@ -22,7 +22,7 @@
       "valueType": "NUMBER"
     },
     "ai_global_daily_credits": {
-      "defaultValue": { "value": "200" },
+      "defaultValue": { "value": "500" },
       "description": "Giới hạn tổng điểm AI mỗi ngày trên mọi thiết bị",
       "valueType": "NUMBER"
     },
@@ -47,6 +47,48 @@
       },
       "description": "Danh sách model, giá điểm và hạn mức theo model",
       "valueType": "JSON"
+    },
+    "early_access_open": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "valueType": "BOOLEAN"
+    },
+    "ai_early_access_days": {
+      "defaultValue": {
+        "value": "60"
+      },
+      "valueType": "NUMBER"
+    },
+    "ai_early_daily_credits": {
+      "defaultValue": {
+        "value": "15"
+      },
+      "valueType": "NUMBER"
+    },
+    "ai_schedule_guest_enabled": {
+      "defaultValue": {
+        "value": "false"
+      },
+      "valueType": "BOOLEAN"
+    },
+    "ai_schedule_model": {
+      "defaultValue": {
+        "value": "google/gemini-2.5-flash-lite"
+      },
+      "valueType": "STRING"
+    },
+    "ai_schedule_parse_cost": {
+      "defaultValue": {
+        "value": "1"
+      },
+      "valueType": "NUMBER"
+    },
+    "ai_schedule_enabled": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "valueType": "BOOLEAN"
     }
   },
   "version": {

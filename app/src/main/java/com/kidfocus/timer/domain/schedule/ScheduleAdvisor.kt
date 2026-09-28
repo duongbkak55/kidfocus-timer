@@ -12,6 +12,8 @@ enum class RuleId { SLEEP_SHORT, SOCIAL_JETLAG, SCREEN_BEFORE_BED, OVERLAP, LATE
 enum class Severity { HIGH, MEDIUM, LOW }
 
 sealed interface ScheduleChange {
+    data class AddTask(val task: ScheduledTask) : ScheduleChange
+    data class SetAnchors(val anchors: ScheduleAnchors) : ScheduleChange
     data class SetBed(val times: Map<DayOfWeek, LocalTime>) : ScheduleChange
     sealed interface TaskChange : ScheduleChange {
         val taskId: Long

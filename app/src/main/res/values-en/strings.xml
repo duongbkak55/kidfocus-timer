@@ -442,4 +442,35 @@
     <string name="smart_previous_day_time">%1$s (previous day)</string>
     <string name="smart_suggest_resize">Suggested focus duration for this day: %1$d minutes.</string>
     <string name="smart_school_label">School session name</string>
+
+    <!-- Smart Weekly Schedule W2 -->
+    <string name="quick_title">Quick entry</string>
+    <string name="quick_privacy">Enter activities and times without child or school names. Create draft sends text to Firebase Functions and OpenRouter for processing. Voice input uses the device/Google speech service.</string>
+    <string name="quick_disabled">Quick entry is currently disabled. You can still enter your schedule manually.</string>
+    <string name="quick_retry">Check again</string>
+    <string name="quick_sign_in_help">Sign in with Google to use AI schedule entry. Early registrants receive a trial while enrollment is open.</string>
+    <string name="quick_sign_in">Sign in with Google</string>
+    <string name="quick_sign_in_failed">Could not sign in. Please try again.</string>
+    <string name="quick_input">What would you like to add to the weekly schedule?</string>
+    <string name="quick_mic">🎤 Speak to enter</string>
+    <string name="quick_examples">Tap an example to fill in</string>
+    <string name="quick_example_one">English on Tuesday and Thursday at 6 pm for one hour.</string>
+    <string name="quick_example_two">Every day, bedtime at 9:30 pm and wake up at 6:15 am.</string>
+    <string name="quick_example_three">School on weekdays from 7:15 to 11:30 am and 1:30 to 4:30 pm.</string>
+    <string name="quick_parse">Create draft</string>
+    <string name="quick_wait">Processing…</string>
+    <string name="quick_error_quota">The daily AI limit has been reached. Your text is kept; try again later.</string>
+    <string name="quick_error_parse">Could not understand this schedule. Specify days, times and durations, then retry. Your text is kept.</string>
+    <string name="quick_error_network">Could not connect to AI. Check your connection and retry; your text is kept.</string>
+    <string name="quick_error_stale">The schedule has changed. Create a fresh draft before applying.</string>
+    <string name="quick_preview">Review draft</string>
+    <string name="quick_review_help">Select items to save and edit days/times as needed. Apply saves immediately. Warnings leave the final choice to the parent.</string>
+    <string name="quick_check">Needs review</string>
+    <string name="quick_duration">Duration (5–120 minutes)</string>
+    <string name="quick_invalid_item">Select at least one day and check the times/duration.</string>
+    <string name="quick_warn_overlap">⚠ This item adds a schedule overlap.</string>
+    <string name="quick_warn_sleep">⚠ This item adds a short sleep warning.</string>
+    <string name="quick_usage_early">AI trial: %1$d days left · %2$d credits left today</string>
+    <string name="quick_usage">AI: %1$d credits left today</string>
+    <string name="quick_duplicate_hours">Two wake/bed rows set different times for the same day. Edit the days or uncheck one item.</string>
 </resources>

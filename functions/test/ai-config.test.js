@@ -32,10 +32,10 @@ test("premium usage is credit based while free usage is question based", () => {
   const config = {premiumDailyCredits: 60, freeDailyLimit: 10, guestDailyLimit: 10};
   assert.deepEqual(
       _test.usageFromData({premium: true, signedIn: true}, config, {questions: 2, credits: 13}),
-      {premium: true, remainingQuestions: 58, remainingCredits: 47},
+      {premium: true, tier: "premium", earlyAccessUntil: null, remainingQuestions: 58, remainingCredits: 47},
   );
   assert.deepEqual(
       _test.usageFromData({premium: false, signedIn: false}, config, {questions: 3, credits: 3}),
-      {premium: false, remainingQuestions: 7, remainingCredits: 7},
+      {premium: false, tier: "guest", earlyAccessUntil: null, remainingQuestions: 7, remainingCredits: 7},
   );
 });
