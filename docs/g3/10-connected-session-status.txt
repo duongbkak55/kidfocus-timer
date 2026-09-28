@@ -1,0 +1,23 @@
+G3 connected session notes — 2026-09-28 (Asia/Ho_Chi_Minh)
+These are session notes, not a raw adb transcript. Pairing code and adb keys are omitted.
+
+Wireless pairing succeeded with the IP endpoint supplied by Duong after the .local endpoint failed.
+Target: adb-4A150DLAQ0013S-aauTsY._adb-tls-connect._tcp
+Device: Pixel 9 / Android 17 / API 37
+Only this target was used; another discovered network device was not targeted.
+Offline debug APK installed with adb install -r: Success.
+Only com.kidfocusstudio.timer.debug was cleared with pm clear: Success.
+adb logcat -c ran before the first app launch.
+Launch component: com.kidfocusstudio.timer.debug/com.kidfocus.timer.MainActivity
+Onboarding completed. Parent PIN 2468 created and confirmed. Parent settings opened after entering PIN again.
+Child profiles screen reached; default profile was Child / Ages 4–5. No grade/anchors/tasks changed yet.
+
+Stopped at approximately 21:58 when the phone entered its lock screen. A fresh UI dump prevented a tap because KidFocus was no longer foreground. A wake command and bringing KidFocus forward still showed the device lock screen with a fingerprint prompt. No attempt to enter the device credential was made.
+Observed window/power diagnostics before stopping:
+    mKeyguardOccluded=true mPendingKeyguardOccluded=true
+      showing=true
+  mWakefulness=Dreaming
+  mIsPowered=true
+
+No further device commands after recognizing that manual unlock was required. Final crash-buffer/general-logcat capture is SKIP until Duong unlocks and the session resumes; absence of a captured crash log does not mean no crash.
+Font scale/rotation were not changed. No reboot, login, purchase, source edit, push, merge, or deploy.

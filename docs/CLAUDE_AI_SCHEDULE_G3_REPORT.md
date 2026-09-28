@@ -1,71 +1,65 @@
-# Báo cáo G3 — Chưa kết nối được thiết bị (USB / wireless)
+# Báo cáo G3 — Đã chạy A, dừng để Duong mở khóa điện thoại
 
 Ngày: 2026-09-28 · Người chạy: Codex · Reviewer: Claude (Cowork) · Nghiệm thu: Duong
 
 ## Kết luận
 
-**G3 chưa thực hiện được; không kết luận PASS/FAIL ứng dụng.** Lần thử lại sau khi Duong bật wireless debugging: `adb devices -l` không có thiết bị, `adb mdns services` không có dịch vụ pairing/connect. ADB 37.0.0 trên Mac có mDNS bật và daemon trả lời; chưa có địa chỉ IP/cổng hoặc mã ghép đôi để kết nối. Dừng trước cài APK vì cần thao tác/thông tin từ điện thoại. A–I vẫn SKIP.
+**G3 chưa hoàn tất: A PASS; B–I SKIP.** Đã ghép đôi wireless, build/cài APK debug và chạy onboarding, tạo PIN thử 2468, nhập lại PIN để vào khu phụ huynh. Khi chuẩn bị sửa hồ sơ cho B, điện thoại tự chuyển sang màn hình khóa và yêu cầu vân tay/mã mở khóa. Dừng thao tác theo yêu cầu của Duong khi cần thao tác tay; không thử nhập mã khóa máy hoặc vượt qua màn hình khóa.
 
-Lần thử USB trước đó dừng vì `device still authorizing`; bằng chứng cũ được giữ ở `g3/00-adb-authorization.txt`. Các thông tin máy/build trong bảng chuẩn bị bên dưới thuộc lần thử trước, không phải xác minh thiết bị wireless hiện tại.
+**Cần Duong mở khóa điện thoại, giữ KidFocus ở phía trước và cho tiếp tục B–I.** Hồ sơ mặc định vẫn là `Child / Ages 4–5`; chưa đặt lớp 1, giờ giấc hoặc task. Không tính G2/unit test thay cho G3. Chưa có đủ bằng chứng để nghiệm thu Smart Weekly Schedule trên máy thật.
 
-Đã đọc `CLAUDE_AI_SCHEDULE_TASK_G3.md` và review W4 G2 PASS. Làm trên `feature/smart-schedule-w4`, HEAD code `ce0220c`; không sửa code, không đăng nhập Google, không mua, không gọi OpenRouter/Firebase production, không push/merge/deploy hoặc reboot. Không xoá dữ liệu, không đổi mạng/font/xoay màn trên điện thoại.
-
-## Chuẩn bị và thiết bị
+## Thiết bị và bản thử
 
 | Mục | Kết quả |
 |---|---|
-| Thiết bị từ `adb devices -l` đầu phiên | Pixel 9, product/device `tokay`, serial `4A150DLAQ0013S`; trạng thái ban đầu `device` |
-| Model qua getprop | Không lấy được: adb trả `device ... not found`; không suy thêm từ thông số máy |
-| Android version / API | **Chưa xác minh** — hai lệnh getprop cũng trả device not found |
-| Đọc trạng thái màn hình | adb báo **device still authorizing**; chưa quan sát trực tiếp hộp thoại USB hoặc màn hình khoá |
-| Package debug | Batch đọc chuẩn bị đã được gửi trả về `com.kidfocusstudio.timer.debug` tồn tại; không cài/ghi đè/xoá package |
-| Build APK | **PASS** — `assembleDebug`, JDK 17, BUILD SUCCESSFUL trong 10 giây, 44 task (1 executed/43 up-to-date) |
-| Cài APK | **SKIP** — chưa gọi `adb install -r` do dừng ở USB authorization |
-| Ảnh / UI dump | **SKIP** — không có ảnh PNG hoặc uiautomator dump trong lần thử này |
-| Logcat crash / ANR | **SKIP** — chưa clear/thu logcat; không thể kết luận không có crash |
+| Thiết bị đã xác minh bằng getprop | Pixel 9, Android **17**, API **37** |
+| Kết nối | Wireless pairing thành công bằng endpoint IP Duong cung cấp; adb tự kết nối sau pairing |
+| Target duy nhất | `adb-4A150DLAQ0013S-aauTsY._adb-tls-connect._tcp` |
+| Branch / code HEAD | `feature/smart-schedule-w4` / `ce0220ce466ec33d0d0bd7c9599c505ec29e479c`; W4 G2 PASS theo review Claude |
+| Working tree | Có 19 đường dẫn tracked release/Learning thay đổi từ trước. APK build từ shared working tree này, **không phải checkout sạch chỉ chứa commit W4**. Không sửa những đường dẫn đó; SHA-256 trước/sau của cả 19 đường dẫn không đổi |
+| Build | **PASS** — JDK 17, `assembleDebug`, BUILD SUCCESSFUL trong 18 giây; 44 task, 10 executed / 34 up-to-date |
+| Cấu hình dịch vụ | Build với biến môi trường Firebase và RevenueCat rỗng, kiểm tra giá trị generated BuildConfig rỗng. Không sửa file cấu hình nguồn; không đăng nhập Google, mua gói hoặc gọi OpenRouter/Firebase production |
+| Cài APK | **PASS** — `adb install -r app/build/outputs/apk/debug/app-debug.apk` trả Success |
+| Dữ liệu thử | Chỉ `pm clear com.kidfocusstudio.timer.debug` để chạy onboarding mới; không xóa dữ liệu cá nhân của app khác |
+| Mở app | `com.kidfocusstudio.timer.debug/com.kidfocus.timer.MainActivity` |
+| Logcat đầu phiên | Đã chạy `adb logcat -c` trước mở app |
+| Logcat cuối phiên | **SKIP** — dừng toàn bộ lệnh thiết bị khi xác định cần Duong mở khóa. Chưa thu crash buffer hoặc lọc FATAL/AndroidRuntime/ANR; không kết luận “không crash” |
 
-Lệnh build đã được khởi chạy song song với batch chuẩn bị đọc thiết bị, trước khi nhận lỗi authorization. Sau khi dừng thao tác điện thoại chỉ đợi kết quả build cục bộ và viết tài liệu. Không gửi thêm lệnh adb, kể cả lệnh đọc/logcat.
+APK SHA-256 đã cài: `ec0dc83d4546ae4420709c589885ee6179e17d66d0a67d0a46ad230473b8b56b`.
 
-APK: `app/build/outputs/apk/debug/app-debug.apk` (chưa cài trong lần này). Build trong shared working tree trên branch w4, vẫn có các thay đổi release/Learning intentional từ trước; không sửa/chọn thêm code trong task G3.
-
-SHA-256 APK: `daaf839817ac972eb6a357f9cd385dbcf6dc7743a3ee62ea566b61391ab3a01f`.
-
-Bằng chứng:
-
-- [Kết quả adb và lý do dừng](g3/00-adb-authorization.txt).
-- [Log build debug và checksum](g3/01-build-debug.txt).
-- [Lần thử lại wireless và chẩn đoán adb](g3/02-wireless-preflight.txt).
+[Log build offline và cấu hình thử](g3/09-offline-build.txt) · [Ghi chú phiên kết nối và lý do dừng](g3/10-connected-session-status.txt).
 
 ## Kịch bản A–I
 
-| Kịch bản | Trạng thái | Ảnh / ghi chú |
+| Kịch bản | Trạng thái | Bằng chứng / ghi chú |
 |---|---|---|
-| A — Khởi động, onboarding, PIN thử 2468, khu phụ huynh | **SKIP** | Chưa mở app/tạo PIN; bị chặn ở chuẩn bị USB |
-| B — Lớp 1, wake 06:15 / bed 22:30 T2–T6, SLEEP_SHORT Cao | **SKIP** | Chưa thao tác; chưa có ảnh |
-| C — Apply bed 21:15, snackbar Undo và Khôi phục lịch trước | **SKIP** | Chưa thao tác; chưa có ảnh |
-| D — Trường 07:00–16:30, bài tập 21:00/45 phút, timeline và bed 00:30 | **SKIP** | Chưa thao tác; chưa có ảnh |
-| E — Task sau 3 phút, alarm URI và thông báo đúng giờ | **SKIP** | Chưa tạo task/đọc alarm/quan sát thông báo |
-| F — Hai hồ sơ, dữ liệu tách riêng | **SKIP** | Chưa tạo/chuyển hồ sơ |
-| G — Nhập nhanh/Ảnh/Nhờ AI sắp lại ẩn khi chưa config | **SKIP** | Chưa mở màn hình; không gọi production |
-| H — Font 1.3, Góp ý/Timeline, xoay ngang rồi font 1.0 | **SKIP** | Không đổi font hoặc rotation; không cần khôi phục cài đặt |
-| I — Force-stop + mở lại giữ dữ liệu (thay reboot) | **SKIP** | Chưa force-stop/mở app; không reboot |
+| A — Khởi động, onboarding, PIN 2468, khu phụ huynh | **PASS** | Đi qua 4 trang onboarding → Home → tạo và xác nhận PIN 2468 → trở về Home → mở Parent settings, nhập lại PIN → vào khu phụ huynh. [Onboarding](g3/03-A-onboarding.png), [Home trước PIN](g3/04-A-home-before-pin.png), [Tạo PIN](g3/05-A-pin-setup.png), [Xác nhận PIN](g3/06-A-pin-confirm.png), [Home sau tạo PIN](g3/07-A-pin-created-home.png), [Khu phụ huynh](g3/08-A-parent-area.png) |
+| B — Lớp 1, wake 06:15 / bed 22:30 T2–T6, ngủ thiếu mức Cao | **SKIP** | Đã mở Manage child profiles; chưa sửa hồ sơ. Màn hình khóa chặn bước tiếp theo |
+| C — Apply bed 21:15, snackbar Undo, Khôi phục lịch trước | **SKIP** | Chưa đặt dữ liệu B, chưa Apply/Undo/Restore |
+| D — Trường 07:00–16:30, bài tập 21:00/45 phút, timeline, bed 00:30 | **SKIP** | Chưa tạo ca học/task hoặc kiểm tra timeline qua nửa đêm |
+| E — Task sau 3 phút, alarm URI, thông báo đúng giờ | **SKIP** | Chưa tạo task, chưa kiểm tra dumpsys alarm hoặc nhận thông báo |
+| F — Hai hồ sơ, dữ liệu tách riêng | **SKIP** | Chưa tạo hồ sơ thứ hai hoặc chuyển qua lại |
+| G — Nhập nhanh/Ảnh/Nhờ AI sắp lại ẩn khi chưa config | **SKIP** | Cấu hình dịch vụ đã tắt để thử offline, nhưng chưa mở đủ màn hình để kiểm chứng nút AI ẩn |
+| H — Font 1.3, Góp ý/Timeline, xoay ngang rồi font 1.0 | **SKIP** | Chưa thay font scale/rotation; không có cài đặt thử cần hoàn nguyên |
+| I — Force-stop + mở lại giữ dữ liệu | **SKIP** | Chưa chạy kịch bản persistence. Không reboot máy |
 
-## Lỗi và việc cần thao tác tay
+Ảnh được chụp bằng `adb exec-out screencap -p`; thao tác app bằng `uiautomator dump` và `input`. Trước mỗi tap theo nhãn, xác nhận KidFocus đang ở foreground. Không lưu ảnh launcher/màn hình khóa hoặc mã ghép đôi/khóa adb vào repo.
 
-**Chặn môi trường, chưa quy mức lỗi ứng dụng:** kết nối USB/authorization không ổn định. Tái hiện trong lần này: adb devices ban đầu liệt kê máy ở trạng thái device → getprop trả không tìm thấy thiết bị → dumpsys window báo vẫn đang authorizing. Một lệnh đọc package trong cùng batch có kết quả, nhưng không dùng kết quả đó để bỏ qua yêu cầu dừng của task.
+## Lỗi và điểm chặn
 
-Duong cần kiểm tra/cấp xác nhận USB debugging trên điện thoại. Nếu không có hộp thoại, kiểm tra trạng thái kết nối cáp/USB debugging bằng tay trước khi cho chạy tiếp. Không suy rằng Duong đã xác nhận từ việc máy có lúc trả lời adb.
+1. **Chặn môi trường — cần thao tác tay, không phải lỗi app:** điện thoại tự vào màn hình khóa khi phiên chạy đang ở Child profiles. UI dump tiếp theo không có KidFocus foreground nên không gửi tap sửa hồ sơ. Lệnh đánh thức và đưa KidFocus ra trước vẫn hiển thị khóa máy có yêu cầu vân tay. Diagnostic window có `showing=true`; power trước khi đánh thức có `mWakefulness=Dreaming`. Đã dừng, chờ Duong mở khóa. Không đổi timeout/khóa bảo mật của điện thoại.
+2. **Thấp — quan sát ngôn ngữ trộn, cần reviewer xác nhận:** onboarding/PIN hiển thị tiếng Việt, còn Home/Parent settings hiển thị tiếng Anh trong cùng phiên. Tái hiện sau xóa dữ liệu debug: chạy onboarding → tạo PIN → vào Parent settings; đối chiếu ảnh 03/05/06 với 04/08. Chưa kiểm tra locale hệ thống hoặc xác định phạm vi lỗi; không ghi đây là lỗi W4 đã xác nhận, không sửa code.
 
-Chưa tìm thấy lỗi app vì **chưa chạy A–I**. Không có crash logcat thực tế để trích dẫn. Không dùng kết quả unit/G2 thay G3, không tạo ảnh/log giả.
+Chưa tìm thấy lỗi chức năng trong phần A đã thực hiện. Không có crash logcat thực tế để trích dẫn; yêu cầu thu `logcat -d -b crash` và lọc `FATAL|AndroidRuntime|ANR` vẫn còn phải làm khi tiếp tục phiên. Không tạo file crash giả hoặc suy từ việc mở app thành công rằng toàn bộ phiên không crash.
 
-## Lần thử lại wireless — 2026-09-28
+## Những lần kết nối trước
 
-Duong yêu cầu thử lại sau khi bật Wireless debugging. Đã chạy lại inventory adb, discovery mDNS và kiểm tra phiên bản/server trên Mac. Cả danh sách thiết bị và dịch vụ đều trống; mDNS đang bật. Không đoán địa chỉ, không quét mạng, không chạy pair/connect khi thiếu endpoint, không bật/tắt mạng điện thoại.
+- USB: ban đầu adb liệt kê máy, sau đó đọc thông tin trả `device not found` / `device still authorizing`; dừng trước cài APK. [Bằng chứng USB](g3/00-adb-authorization.txt), [build ban đầu chưa cài](g3/01-build-debug.txt). Checksum trong log build cũ thuộc artifact trước khi build lại offline, không phải APK hiện đã cài.
+- Wireless lần đầu: inventory và mDNS trống; dừng để lấy endpoint. [Bằng chứng discovery](g3/02-wireless-preflight.txt).
+- Wireless lần này: endpoint `.local` pair thất bại; endpoint IP Duong cung cấp pair thành công, đúng Pixel 9 đã xác minh. Không lưu mã pairing vào tài liệu hoặc commit. Một thiết bị mạng khác được discovery nhưng không được chọn hay thao tác.
 
-Cần Duong mở **Wireless debugging → Pair device with pairing code**, cung cấp **IP:cổng ghép đôi + mã 6 số** đang hiển thị và **IP:cổng kết nối** ở màn Wireless debugging chính; giữ hộp thoại ghép đôi mở trong lúc kết nối. Không lưu mã ghép đôi hoặc khóa adb vào repo. Chưa biết từ kết quả này điện thoại đã ghép đôi với Mac hay chưa, nên không kết luận có lỗi ứng dụng hoặc lỗi thiết lập cụ thể.
+## Tiếp tục và phạm vi commit
 
-Không build lại APK trong lần này; build PASS/checksum của lần trước được giữ nguyên, chưa install. Chưa có screenshot, UI dump, alarm check hoặc crash logcat. Không sửa code/đăng nhập/mua/gọi production/push/merge/deploy/reboot. Chỉ cập nhật báo cáo và thêm bằng chứng wireless. Cần kết nối thành công rồi chạy lại toàn bộ A–I; chưa có kịch bản nào được tính PASS.
+Sau khi Duong mở khóa: kiểm tra lại đúng thiết bị và app; giữ PIN/dữ liệu A hiện có, chạy B–I; chụp ảnh trước/sau bước chính; thu logcat cuối phiên. Nếu cần thao tác tay mới thì dừng và ghi lại. Giữ các giới hạn không sửa code, không production AI/Firebase, không Google login/mua, không reboot/push/merge/deploy.
 
-## Phạm vi commit
-
-Commit USB trước gồm `docs/g3/00-adb-authorization.txt`, `docs/g3/01-build-debug.txt` và báo cáo này. Commit thử lại chỉ cập nhật báo cáo và thêm `docs/g3/02-wireless-preflight.txt`. Không commit task/review có sẵn, APK, code hoặc `.omc`. Giữ nguyên 19 đường dẫn tracked intentional từ trước; không reset/stash.
+Commit lần này chỉ gồm báo cáo này và bằng chứng mới trong `docs/g3/` (6 ảnh A, log build offline, ghi chú kết nối/dừng). Các bằng chứng USB/wireless cũ được giữ nguyên. Không stage code, APK, task/review chưa tracked hoặc `.omc`; không reset/stash. Đã kiểm tra hash của 19 đường dẫn tracked thay đổi có sẵn: không có thay đổi ngoài tài liệu G3 do task này.
