@@ -77,6 +77,9 @@ class ParentScheduleNavigationTest {
         every { access.signingIn } returns MutableStateFlow(false)
         every { access.signInFailed } returns MutableStateFlow(false)
         val smart = mockk<SmartScheduleViewModel>(relaxed = true)
+        val alarmPermission = mockk<ScheduleAlarmPermissionViewModel>(relaxed = true)
+        every { alarmPermission.reminderVisible } returns MutableStateFlow(false)
+        every { alarmPermission.settingsUnavailable } returns MutableStateFlow(false)
         every { smart.state } returns MutableStateFlow(SmartScheduleUiState(profile, schedule, emptyList(), false))
         every { smart.busy } returns MutableStateFlow(false)
         every { smart.events } returns MutableSharedFlow()
@@ -102,7 +105,7 @@ class ParentScheduleNavigationTest {
                         composable(NavRoutes.PinSetup.route) { Text("PIN setup") }
                         parentPinEntry(nav, vm)
                         parentScheduleDestinations(nav, vm,
-                            smartScreen = { SmartScheduleScreen({}, access = access, viewModel = smart) },
+                            smartScreen = { SmartScheduleScreen({}, access = access, viewModel = smart, alarmPermission = alarmPermission) },
                             quickScreen = { QuickScheduleScreen({}, access, quick) })
                     }
                 }

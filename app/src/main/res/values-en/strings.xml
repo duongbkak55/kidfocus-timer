@@ -532,4 +532,14 @@
     <string name="advise_disabled">AI scheduling is disabled.</string>
     <string name="advise_stale">The schedule changed. Request new suggestions before applying.</string>
     <string name="advise_quota">Today’s AI quota is exhausted. Your note is kept.</string>
+
+    <!-- Schedule alarm permission and localized reminders (G3 round 2). -->
+    <string name="schedule_exact_alarm_title">For on-time reminders, allow Alarms &amp; reminders</string>
+    <string name="schedule_exact_alarm_dismiss">Dismiss this reminder</string>
+    <string name="schedule_exact_alarm_unavailable">Could not open Alarms &amp; reminders. Try again in app settings.</string>
+    <string name="task_notification_title">%1$s It’s time!</string>
+    <string name="task_notification_text">Time to start %1$s! 🎯</string>
+    <string name="routine_notification_timer_hint">\u0020• %1$d-minute timer</string>
+    <string name="routine_notification_deadline">Complete by %1$s%2$s</string>
+    <string name="routine_notification_done">Done</string>
 </resources>

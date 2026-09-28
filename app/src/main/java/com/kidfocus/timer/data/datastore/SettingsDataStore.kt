@@ -43,6 +43,15 @@ class SettingsDataStore @Inject constructor(
         val LEARNING_AGE_BAND = stringPreferencesKey("learning_age_band")
         val CALM_MODE_ENABLED = booleanPreferencesKey("calm_mode_enabled")
         val ACTIVE_CHILD_PROFILE_ID = stringPreferencesKey("active_child_profile_id")
+        val SCHEDULE_ALARM_REMINDER_DISMISSED = booleanPreferencesKey("schedule_alarm_reminder_dismissed")
+    }
+
+    val scheduleAlarmReminderDismissed: Flow<Boolean> = context.dataStore.data.map {
+        it[Keys.SCHEDULE_ALARM_REMINDER_DISMISSED] ?: false
+    }
+
+    suspend fun dismissScheduleAlarmReminder() {
+        context.dataStore.edit { it[Keys.SCHEDULE_ALARM_REMINDER_DISMISSED] = true }
     }
 
     val scheduleAnchorsJson: Flow<Map<String, String>> = context.dataStore.data.map { prefs ->

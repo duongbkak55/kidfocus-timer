@@ -49,6 +49,8 @@ import com.kidfocus.timer.domain.model.ScheduledTask
 import com.kidfocus.timer.ui.theme.KidFocusTheme
 import com.kidfocus.timer.ui.components.TaskVisual
 import com.kidfocus.timer.ui.viewmodel.ScheduleViewModel
+import com.kidfocus.timer.ui.viewmodel.ScheduleAlarmPermissionViewModel
+import com.kidfocus.timer.ui.components.ScheduleExactAlarmReminder
 import java.util.Calendar
 
 private fun buildTimeline(tasks: List<ScheduledTask>, anchors: ScheduleAnchors, day: java.time.DayOfWeek): List<ScheduleTimelineItem> =
@@ -62,6 +64,7 @@ fun DailyScheduleScreen(
     quickEntryEnabled: Boolean = false,
     onQuickEntry: () -> Unit = {},
     onAddTaskAtTime: (hour: Int, minute: Int) -> Unit = { _, _ -> },
+    alarmPermission: ScheduleAlarmPermissionViewModel = androidx.hilt.navigation.compose.hiltViewModel(),
 ) {
     val colors = KidFocusTheme.colors
     val tasks by viewModel.tasks.collectAsState()
@@ -105,6 +108,8 @@ fun DailyScheduleScreen(
             if (quickEntryEnabled) androidx.compose.material3.TextButton(onClick = onQuickEntry, modifier = Modifier.padding(horizontal = 16.dp)) {
                 Text(stringResource(R.string.quick_title))
             }
+
+            ScheduleExactAlarmReminder(alarmPermission)
 
             // Week strip
             WeekStrip(

@@ -4,6 +4,9 @@ import android.app.AlarmManager
 import android.app.Application
 import android.app.PendingIntent
 import android.content.Intent
+import android.content.Context
+import android.content.ContextWrapper
+import io.mockk.*
 import com.kidfocus.timer.domain.model.ScheduledTask
 import com.kidfocus.timer.domain.model.TaskType
 import org.junit.Assert.*
@@ -47,5 +50,34 @@ class AlarmSchedulerTest {
         assertEquals("kidfocus://task/42/7", shadowOf(shadowOf(manager).scheduledAlarms.single().operation).savedIntent.data.toString())
         scheduler.cancelTask(a)
         assertTrue(shadowOf(manager).scheduledAlarms.isEmpty())
+    }
+
+    private fun withManager(manager: AlarmManager): AlarmScheduler = AlarmScheduler(object : ContextWrapper(RuntimeEnvironment.getApplication()) {
+        override fun getSystemService(name: String): Any? = if (name == Context.ALARM_SERVICE) manager else super.getSystemService(name)
+    })
+
+    @Test @Config(sdk = [31]) fun `without permission uses inexact allow while idle instead of set`() {
+        val manager = mockk<AlarmManager>(relaxed = true)
+        every { manager.canScheduleExactAlarms() } returns false
+        withManager(manager).scheduleTask(task(1))
+        verify(exactly = 1) { manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, any(), any()) }
+        verify(exactly = 0) { manager.setExactAndAllowWhileIdle(any(), any(), any()) }
+        verify(exactly = 0) { manager.set(any(), any(), any<PendingIntent>()) }
+    }
+
+    @Test @Config(sdk = [31]) fun `with permission uses exact allow while idle`() {
+        val manager = mockk<AlarmManager>(relaxed = true)
+        every { manager.canScheduleExactAlarms() } returns true
+        withManager(manager).scheduleTask(task(2))
+        verify(exactly = 1) { manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, any(), any()) }
+        verify(exactly = 0) { manager.setAndAllowWhileIdle(any(), any(), any()) }
+    }
+
+    @Test @Config(sdk = [31]) fun `permission revoked during exact call falls back safely`() {
+        val manager = mockk<AlarmManager>(relaxed = true)
+        every { manager.canScheduleExactAlarms() } returns true
+        every { manager.setExactAndAllowWhileIdle(any(), any(), any()) } throws SecurityException("revoked")
+        withManager(manager).scheduleTask(task(3))
+        verify(exactly = 1) { manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, any(), any()) }
     }
 }

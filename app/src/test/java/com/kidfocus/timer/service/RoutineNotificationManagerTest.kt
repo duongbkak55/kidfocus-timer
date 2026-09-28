@@ -18,6 +18,18 @@ class RoutineNotificationManagerTest {
     private val context get() = RuntimeEnvironment.getApplication()
     private val notifications get() = shadowOf(context.getSystemService(NotificationManager::class.java))
 
+    private fun localized(text: String, action: String, timer: Int?) {
+        RoutineNotificationManager(context).show(42L, "Reading", "📚", 420, "2026-09-29", timer)
+        val notification = notifications.allNotifications.single()
+        assertEquals("📚 Reading", notification.extras.getString(Notification.EXTRA_TITLE))
+        assertEquals(text, notification.extras.getString(Notification.EXTRA_TEXT))
+        assertEquals(action, notification.actions.single().title.toString())
+    }
+
+    @Test @Config(qualifiers = "en") fun `English reminder includes deadline timer and completion action`() = localized("Complete by 07:00 • 25-minute timer", "Done", 25)
+    @Test @Config(qualifiers = "vi") fun `Vietnamese reminder includes deadline timer and completion action`() = localized("Cần hoàn thành trước 07:00 • Có timer 25 phút", "Đã xong", 25)
+    @Test @Config(qualifiers = "en") fun `reminder without timer has no dangling hint`() = localized("Complete by 07:00", "Done", null)
+
     @Test fun `IDs sharing low 32 bits retain separate complete and open intents with correct extras`() {
         val firstId = 1_800_000_000_000_123L
         val secondId = firstId + (1L shl 32)

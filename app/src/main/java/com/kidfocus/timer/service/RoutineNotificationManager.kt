@@ -50,17 +50,17 @@ class RoutineNotificationManager @Inject constructor(
         val hour = deadlineMinutes / 60
         val minute = deadlineMinutes % 60
         val deadline = String.format(Locale.getDefault(), "%02d:%02d", hour, minute)
-        val timerHint = linkedTimerMinutes?.let { " • Có timer $it phút" }.orEmpty()
+        val timerHint = linkedTimerMinutes?.let { context.getString(R.string.routine_notification_timer_hint, it) }.orEmpty()
 
         val notification = NotificationCompat.Builder(context, KidFocusApp.ROUTINE_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_timer_notification)
             .setContentTitle("$emoji $title")
-            .setContentText("Cần hoàn thành trước $deadline$timerHint")
+            .setContentText(context.getString(R.string.routine_notification_deadline, deadline, timerHint))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setAutoCancel(true)
             .setContentIntent(openApp)
-            .addAction(R.drawable.ic_timer_notification, "Đã xong", complete)
+            .addAction(R.drawable.ic_timer_notification, context.getString(R.string.routine_notification_done), complete)
             .build()
 
         manager.notify(notificationId(routineId), notification)

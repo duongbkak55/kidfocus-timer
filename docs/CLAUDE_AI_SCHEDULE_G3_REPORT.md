@@ -205,3 +205,40 @@ git -c core.whitespace=-blank-at-eol diff --cached --check -- docs/g3/89-before-
 ```
 
 Cả hai lệnh **PASS**; chỉ bỏ kiểm khoảng trắng cuối dòng cho raw log lịch sử, không đổi cấu hình git lưu trên máy. Lần này không thay code nên không chạy lại unit/lint; kết quả 245 test và lint của APK ở mục Fixes G3 vẫn là lần kiểm code gần nhất.
+
+## Fixes G3 vòng 2
+
+Ngày: **2026-09-29** · Theo phần “Vòng 2” của `CLAUDE_AI_SCHEDULE_G3_FIXES.md` · Base **`d4c9fc1`** · Branch `feature/smart-schedule-w4`.
+
+### F-G3-3 — Quyền Báo thức & lời nhắc trong luồng lịch
+
+- Tách `ExactAlarmPermission` dùng chung cho Routine và lịch: kiểm `canScheduleExactAlarms` từ API 31, mở `ACTION_REQUEST_SCHEDULE_EXACT_ALARM` với URI package của chính app; Android cũ không mở special access. Nếu hệ thống không có màn cài đặt, helper trả lỗi an toàn, thẻ lịch có thông báo để thử lại.
+- Thẻ ở **Lịch ngày** và **Góp ý lịch tuần**, có nút Open settings và Dismiss this reminder. Chỉ hiện khi có ít nhất một task bật, chưa có quyền và chưa đóng. Trạng thái đóng lưu riêng trong **DataStore** (`schedule_alarm_reminder_dismissed`), dùng chung giữa hai màn vì quyền áp dụng cho cả app; không đưa vào Room hoặc thay TimerSettings/cloud payload. Lưu settings thông thường không xóa trạng thái đóng.
+- `ScheduleAlarmPermissionViewModel` dùng chung ở AppNavigation, observer theo lifecycle Activity nằm **trên các route PIN**. Quay lại từ cài đặt: kiểm quyền hiện tại, ẩn thẻ khi được cấp, gọi `scheduleAll(repository.getEnabledTasks())` cho **mọi hồ sơ**, kể cả hồ sơ không đang chọn. Vẫn lên lịch lại nếu thẻ đã đóng. Thực hiện khi quyền chuyển sang được cấp hoặc lần resume đầu của ViewModel có quyền (bao gồm app bị tạo lại); resume với quyền không đổi giữ alarm đang chờ. Cổng PIN/ON_STOP không được nới để mở lịch sau special access.
+- Fallback thiếu quyền đổi **`set` → `setAndAllowWhileIdle`**; có quyền vẫn dùng `setExactAndAllowWhileIdle`. Nếu quyền mất giữa lúc kiểm và gọi exact, giữ fallback `setAndAllowWhileIdle` trong catch SecurityException. Fallback vẫn không cam kết đúng giờ.
+- Chọn observer tại AppNavigation để việc reschedule không phụ thuộc Smart screen còn ở foreground sau khi đi cài đặt; đây là thay đổi nhỏ nhất xử lý được cổng PIN đã sửa ở vòng 1. Không thêm broadcast receiver, permission, WorkManager/service hoặc thay thuật toán tính lần chạy.
+
+Hành vi xin special access và kiểm lại khi resume đối chiếu [Android Developers](https://developer.android.com/about/versions/14/changes/schedule-exact-alarms); đặc tính báo thức không chính xác/Doze đối chiếu [Schedule alarms](https://developer.android.com/develop/background-work/services/alarms).
+
+### F-G3-4 — Notification theo locale
+
+`TaskAlarmReceiver` dùng resource cho title/text, giữ emoji và tên task qua placeholder. `RoutineNotificationManager` dùng resource cho hạn hoàn thành, timer hint và action Done/Đã xong. Thêm **8 key vi/en** cho notification và thẻ quyền, không thay các chuỗi release/Learning có sẵn ở working tree. Timer hint dùng `\u0020` giữ khoảng trắng trước dấu • khi Android biên dịch resource. Không đổi ID, PendingIntent, URI, channel hoặc hành vi nhận thông báo.
+
+### Kiểm tra và phạm vi commit sửa
+
+| Kiểm tra | Kết quả |
+|---|---|
+| `testDebugUnitTest` | **264/264 PASS**, 41 suite, 0 failures/errors/skipped; 19 test mới so với bản sửa vòng 1 |
+| Test API alarm | Thiếu quyền → inexact allow while idle; có quyền → exact allow while idle; SecurityException → fallback; giữ 2 test URI/cancel cũ |
+| Helper/DataStore/VM | Special access đúng package và flag, API cũ không yêu cầu quyền, cài đặt không có không crash; DataStore thật giữ dismissal qua wrapper/settings write; resume có quyền reschedule enabled tasks mọi hồ sơ, không reschedule thường xuyên khi quyền không đổi; dismissal không tắt reschedule |
+| Compose/lifecycle | Thẻ thật → nút cài đặt; `ActivityScenario` CREATED → RESUMED với quyền đã cấp → ẩn thẻ và reschedule; nút đóng thật → persistence callback → ẩn. 9 test điều hướng/PIN thật của vòng 1 vẫn PASS |
+| Notification | Notification thực tế trong Robolectric đúng vi/en cho task, deadline/timer/action Routine; không có timer thì không có hint thừa; giữ các test PendingIntent/occurrence cũ |
+| `assembleDebug` | **PASS**, APK SHA-256 `4a3cae9645fe298bc68ce91b4eac5c422d0caeb7d6bb31e505d3242fe6057f1f` |
+| `lintDebug` | **PASS**, 0 lỗi / 189 cảnh báo |
+| `git diff --check`, kiểm staged | **PASS**; chỉ stage hunk G3 của 4 file chồng phạm vi và file G3 liên quan |
+
+Lệnh giống mục Fixes G3: JDK 17, Firebase/RevenueCat env rỗng, `./gradlew testDebugUnitTest assembleDebug lintDebug`. Lần kiểm cuối **BUILD SUCCESSFUL in 49s**, 65 task (23 executed / 42 up-to-date). [Log kiểm tra vòng 2](g3/91-g3-v2-checks.txt). Generated BuildConfig xác minh các key dịch vụ rỗng; test không gọi OpenRouter/Firebase/Google login/mua.
+
+Working tree vẫn có 19 đường dẫn tracked từ trước. **15 đường dẫn không chồng phạm vi giữ nguyên hash**, gồm Manifest/build/dependency; 4 đường dẫn chồng là AppNavigation, RoutineScreens, strings vi/en được dựng patch chỉ chứa delta G3 so với snapshot đầu task. Các thay đổi Home/permission thông báo Routine/release/Learning còn ngoài commit. Không reset/stash/sửa `.omc`, không thêm permission mới (**SCHEDULE_EXACT_ALARM đã có**; không USE_EXACT_ALARM), Room **v5**, không WorkManager/service/push/merge/deploy/reboot.
+
+**Nghiệm thu máy tại thời điểm commit sửa: chưa chạy lại E.** Sau commit, cài APK giữ dữ liệu; đo lượt không có quyền hiện tại trước để lấy số liệu tham khảo, rồi dùng chính thẻ mới cấp quyền và đo lượt có quyền (kỳ vọng <10 giây, notification tiếng Anh). Chỉ kết luận E từ timestamp/ảnh trên Pixel, không dùng kết quả unit test thay phép đo máy.

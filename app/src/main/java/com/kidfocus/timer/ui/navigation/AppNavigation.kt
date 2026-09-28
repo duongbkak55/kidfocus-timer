@@ -78,6 +78,8 @@ fun AppNavigation(
     // Shared TimerViewModel scoped to the nav graph so Focus and Break screens share state
     val timerViewModel: TimerViewModel = hiltViewModel()
     val scheduleViewModel: ScheduleViewModel = hiltViewModel()
+    val alarmPermission: com.kidfocus.timer.ui.viewmodel.ScheduleAlarmPermissionViewModel = hiltViewModel()
+    com.kidfocus.timer.ui.components.ScheduleAlarmPermissionLifecycle(alarmPermission)
     val routineViewModel: RoutineViewModel = hiltViewModel()
     val cloudSyncViewModel: CloudSyncViewModel = hiltViewModel()
     val scheduleAccess: com.kidfocus.timer.ui.viewmodel.ScheduleAccessViewModel = hiltViewModel()
@@ -268,7 +270,8 @@ fun AppNavigation(
             settingsViewModel = settingsViewModel,
             smartScreen = {
                 SmartScheduleScreen(onBack = { navController.popBackStack() },
-                    onQuickEntry = { navController.navigate(NavRoutes.QuickSchedule.route) }, access = scheduleAccess)
+                    onQuickEntry = { navController.navigate(NavRoutes.QuickSchedule.route) }, access = scheduleAccess,
+                    alarmPermission = alarmPermission)
             },
             quickScreen = {
                 com.kidfocus.timer.ui.screens.QuickScheduleScreen(onBack = { navController.popBackStack() }, access = scheduleAccess)
@@ -293,6 +296,7 @@ fun AppNavigation(
         composable(NavRoutes.DailySchedule.route) {
             DailyScheduleScreen(
                 viewModel = scheduleViewModel,
+                alarmPermission = alarmPermission,
                 quickEntryEnabled = scheduleConfig.scheduleEnabled,
                 onQuickEntry = { navController.navigate(parentGateRoute(settings?.hasPinSet == true, NavRoutes.QuickSchedule.route)) },
                 onBack = { navController.popBackStack() },

@@ -558,4 +558,14 @@
     <string name="advise_disabled">AI sắp lịch đang tắt.</string>
     <string name="advise_stale">Lịch đã thay đổi. Hãy lấy đề xuất mới trước khi áp dụng.</string>
     <string name="advise_quota">Đã hết quota AI hôm nay. Ghi chú vẫn được giữ.</string>
+
+    <!-- Schedule alarm permission and localized reminders (G3 round 2). -->
+    <string name="schedule_exact_alarm_title">Để nhắc đúng giờ, cho phép Báo thức &amp; lời nhắc</string>
+    <string name="schedule_exact_alarm_dismiss">Ẩn lời nhắc này</string>
+    <string name="schedule_exact_alarm_unavailable">Không mở được cài đặt Báo thức &amp; lời nhắc. Hãy thử lại trong cài đặt ứng dụng.</string>
+    <string name="task_notification_title">%1$s Đến giờ rồi!</string>
+    <string name="task_notification_text">Bắt đầu %1$s nào! 🎯</string>
+    <string name="routine_notification_timer_hint">\u0020• Có timer %1$d phút</string>
+    <string name="routine_notification_deadline">Cần hoàn thành trước %1$s%2$s</string>
+    <string name="routine_notification_done">Đã xong</string>
 </resources>

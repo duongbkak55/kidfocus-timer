@@ -18,13 +18,15 @@ import com.kidfocus.timer.domain.schedule.*
 import com.kidfocus.timer.ui.components.scheduleDaysLabel
 import com.kidfocus.timer.ui.viewmodel.ScheduleEvent
 import com.kidfocus.timer.ui.viewmodel.SmartScheduleViewModel
+import com.kidfocus.timer.ui.viewmodel.ScheduleAlarmPermissionViewModel
+import com.kidfocus.timer.ui.components.ScheduleExactAlarmReminder
 import java.time.DayOfWeek
 import java.time.LocalTime
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun SmartScheduleScreen(onBack: () -> Unit, onQuickEntry: () -> Unit = {}, access: com.kidfocus.timer.ui.viewmodel.ScheduleAccessViewModel = hiltViewModel(), viewModel: SmartScheduleViewModel = hiltViewModel()) {
+fun SmartScheduleScreen(onBack: () -> Unit, onQuickEntry: () -> Unit = {}, access: com.kidfocus.timer.ui.viewmodel.ScheduleAccessViewModel = hiltViewModel(), viewModel: SmartScheduleViewModel = hiltViewModel(), alarmPermission: ScheduleAlarmPermissionViewModel = hiltViewModel()) {
     val config by access.config.collectAsState()
     val account by access.account.collectAsState()
     LaunchedEffect(Unit) { access.refresh() }
@@ -59,6 +61,7 @@ fun SmartScheduleScreen(onBack: () -> Unit, onQuickEntry: () -> Unit = {}, acces
         if (current == null) { CircularProgressIndicator(Modifier.padding(padding)); return@Scaffold }
         Column(Modifier.padding(padding).fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(current.profile.name, style = MaterialTheme.typography.titleLarge)
+            ScheduleExactAlarmReminder(alarmPermission)
             if (config.scheduleEnabled) {
                 Button(onClick = onQuickEntry, enabled = !busy) { Text(stringResource(R.string.quick_title)) }
                 if (account.isSignedIn) ScheduleUsage(config.usage, config.scheduleParseCost)
