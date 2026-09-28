@@ -34,6 +34,10 @@ const DEFAULT_CONFIG = {
   scheduleGuestEnabled: false,
   scheduleModel: "google/gemini-2.5-flash-lite",
   scheduleParseCost: 1,
+  scheduleVisionModel: "google/gemini-2.5-flash-lite",
+  scheduleImageCost: 3,
+  scheduleImageTiers: ["early", "premium"],
+  scheduleFreeDailyParses: 0, // 0 preserves W2: no additional PARSE cap.
   maxHistoryMessages: 12,
   maxInputChars: 1500,
   maxOutputTokens: 600,
@@ -234,6 +238,12 @@ async function loadConfig() {
     next.scheduleGuestEnabled = parseBoolean(value("ai_schedule_guest_enabled"), next.scheduleGuestEnabled);
     next.scheduleModel = safeString(value("ai_schedule_model"), 120) || next.scheduleModel;
     next.scheduleParseCost = parseIntSafe(value("ai_schedule_parse_cost"), next.scheduleParseCost, 1, 100);
+    next.scheduleVisionModel = safeString(value("ai_schedule_vision_model"), 120) || next.scheduleVisionModel;
+    next.scheduleImageCost = parseIntSafe(value("ai_schedule_image_cost"), next.scheduleImageCost, 1, 100);
+    const imageTiers = value("ai_schedule_image_tiers");
+    if (typeof imageTiers === "string") next.scheduleImageTiers = imageTiers.split(",").map((tier) => tier.trim())
+        .filter((tier) => ["free", "early", "premium", "guest"].includes(tier));
+    next.scheduleFreeDailyParses = parseIntSafe(value("ai_schedule_free_daily_parses"), next.scheduleFreeDailyParses, 0, 100);
     const remoteModels = JSON.parse(value("ai_models_json") || "null");
     if (Array.isArray(remoteModels) && remoteModels.length) {
       next.models = remoteModels.map(normalizeModel).filter(Boolean);
@@ -297,7 +307,9 @@ function usageFromData(identity, config, data) {
   const questions = Number(data.questions || 0);
   const credits = Number(data.credits || 0);
   const limit = dailyCredits(identity, config);
+  const freeScheduleCap = identity.signedIn && !identity.premium && identity.tier !== "early" && config.scheduleFreeDailyParses > 0;
   return {
+    ...(freeScheduleCap ? {remainingScheduleParses: Math.max(0, config.scheduleFreeDailyParses - Number(data.scheduleParses || 0))} : {}),
     premium: identity.premium,
     tier: identity.tier || (identity.premium ? "premium" : identity.signedIn ? "free" : "guest"),
     earlyAccessUntil: identity.earlyAccessUntil || null,
@@ -325,6 +337,11 @@ async function reserveQuota(identity, config, model, requestId, quotaDb = db) {
     const modelCount = Number(modelCounts[model.id] || 0);
     const maxCredits = dailyCredits(identity, config);
     const globalCredits = Number(globalData.credits || 0);
+    const scheduleParses = Number(data.scheduleParses || 0);
+    if (model.scheduleParse && identity.signedIn && !identity.premium && identity.tier !== "early" &&
+        config.scheduleFreeDailyParses > 0 && scheduleParses >= config.scheduleFreeDailyParses) {
+      throw new HttpsError("resource-exhausted", "SCHEDULE_DAILY_LIMIT_REACHED");
+    }
     if (questions >= maxCredits || credits + model.creditCost > maxCredits || modelCount >= model.dailyLimit) {
       throw new HttpsError("resource-exhausted", "DAILY_LIMIT_REACHED");
     }
@@ -332,10 +349,11 @@ async function reserveQuota(identity, config, model, requestId, quotaDb = db) {
       throw new HttpsError("resource-exhausted", "GLOBAL_DAILY_LIMIT_REACHED");
     }
     transaction.set(ref, {
+      ...(model.scheduleParse ? {scheduleParses: scheduleParses + 1} : {}),
       questions: questions + 1,
       credits: credits + model.creditCost,
       modelCounts: {...modelCounts, [model.id]: modelCount + 1},
-      requests: {...requests, [requestId]: {state: "reserved", modelId: model.id}},
+      requests: {...requests, [requestId]: {state: "reserved", modelId: model.id, ...(model.scheduleParse ? {scheduleParse: true} : {})}},
       updatedAt: FieldValue.serverTimestamp(),
     }, {merge: true});
     transaction.set(globalRef, {
@@ -343,7 +361,7 @@ async function reserveQuota(identity, config, model, requestId, quotaDb = db) {
       credits: globalCredits + model.creditCost,
       updatedAt: FieldValue.serverTimestamp(),
     }, {merge: true});
-    const reserved = {...data, questions: questions + 1, credits: credits + model.creditCost};
+    const reserved = {...data, ...(model.scheduleParse ? {scheduleParses: scheduleParses + 1} : {}), questions: questions + 1, credits: credits + model.creditCost};
     return {usage: usageFromData(identity, config, reserved)};
   });
 }
@@ -373,9 +391,11 @@ async function refundReservation(identity, model, requestId, quotaDb = db) {
     const requests = data.requests || {};
     if (!requests[requestId] || requests[requestId].state !== "reserved") return;
     const modelCounts = data.modelCounts || {};
+    const wasScheduleParse = requests[requestId].scheduleParse === true;
     delete requests[requestId];
     transaction.set(ref, {
       ...data,
+      ...(wasScheduleParse ? {scheduleParses: Math.max(0, Number(data.scheduleParses || 0) - 1)} : {}),
       questions: Math.max(0, Number(data.questions || 0) - 1),
       credits: Math.max(0, Number(data.credits || 0) - model.creditCost),
       modelCounts: {...modelCounts, [model.id]: Math.max(0, Number(modelCounts[model.id] || 0) - 1)},
@@ -392,7 +412,9 @@ async function refundReservation(identity, model, requestId, quotaDb = db) {
 function publicConfig(config, usage) {
   return {enabled: config.enabled, models: config.models, usage,
     ai_schedule_enabled: config.scheduleEnabled && config.enabled, early_access_open: config.earlyAccessOpen,
-    ai_schedule_parse_cost: config.scheduleParseCost};
+    ai_schedule_parse_cost: config.scheduleParseCost,
+    ai_schedule_image_tiers: config.scheduleImageTiers, ai_schedule_image_cost: config.scheduleImageCost,
+    ai_schedule_free_daily_parses: config.scheduleFreeDailyParses};
 }
 
 function sanitizeMessages(raw, config) {
@@ -431,4 +453,4 @@ function parseIntSafe(value, fallback, min, max) {
   return Number.isFinite(parsed) ? Math.min(max, Math.max(min, parsed)) : fallback;
 }
 
-module.exports._test = {normalizeModel, parseBoolean, parseIntSafe, sanitizeMessages, usageFromData, identityFromEntitlement, dailyCredits, reserveQuota, completeReservation, refundReservation};
+module.exports._test = {DEFAULT_CONFIG, publicConfig, normalizeModel, parseBoolean, parseIntSafe, sanitizeMessages, usageFromData, identityFromEntitlement, dailyCredits, reserveQuota, completeReservation, refundReservation};

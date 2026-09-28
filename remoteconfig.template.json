@@ -2,42 +2,58 @@
   "conditions": [],
   "parameters": {
     "ai_enabled": {
-      "defaultValue": { "value": "true" },
+      "defaultValue": {
+        "value": "true"
+      },
       "description": "Bật hoặc tắt AI cho mọi thiết bị",
       "valueType": "BOOLEAN"
     },
     "ai_guest_daily_limit": {
-      "defaultValue": { "value": "10" },
+      "defaultValue": {
+        "value": "10"
+      },
       "description": "Số câu AI miễn phí mỗi ngày cho thiết bị chưa đăng nhập",
       "valueType": "NUMBER"
     },
     "ai_free_daily_limit": {
-      "defaultValue": { "value": "10" },
+      "defaultValue": {
+        "value": "10"
+      },
       "description": "Số câu AI miễn phí mỗi ngày cho tài khoản đăng nhập",
       "valueType": "NUMBER"
     },
     "ai_premium_daily_credits": {
-      "defaultValue": { "value": "60" },
+      "defaultValue": {
+        "value": "60"
+      },
       "description": "Tổng điểm AI mỗi ngày của tài khoản Premium",
       "valueType": "NUMBER"
     },
     "ai_global_daily_credits": {
-      "defaultValue": { "value": "500" },
+      "defaultValue": {
+        "value": "500"
+      },
       "description": "Giới hạn tổng điểm AI mỗi ngày trên mọi thiết bị",
       "valueType": "NUMBER"
     },
     "ai_max_history_messages": {
-      "defaultValue": { "value": "12" },
+      "defaultValue": {
+        "value": "12"
+      },
       "description": "Số tin nhắn gần nhất gửi tới model",
       "valueType": "NUMBER"
     },
     "ai_max_input_chars": {
-      "defaultValue": { "value": "1500" },
+      "defaultValue": {
+        "value": "1500"
+      },
       "description": "Độ dài tối đa mỗi tin nhắn",
       "valueType": "NUMBER"
     },
     "ai_max_output_tokens": {
-      "defaultValue": { "value": "600" },
+      "defaultValue": {
+        "value": "600"
+      },
       "description": "Số token trả lời tối đa",
       "valueType": "NUMBER"
     },
@@ -89,6 +105,30 @@
         "value": "true"
       },
       "valueType": "BOOLEAN"
+    },
+    "ai_schedule_vision_model": {
+      "defaultValue": {
+        "value": "google/gemini-2.5-flash-lite"
+      },
+      "valueType": "STRING"
+    },
+    "ai_schedule_image_cost": {
+      "defaultValue": {
+        "value": "3"
+      },
+      "valueType": "NUMBER"
+    },
+    "ai_schedule_image_tiers": {
+      "defaultValue": {
+        "value": "early,premium"
+      },
+      "valueType": "STRING"
+    },
+    "ai_schedule_free_daily_parses": {
+      "defaultValue": {
+        "value": "3"
+      },
+      "valueType": "NUMBER"
     }
   },
   "version": {

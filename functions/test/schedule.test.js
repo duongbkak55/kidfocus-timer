@@ -42,7 +42,7 @@ function deepMerge(before, after) {
   for (const [key, value] of Object.entries(after)) result[key] = value && typeof value === "object" && !Array.isArray(value) ? deepMerge(result[key] || {}, value) : value;
   return result;
 }
-function harness(payload = JSON.stringify(fixtures.cases[0].expected), customConfig = {}) {
+function harness(payload = JSON.stringify(fixtures.cases[0].expected), customConfig = {}, entitlement = {}) {
   const db = new FakeFirestore();
   const currentConfig = {...config, ...customConfig};
   const logs = [];
@@ -50,7 +50,7 @@ function harness(payload = JSON.stringify(fixtures.cases[0].expected), customCon
   let calls = 0;
   const handler = createScheduleHandler({
     loadConfig: async () => currentConfig, quotaDay: () => "2026-09-28",
-    resolveIdentity: async (request) => request.auth ? gateway.identityFromEntitlement(request.auth.uid, {}, 100) : {subject: "guest_mock", premium: false, signedIn: false},
+    resolveIdentity: async (request) => request.auth ? gateway.identityFromEntitlement(request.auth.uid, entitlement, 100) : {subject: "guest_mock", premium: false, signedIn: false},
     reserveQuota: (identity, conf, model, id) => gateway.reserveQuota(identity, conf, model, id, db),
     completeReservation: (identity, conf, id) => gateway.completeReservation(identity, conf, id, db),
     refundReservation: (identity, model, id) => gateway.refundReservation(identity, model, id, db),
@@ -203,5 +203,115 @@ for (const [label, payload] of [["provider HTTP failure", null], ["network failu
     assert.equal(h.db.usage("uid_parent").credits, 0);
     assert.equal(h.db.usage("_global").credits, 0);
     assert.deepEqual(h.logs, ["AI_PARSE_FAILED"]);
+  });
+}
+
+const fs = require("node:fs");
+const path = require("node:path");
+const imageFixtures = require("./fixtures/schedule-images.vi.json");
+const jpeg = fs.readFileSync(path.join(__dirname, "fixtures", imageFixtures.cases[0].imageFile)).toString("base64");
+const imageRequest = (id = "image-1") => ({...request(), data: {...request().data, requestId: id, text: "", image: jpeg,
+  currentSchool: [{days: ["MON"], start: "07:15", end: "11:15"}]}});
+
+test("image validation rejects oversize, malformed base64, non-JPEG and invalid currentSchool before quota", async () => {
+  const h = harness();
+  for (const image of ["a".repeat(1_400_001), Buffer.alloc(1_000_001, 255).toString("base64"),
+    "not base64!", "data:image/jpeg;base64," + jpeg, Buffer.from("PNG DATA").toString("base64"), jpeg.slice(0, -4), null, {}, [jpeg]]) {
+    await assert.rejects(h.handler({...imageRequest(), data: {...imageRequest().data, image}}), {code: "invalid-argument"});
+  }
+  for (const currentSchool of [[{days: ["BAD"], start: "07:15", end: "11:15"}], Array(31).fill({}),
+    [{days: ["MON"], start: "07:15", end: "07:15"}], [{days: ["MON"], start: "24:15", end: "11:15"}],
+    [{days: ["MON"], start: "07:15", end: "11:15", label: "private"}]]) {
+    await assert.rejects(h.handler({...imageRequest(), data: {...imageRequest().data, currentSchool}}), {code: "invalid-argument"});
+  }
+  assert.equal(h.db.writes, 0); assert.equal(h.calls(), 0); assert.equal(h.logs.length, 0);
+});
+test("free tier cannot send photos before quota or provider; enabled tier is configurable", async () => {
+  const h = harness();
+  await assert.rejects(h.handler(imageRequest()), {code: "permission-denied", message: "IMAGE_TIER_REQUIRED"});
+  assert.equal(h.db.writes, 0); assert.equal(h.calls(), 0);
+  const allowed = harness(undefined, {scheduleImageTiers: ["free"]});
+  await allowed.handler(imageRequest()); assert.equal(allowed.calls(), 1);
+  const disabled = harness(undefined, {scheduleImageTiers: []}, {premium: true});
+  await assert.rejects(disabled.handler(imageRequest()), {message: "IMAGE_TIER_REQUIRED"});
+});
+test("early and premium photos use vision model, multimodal prompt and image credits", async () => {
+  for (const entitlement of [{earlyAccessUntil: 200}, {premium: true}]) {
+    const h = harness(JSON.stringify(imageFixtures.cases[0].expected), {scheduleVisionModel: "mock/vision", scheduleImageCost: 4}, entitlement);
+    const reply = await h.handler(imageRequest());
+    const body = h.bodies[0];
+    assert.equal(body.model, "mock/vision"); assert.equal(body.max_tokens, 2000);
+    assert.equal(body.provider.data_collection, "deny");
+    assert.equal(body.messages[1].content[1].image_url.url, "data:image/jpeg;base64," + jpeg);
+    const context = JSON.parse(body.messages[1].content[0].text);
+    assert.deepEqual(context.currentSchool, imageRequest().data.currentSchool);
+    assert.equal(context.text, ""); assert.equal(context.image, undefined);
+    assert.match(body.messages[0].content, /KHÔNG biến môn học/);
+    assert.match(body.messages[0].content, /Tiết 1–5/);
+    assert.deepEqual(reply.draft.tasks, []);
+    assert.equal(h.db.usage("uid_parent").credits, 4);
+    assert.equal(h.db.usage("_global").credits, 4);
+    assert.equal(h.db.usage("uid_parent").scheduleParses, 1);
+    assert.equal(reply.usage.remainingCredits, entitlement.premium ? 56 : 11);
+  }
+});
+test("image failures refund cost and PARSE count idempotently, logging codes only", async () => {
+  for (const payload of [null, new Error("private image contents"), "invalid JSON"]) {
+    const h = harness(payload, {scheduleImageCost: 3}, {earlyAccessUntil: 200});
+    await assert.rejects(h.handler(imageRequest()), {message: "AI_PARSE_FAILED"});
+    assert.equal(h.db.usage("uid_parent").credits, 0); assert.equal(h.db.usage("_global").credits, 0);
+    assert.equal(h.db.usage("uid_parent").scheduleParses, 0);
+    assert.equal(h.db.usage("uid_parent").requests["image-1"], undefined);
+    assert.deepEqual(h.logs, ["AI_PARSE_FAILED"]);
+  }
+});
+test("free PARSE cap reserves transactionally under concurrency and leaves chat available", async () => {
+  const h = harness(undefined, {scheduleFreeDailyParses: 3});
+  const results = await Promise.allSettled(Array.from({length: 6}, (_, i) => h.handler({...request(), data: {...request().data, requestId: `p-${i}`}})));
+  assert.equal(results.filter((r) => r.status === "fulfilled").length, 3);
+  assert.ok(results.filter((r) => r.status === "rejected").every((r) => r.reason.message === "SCHEDULE_DAILY_LIMIT_REACHED"));
+  assert.equal(h.calls(), 3); assert.equal(h.db.usage("uid_parent").scheduleParses, 3);
+  assert.equal(results.find((r) => r.status === "fulfilled").value.usage.remainingScheduleParses, 0);
+  await gateway.reserveQuota(gateway.identityFromEntitlement("parent", {}, 100), {...config, scheduleFreeDailyParses: 3},
+      {id: "chat", creditCost: 1, dailyLimit: 10}, "chat-1", h.db);
+  assert.equal(h.db.usage("uid_parent").questions, 4); assert.equal(h.db.usage("uid_parent").scheduleParses, 3);
+});
+test("free PARSE cap defaults unlimited, exempts early/premium, resets on a new day, and refunds", async () => {
+  for (const [settings, entitlement] of [[{}, {}], [{scheduleFreeDailyParses: 0}, {}],
+    [{scheduleFreeDailyParses: 1}, {earlyAccessUntil: 200}], [{scheduleFreeDailyParses: 1}, {premium: true}]]) {
+    const h = harness(undefined, settings, entitlement);
+    for (let i = 0; i < 4; i++) await h.handler({...request(), data: {...request().data, requestId: `p-${i}`}});
+    assert.equal(h.calls(), 4);
+  }
+  const h = harness("broken", {scheduleFreeDailyParses: 1});
+  for (let i = 0; i < 2; i++) await assert.rejects(h.handler(request()), {message: "AI_PARSE_FAILED"});
+  assert.equal(h.db.usage("uid_parent").scheduleParses, 0);
+  const model = {id: "parse", creditCost: 1, dailyLimit: 1000, scheduleParse: true};
+  const settings = {...config, scheduleFreeDailyParses: 1};
+  const firstDay = {...gateway.identityFromEntitlement("parent", {}, 100), quotaDate: "2026-09-28"};
+  await gateway.reserveQuota(firstDay, settings, model, "day-1", h.db);
+  await gateway.reserveQuota({...firstDay, quotaDate: "2026-09-29"}, settings, model, "day-2", h.db);
+  await gateway.refundReservation(firstDay, model, "day-1", h.db);
+  await gateway.refundReservation(firstDay, model, "day-1", h.db);
+  assert.equal(h.db.rows.get("internalAiQuota/uid_parent/days/2026-09-28").scheduleParses, 0);
+  assert.equal(h.db.rows.get("internalAiQuota/uid_parent/days/2026-09-29").scheduleParses, 1);
+});
+test("getAiConfig advertises image policy and code fallback preserves W2 free behavior", () => {
+  assert.equal(gateway.DEFAULT_CONFIG.scheduleFreeDailyParses, 0);
+  const publicConfig = gateway.publicConfig(gateway.DEFAULT_CONFIG, {});
+  assert.deepEqual(publicConfig.ai_schedule_image_tiers, ["early", "premium"]);
+  assert.equal(publicConfig.ai_schedule_image_cost, 3);
+  assert.equal(publicConfig.ai_schedule_free_daily_parses, 0);
+  const template = require("../../remoteconfig.template.json");
+  assert.equal(template.parameters.ai_schedule_free_daily_parses.defaultValue.value, "3");
+  for (const key of ["vision_model", "image_cost", "image_tiers", "free_daily_parses"]) assert.ok(template.parameters["ai_schedule_" + key]);
+});
+for (const fixture of imageFixtures.cases) {
+  test(`Synthetic photo fixture: ${fixture.id} is a bounded JPEG with a valid expected draft`, () => {
+    const bytes = fs.readFileSync(path.join(__dirname, "fixtures", fixture.imageFile));
+    const input = validateInput({...imageRequest().data, image: bytes.toString("base64"), text: fixture.text, currentSchool: fixture.currentSchool});
+    assert.ok(input.image.length <= 1_400_000);
+    assert.deepEqual(validateDraft(fixture.expected), fixture.expected);
+    if (fixture.id.startsWith("school-")) assert.equal(fixture.expected.tasks.length, 0);
   });
 }

@@ -471,7 +471,7 @@
 
     <!-- Smart Weekly Schedule W2 -->
     <string name="quick_title">Nhập nhanh</string>
-    <string name="quick_privacy">Chỉ nhập việc và giờ giấc, không kèm tên bé hoặc trường. Khi bấm Tạo bản nháp, chữ sẽ được gửi tới Firebase Functions và OpenRouter để xử lý. Giọng nói dùng trình nhận giọng của máy/Google.</string>
+    <string name="quick_privacy">Chỉ nhập việc và giờ giấc, không kèm tên bé hoặc trường. Khi bấm Tạo bản nháp, chữ và ảnh bạn đã xác nhận (nếu chọn) sẽ được gửi tới Firebase Functions và OpenRouter để xử lý. Giọng nói dùng trình nhận giọng của máy/Google.</string>
     <string name="quick_disabled">Nhập nhanh hiện chưa được bật. Bạn vẫn có thể nhập lịch bằng tay.</string>
     <string name="quick_retry">Kiểm tra lại</string>
     <string name="quick_sign_in_help">Đăng nhập Google để dùng AI nhập lịch. Người đăng ký sớm được dùng thử khi chương trình đang mở.</string>
@@ -499,4 +499,24 @@
     <string name="quick_usage_early">Dùng thử AI: còn %1$d ngày · hôm nay còn %2$d lượt</string>
     <string name="quick_usage">AI: hôm nay còn %1$d lượt</string>
     <string name="quick_duplicate_hours">Có giờ thức/ngủ khác nhau cho cùng một ngày. Hãy sửa ngày hoặc bỏ chọn một mục.</string>
+
+    <!-- W3 schedule photo import -->
+    <string name="quick_image">Ảnh</string>
+    <string name="quick_image_source">Chọn ảnh thời khóa biểu hoặc lịch gia đình.</string>
+    <string name="quick_image_library">Thư viện</string>
+    <string name="quick_image_camera">Chụp</string>
+    <string name="quick_image_preview">Ảnh lịch đã xử lý</string>
+    <string name="quick_image_privacy">Nên che tên/trường của bé trước khi gửi. Ảnh được thu nhỏ, bỏ metadata và chỉ gửi khi bạn xác nhận.</string>
+    <string name="quick_image_confirm">Tôi đã kiểm tra ảnh và đồng ý gửi để tạo bản nháp.</string>
+    <string name="quick_image_crop">Cắt</string>
+    <string name="quick_image_crop_help">Kéo các góc khung để bỏ thông tin riêng tư, hoặc dùng thanh điều chỉnh.</string>
+    <string name="quick_image_remove">Bỏ ảnh</string>
+    <string name="quick_image_cancel">Hủy</string>
+    <string name="quick_image_error">Không xử lý được ảnh. Ảnh tạm đã được xóa; hãy chọn hoặc chụp lại.</string>
+    <string name="quick_image_tier">Nhập lịch bằng ảnh dành cho tài khoản đủ điều kiện dùng thử hoặc Premium.</string>
+    <string name="quick_image_cost">Lần gửi ảnh này dùng %1$d điểm AI. Có thể thêm giờ vào/ra trường bằng chữ ở trên.</string>
+    <string name="quick_crop_top">Mép trên</string>
+    <string name="quick_crop_bottom">Mép dưới</string>
+    <string name="quick_crop_left">Mép trái</string>
+    <string name="quick_crop_right">Mép phải</string>
 </resources>

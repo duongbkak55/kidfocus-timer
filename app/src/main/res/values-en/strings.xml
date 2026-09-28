@@ -445,7 +445,7 @@
 
     <!-- Smart Weekly Schedule W2 -->
     <string name="quick_title">Quick entry</string>
-    <string name="quick_privacy">Enter activities and times without child or school names. Create draft sends text to Firebase Functions and OpenRouter for processing. Voice input uses the device/Google speech service.</string>
+    <string name="quick_privacy">Enter activities and times without child or school names. Create draft sends text and any photo you have confirmed to Firebase Functions and OpenRouter for processing. Voice input uses the device/Google speech service.</string>
     <string name="quick_disabled">Quick entry is currently disabled. You can still enter your schedule manually.</string>
     <string name="quick_retry">Check again</string>
     <string name="quick_sign_in_help">Sign in with Google to use AI schedule entry. Early registrants receive a trial while enrollment is open.</string>
@@ -473,4 +473,24 @@
     <string name="quick_usage_early">AI trial: %1$d days left · %2$d credits left today</string>
     <string name="quick_usage">AI: %1$d credits left today</string>
     <string name="quick_duplicate_hours">Two wake/bed rows set different times for the same day. Edit the days or uncheck one item.</string>
+
+    <!-- W3 schedule photo import -->
+    <string name="quick_image">Photo</string>
+    <string name="quick_image_source">Choose a school timetable or family schedule photo.</string>
+    <string name="quick_image_library">Library</string>
+    <string name="quick_image_camera">Take photo</string>
+    <string name="quick_image_preview">Prepared schedule photo</string>
+    <string name="quick_image_privacy">Cover your child’s name/school before sending. The photo is resized, metadata is removed, and it is sent only after you confirm.</string>
+    <string name="quick_image_confirm">I have reviewed the photo and agree to send it to create a draft.</string>
+    <string name="quick_image_crop">Crop</string>
+    <string name="quick_image_crop_help">Drag the corners to remove private details, or use the adjustment sliders.</string>
+    <string name="quick_image_remove">Remove photo</string>
+    <string name="quick_image_cancel">Cancel</string>
+    <string name="quick_image_error">Could not process the photo. Temporary photos were deleted; choose or take another photo.</string>
+    <string name="quick_image_tier">Photo import requires an eligible Early Access or Premium account.</string>
+    <string name="quick_image_cost">This photo request uses %1$d AI credits. You can add school start/end times in the text above.</string>
+    <string name="quick_crop_top">Top edge</string>
+    <string name="quick_crop_bottom">Bottom edge</string>
+    <string name="quick_crop_left">Left edge</string>
+    <string name="quick_crop_right">Right edge</string>
 </resources>

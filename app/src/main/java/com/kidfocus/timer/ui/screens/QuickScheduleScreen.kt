@@ -5,6 +5,8 @@ import android.app.TimePickerDialog
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.speech.RecognizerIntent
+import androidx.activity.compose.BackHandler
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.selection.toggleable
@@ -24,6 +26,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kidfocus.timer.R
+import coil.compose.AsyncImage
+import com.kidfocus.timer.data.remote.canImportImage
 import com.kidfocus.timer.data.remote.AiUsage
 import com.kidfocus.timer.domain.schedule.*
 import com.kidfocus.timer.ui.components.scheduleDaysLabel
@@ -42,7 +46,7 @@ private fun speechIntent(language: String) = Intent(RecognizerIntent.ACTION_RECO
 @Composable
 fun ScheduleUsage(usage: AiUsage, parseCost: Int = 1) {
     val days = usage.earlyAccessUntil?.let { ((it - System.currentTimeMillis()).coerceAtLeast(0) + 86_399_999) / 86_400_000 } ?: 0
-    val remaining = minOf(usage.remainingQuestions, usage.remainingCredits / parseCost.coerceAtLeast(1))
+    val remaining = minOf(usage.remainingQuestions, usage.remainingCredits / parseCost.coerceAtLeast(1), usage.remainingScheduleParses ?: Int.MAX_VALUE)
     Text(if (usage.tier == "early") stringResource(R.string.quick_usage_early, days, remaining)
         else stringResource(R.string.quick_usage, remaining), style = MaterialTheme.typography.bodySmall)
 }
@@ -57,6 +61,30 @@ fun QuickScheduleScreen(onBack: () -> Unit, access: ScheduleAccessViewModel, vie
     val profile by viewModel.profile.collectAsState()
     val current by viewModel.current.collectAsState()
     val context = LocalContext.current
+    val canImportImage = config.canImportImage(account.isSignedIn)
+    var imageSource by remember { mutableStateOf(false) }
+    var cropping by remember { mutableStateOf(false) }
+    val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia(), viewModel::pickResult)
+    val camera = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture(), viewModel::captureResult)
+    val exit = { viewModel.discardImages(); onBack() }
+    BackHandler(onBack = exit)
+    LaunchedEffect(canImportImage, state.busy) { if (!canImportImage && !state.busy) viewModel.discardImages() }
+    if (imageSource) AlertDialog(onDismissRequest = { imageSource = false }, title = { Text(stringResource(R.string.quick_image)) },
+        text = { Text(stringResource(R.string.quick_image_source)) },
+        confirmButton = { TextButton(onClick = {
+            imageSource = false; viewModel.beginImageSelection()
+            try { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
+            catch (_: Exception) { viewModel.imageSelectionFailed() }
+        }) { Text(stringResource(R.string.quick_image_library)) } },
+        dismissButton = { TextButton(onClick = {
+            imageSource = false
+            viewModel.createCapture()?.let { uri ->
+                try { camera.launch(uri) } catch (_: Exception) { viewModel.imageSelectionFailed() }
+            }
+        }) { Text(stringResource(R.string.quick_image_camera)) } })
+    if (cropping) state.image?.let { image -> ScheduleImageCropDialog(image, { cropping = false }) {
+        cropping = false; viewModel.cropImage(it)
+    } }
     val locale = Locale.getDefault().toLanguageTag()
     var speechLanguage by remember { mutableStateOf("vi-VN") }
     var micAvailable by remember { mutableStateOf(speechIntent("vi-VN").resolveActivity(context.packageManager) != null) }
@@ -76,7 +104,7 @@ fun QuickScheduleScreen(onBack: () -> Unit, access: ScheduleAccessViewModel, vie
         }
     }
     LaunchedEffect(Unit) { access.refresh() }
-    LaunchedEffect(state.error) { if (state.error == QuickScheduleError.DISABLED) access.refresh() }
+    LaunchedEffect(state.error) { if ((state.error == QuickScheduleError.DISABLED || state.error == QuickScheduleError.IMAGE_TIER)) access.refresh() }
     LaunchedEffect(state.usage) { state.usage?.let(access::updateUsage) }
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -97,7 +125,7 @@ fun QuickScheduleScreen(onBack: () -> Unit, access: ScheduleAccessViewModel, vie
         }
     }
     Scaffold(topBar = { TopAppBar(title = { Text(stringResource(R.string.quick_title)) }, navigationIcon = {
-        IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back)) }
+        IconButton(onClick = exit) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back)) }
     }) }, snackbarHost = { SnackbarHost(snackbar) }) { padding ->
         Column(Modifier.padding(padding).fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             profile?.let { Text(it.name, style = MaterialTheme.typography.titleLarge) }
@@ -111,7 +139,7 @@ fun QuickScheduleScreen(onBack: () -> Unit, access: ScheduleAccessViewModel, vie
                 Text(stringResource(R.string.quick_sign_in_help))
                 Button(onClick = { access.signIn(context) }, enabled = account.configured && !signingIn) { Text(stringResource(R.string.quick_sign_in)) }
                 if (signInFailed) Text(stringResource(R.string.quick_sign_in_failed), color = MaterialTheme.colorScheme.error)
-            } else ScheduleUsage(config.usage, config.scheduleParseCost)
+            } else ScheduleUsage(config.usage, if (state.image == null) config.scheduleParseCost else config.scheduleImageCost)
             OutlinedTextField(value = state.text, onValueChange = viewModel::editText, modifier = Modifier.fillMaxWidth(),
                 label = { Text(stringResource(R.string.quick_input)) }, minLines = 4, maxLines = 10,
                 enabled = !state.busy, supportingText = { Text("${state.text.length}/2000") })
@@ -119,12 +147,31 @@ fun QuickScheduleScreen(onBack: () -> Unit, access: ScheduleAccessViewModel, vie
                 speechLanguage = "vi-VN"
                 try { voice.launch(speechIntent(speechLanguage)) } catch (_: ActivityNotFoundException) { micAvailable = false }
             }, enabled = !state.busy) { Text(stringResource(R.string.quick_mic)) }
+            if (canImportImage) OutlinedButton(onClick = { imageSource = true }, enabled = !state.busy) { Text(stringResource(R.string.quick_image)) }
+            state.image?.let { image ->
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        AsyncImage(image.file, stringResource(R.string.quick_image_preview), Modifier.fillMaxWidth().heightIn(max = 240.dp))
+                        Text(stringResource(R.string.quick_image_privacy))
+                        Text(stringResource(R.string.quick_image_cost, config.scheduleImageCost))
+                        Row(Modifier.fillMaxWidth().toggleable(state.imageConfirmed, enabled = !state.busy, role = Role.Checkbox,
+                            onValueChange = viewModel::confirmImage)) {
+                            Checkbox(state.imageConfirmed, onCheckedChange = null, enabled = !state.busy)
+                            Text(stringResource(R.string.quick_image_confirm), Modifier.weight(1f))
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            TextButton(onClick = { cropping = true }, enabled = !state.busy) { Text(stringResource(R.string.quick_image_crop)) }
+                            TextButton(onClick = viewModel::discardImages, enabled = !state.busy) { Text(stringResource(R.string.quick_image_remove)) }
+                        }
+                    }
+                }
+            }
             Text(stringResource(R.string.quick_examples), style = MaterialTheme.typography.labelLarge)
             listOf(R.string.quick_example_one, R.string.quick_example_two, R.string.quick_example_three).forEach { resource ->
                 val example = stringResource(resource)
                 TextButton(onClick = { viewModel.editText(example) }, enabled = !state.busy) { Text(example) }
             }
-            Button(onClick = viewModel::parse, enabled = account.isSignedIn && !state.busy && state.text.isNotBlank() && current != null) {
+            Button(onClick = viewModel::parse, enabled = account.isSignedIn && !state.busy && (if (state.image != null) canImportImage && state.imageConfirmed else state.text.isNotBlank()) && current != null) {
                 Text(stringResource(if (state.busy) R.string.quick_wait else R.string.quick_parse))
             }
             state.error?.let { error ->
@@ -135,6 +182,8 @@ fun QuickScheduleScreen(onBack: () -> Unit, access: ScheduleAccessViewModel, vie
                     QuickScheduleError.DISABLED -> R.string.quick_disabled
                     QuickScheduleError.STALE -> R.string.quick_error_stale
                     QuickScheduleError.APPLY -> R.string.smart_error
+                    QuickScheduleError.IMAGE -> R.string.quick_image_error
+                    QuickScheduleError.IMAGE_TIER -> R.string.quick_image_tier
                     QuickScheduleError.NETWORK -> R.string.quick_error_network
                 }), color = MaterialTheme.colorScheme.error)
             }

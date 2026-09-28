@@ -35,6 +35,7 @@ class QuickScheduleViewModelTest {
     private val anchors = mockk<ScheduleAnchorsRepository>()
     private val parser = mockk<ScheduleParser>()
     private val useCase = mockk<ApplyScheduleUseCase>()
+    private val images = mockk<ScheduleImageProcessor>(relaxed = true)
     private val store = mockk<RoomScheduleStore>()
     private val active = MutableStateFlow(ChildProfileEntity.default())
     private lateinit var vm: QuickScheduleViewModel
@@ -47,7 +48,7 @@ class QuickScheduleViewModelTest {
         every { tasks.allTasks } returns flowOf(emptyList())
         every { anchors.observe(any()) } returns flowOf(ScheduleAnchors())
         coEvery { store.read(any()) } returns before
-        vm = QuickScheduleViewModel(profiles, tasks, anchors, parser, useCase, store)
+        vm = QuickScheduleViewModel(profiles, tasks, anchors, parser, useCase, store, images)
     }
     @After fun teardown() { vm.viewModelScope.cancel(); Dispatchers.resetMain() }
     @Test fun `quota failure keeps input and preview unchanged and is retryable`() = runTest(dispatcher) {
@@ -120,6 +121,105 @@ class QuickScheduleViewModelTest {
         runCurrent()
         assertNull(vm.state.value.draft)
         assertEquals("new text", vm.state.value.text)
+    }
+
+    private fun imageFile() = java.io.File.createTempFile("vm-photo-", ".jpg").apply { writeText("JPEG fixture") }
+    private fun mockImage(file: java.io.File): ScheduleImage {
+        val image = ScheduleImage(file, 80, 40)
+        coEvery { images.prepare(any()) } returns image
+        coEvery { images.base64(image) } returns "JPEG_BASE64"
+        every { images.delete(any()) } answers { firstArg<ScheduleImage?>()?.file?.delete(); Unit }
+        every { images.deleteCapture(any()) } answers { firstArg<ScheduleCapture?>()?.file?.delete(); Unit }
+        return image
+    }
+    @Test fun `photo cannot send before checkbox and uses same draft with optional text then deletes cache`() = runTest(dispatcher) {
+        runCurrent()
+        val file = imageFile(); val image = mockImage(file)
+        vm.beginImageSelection(); vm.pickResult(android.net.Uri.fromFile(file)); runCurrent()
+        assertEquals(image, vm.state.value.image); assertFalse(vm.state.value.imageConfirmed)
+        vm.parse(); runCurrent(); coVerify(exactly = 0) { parser.parseImage(any(), any(), any(), any()) }
+        vm.confirmImage(true)
+        coEvery { parser.parseImage("", "JPEG_BASE64", "4-5", before) } returns ScheduleParseReply(draft, AiUsage(12, 12, false, "early"))
+        vm.parse(); runCurrent()
+        coVerify { parser.parseImage("", "JPEG_BASE64", "4-5", before) }
+        assertEquals(draft, vm.state.value.draft); assertNull(vm.state.value.image)
+        assertFalse(file.exists()); assertFalse(vm.state.value.imageConfirmed)
+        val nextFile = imageFile(); mockImage(nextFile)
+        vm.beginImageSelection(); vm.pickResult(android.net.Uri.fromFile(nextFile)); runCurrent()
+        vm.editText("giờ vào 7h15, ra 11h15"); vm.confirmImage(true)
+        coEvery { parser.parseImage(any(), any(), any(), any()) } returns ScheduleParseReply(draft, AiUsage(9, 9, false, "early"))
+        vm.parse(); runCurrent()
+        coVerify { parser.parseImage("giờ vào 7h15, ra 11h15", "JPEG_BASE64", "4-5", before) }
+        assertFalse(nextFile.exists())
+    }
+    @Test fun `photo tier and network errors keep text and preview but delete submitted image`() = runTest(dispatcher) {
+        runCurrent(); vm.editText("keep text")
+        coEvery { parser.parse(any(), any(), any()) } returns ScheduleParseReply(draft, AiUsage(9, 9, false))
+        vm.parse(); runCurrent()
+        for ((failure, expected) in listOf(IllegalStateException("IMAGE_TIER_REQUIRED") to QuickScheduleError.IMAGE_TIER,
+            java.io.IOException("offline") to QuickScheduleError.NETWORK)) {
+            val file = imageFile(); mockImage(file)
+            vm.beginImageSelection(); vm.pickResult(android.net.Uri.fromFile(file)); runCurrent(); vm.confirmImage(true)
+            coEvery { parser.parseImage(any(), any(), any(), any()) } throws failure
+            vm.parse(); runCurrent()
+            assertEquals(expected, vm.state.value.error); assertEquals("keep text", vm.state.value.text)
+            assertEquals(draft, vm.state.value.draft); assertNull(vm.state.value.image); assertFalse(file.exists())
+        }
+    }
+    @Test fun `cancel camera launch or capture and malformed capture always deletes source`() = runTest(dispatcher) {
+        runCurrent()
+        for (mode in 0..2) {
+            val file = imageFile(); mockImage(file)
+            every { images.createCapture() } returns ScheduleCapture(file, android.net.Uri.fromFile(file))
+            vm.createCapture()
+            when (mode) {
+                0 -> vm.captureResult(false)
+                1 -> vm.imageSelectionFailed()
+                else -> { coEvery { images.prepare(any()) } throws java.io.IOException("invalid photo"); vm.captureResult(true) }
+            }
+            runCurrent(); assertFalse(file.exists()); assertNull(vm.state.value.image)
+        }
+    }
+    @Test fun `remove cancel and profile change discard photo plus checkbox`() = runTest(dispatcher) {
+        runCurrent()
+        val file = imageFile(); mockImage(file)
+        vm.beginImageSelection(); vm.pickResult(android.net.Uri.fromFile(file)); runCurrent(); vm.confirmImage(true)
+        vm.discardImages(); assertFalse(file.exists()); assertNull(vm.state.value.image)
+        val next = imageFile(); mockImage(next)
+        vm.beginImageSelection(); vm.pickResult(android.net.Uri.fromFile(next)); runCurrent(); vm.confirmImage(true)
+        active.value = active.value.copy(id = "other"); runCurrent()
+        assertFalse(next.exists()); assertNull(vm.state.value.image); assertFalse(vm.state.value.imageConfirmed)
+        vm.beginImageSelection(); vm.pickResult(null); assertNull(vm.state.value.image)
+    }
+    @Test fun `crop clears consent deletes original and rejects late prepared image after profile change`() = runTest(dispatcher) {
+        runCurrent()
+        val original = imageFile(); val image = mockImage(original)
+        val croppedFile = imageFile(); val cropped = ScheduleImage(croppedFile, 40, 40)
+        coEvery { images.crop(image, any()) } returns cropped
+        vm.beginImageSelection(); vm.pickResult(android.net.Uri.fromFile(original)); runCurrent(); vm.confirmImage(true)
+        vm.cropImage(ScheduleCrop(0.5f, 0f, 1f, 1f)); runCurrent()
+        assertFalse(original.exists()); assertEquals(cropped, vm.state.value.image); assertFalse(vm.state.value.imageConfirmed)
+        vm.discardImages(); assertFalse(croppedFile.exists())
+        val lateFile = imageFile(); val late = ScheduleImage(lateFile, 80, 40)
+        val pending = CompletableDeferred<ScheduleImage>()
+        coEvery { images.prepare(any()) } coAnswers { pending.await() }
+        vm.beginImageSelection(); vm.pickResult(android.net.Uri.fromFile(lateFile)); runCurrent()
+        active.value = active.value.copy(id = "second"); runCurrent()
+        pending.complete(late); runCurrent()
+        assertNull(vm.state.value.image); assertFalse(lateFile.exists()); assertFalse(vm.state.value.busy)
+    }
+    @Test fun `crop failure clears owned cache and ViewModel clearing cleans capture and preview`() = runTest(dispatcher) {
+        runCurrent()
+        val file = imageFile(); val image = mockImage(file)
+        vm.beginImageSelection(); vm.pickResult(android.net.Uri.fromFile(file)); runCurrent()
+        coEvery { images.crop(image, any()) } throws java.io.IOException("invalid crop")
+        vm.cropImage(ScheduleCrop()); runCurrent()
+        assertFalse(file.exists()); assertNull(vm.state.value.image); assertFalse(vm.state.value.busy)
+        val pending = imageFile(); mockImage(pending)
+        every { images.createCapture() } returns ScheduleCapture(pending, android.net.Uri.fromFile(pending))
+        vm.createCapture()
+        androidx.lifecycle.ViewModelStore().apply { put("quick", vm); clear() }
+        assertFalse(pending.exists()); verify { images.close() }
     }
 
 }
