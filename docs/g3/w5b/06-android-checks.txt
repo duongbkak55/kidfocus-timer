@@ -1,0 +1,16 @@
+./gradlew testDebugUnitTest assembleDebug lintDebug assembleDebugAndroidTest
+BUILD SUCCESSFUL in 33s
+96 actionable tasks: 6 executed, 90 up-to-date
+Configuration cache entry reused.
+{
+  "tests": 300,
+  "suites": 46,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "lint": {
+    "Error": 0,
+    "Fatal": 0,
+    "Warning": 172
+  }
+}

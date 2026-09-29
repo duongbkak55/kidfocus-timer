@@ -26,6 +26,16 @@ class DayLogRepository @Inject constructor(
         account.account.value.userId?.let { ownership.claim(entry.id, it) }
         dao.merge(DayLogEntryEntity.fromEntry(entry))
     }
+    suspend fun addAiBatch(entries: List<DayLogEntry>) {
+        entries.forEach { it.validate(); require(it.profileId == entries.first().profileId && it.source == DayLogSource.AI) }
+        val uid = account.account.value.userId
+        entries.forEach { if (uid != null) ownership.claim(it.id, uid) }
+        dao.addAiBatch(entries.map(DayLogEntryEntity::fromEntry))
+    }
+    suspend fun undoAiBatch(expected: List<DayLogEntry>) {
+        check(expected.all { ownership.visible(it.id, account.account.value.userId) }) { "STALE" }
+        dao.undoAiBatch(expected.map(DayLogEntryEntity::fromEntry))
+    }
     suspend fun edit(entry: DayLogEntry) {
         entry.validate()
         if (!ownership.visible(entry.id, account.account.value.userId)) return

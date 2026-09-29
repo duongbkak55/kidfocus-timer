@@ -1,5 +1,6 @@
 const {Buffer} = require("node:buffer");
 const advise = require("./schedule-advise");
+const log = require("./schedule-log");
 const DAYS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 const TASK_TYPES = new Set([
   "MORNING_STUDY", "AFTERNOON_STUDY", "HOMEWORK", "READING", "WEEKEND_STUDY", "MUSIC_PRACTICE", "LEARNING_GAMES",
@@ -131,31 +132,32 @@ function createScheduleHandler(deps) {
     if (!config.scheduleEnabled || config.enabled === false) throw deps.error("failed-precondition", "AI_SCHEDULE_DISABLED");
     if (!config.scheduleGuestEnabled && !request.auth?.uid) throw deps.error("unauthenticated", "SIGN_IN_REQUIRED");
     let input;
-    try { input = request.data?.mode === "ADVISE" ? advise.validateInput(request.data) : validateInput(request.data); } catch { throw deps.error("invalid-argument", "INVALID_SCHEDULE_INPUT"); }
+    try { input = request.data?.mode === "ADVISE" ? advise.validateInput(request.data) : request.data?.mode === "LOG" ? log.validateInput(request.data) : validateInput(request.data); } catch { throw deps.error("invalid-argument", "INVALID_SCHEDULE_INPUT"); }
     // Freeze the reservation day so a parse crossing midnight refunds the same ledger.
     const identity = {...await deps.resolveIdentity(request), quotaDate: deps.quotaDay()};
     if (input.image && !(config.scheduleImageTiers || ["early", "premium"]).includes(identity.tier || (identity.premium ? "premium" : identity.signedIn ? "free" : "guest"))) {
       throw deps.error("permission-denied", "IMAGE_TIER_REQUIRED");
     }
     const isAdvice = input.mode === "ADVISE";
+    const isLog = input.mode === "LOG";
     const model = {id: isAdvice ? config.scheduleAdviseModel || config.scheduleModel : input.image ? config.scheduleVisionModel || "google/gemini-2.5-flash-lite" : config.scheduleModel,
-      creditCost: isAdvice ? config.scheduleAdviseCost ?? 2 : input.image ? config.scheduleImageCost ?? 3 : config.scheduleParseCost, dailyLimit: 1000, scheduleParse: !isAdvice};
+      creditCost: isAdvice ? config.scheduleAdviseCost ?? 2 : isLog ? config.scheduleLogCost ?? 1 : input.image ? config.scheduleImageCost ?? 3 : config.scheduleParseCost, dailyLimit: 1000, scheduleParse: !isAdvice};
     await deps.reserveQuota(identity, config, model, input.requestId);
     try {
       const response = await deps.fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST", headers: {"Authorization": `Bearer ${deps.key()}`, "Content-Type": "application/json",
           "HTTP-Referer": "https://kidfocus.app", "X-Title": "KidFocus Timer"},
-        body: JSON.stringify((isAdvice ? advise.providerBody : providerBody)(input, model.id)), signal: AbortSignal.timeout(25_000),
+        body: JSON.stringify((isAdvice ? advise.providerBody : isLog ? log.providerBody : providerBody)(input, model.id)), signal: AbortSignal.timeout(25_000),
       });
       if (!response.ok) throw new Error("AI_PARSE_FAILED");
       const payload = await response.json();
       const content = payload.choices?.[0]?.message?.content;
-      const result = isAdvice ? {advice: advise.validateAdvice(content, input)} : {draft: validateDraft(content)};
+      const result = isAdvice ? {advice: advise.validateAdvice(content, input)} : isLog ? {log: log.validateLog(content, input)} : {draft: validateDraft(content)};
       const usage = await deps.completeReservation(identity, config, input.requestId);
       return {...result, usage};
     } catch {
       await deps.refundReservation(identity, model, input.requestId).catch(() => deps.log("AI_REFUND_FAILED"));
-      const code = isAdvice ? "AI_ADVISE_FAILED" : "AI_PARSE_FAILED";
+      const code = isAdvice ? "AI_ADVISE_FAILED" : isLog ? "AI_LOG_FAILED" : "AI_PARSE_FAILED";
       deps.log(code);
       throw deps.error("unavailable", code);
     }

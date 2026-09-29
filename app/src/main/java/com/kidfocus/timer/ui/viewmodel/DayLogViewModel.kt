@@ -18,7 +18,7 @@ import java.time.temporal.TemporalAdjusters
 import javax.inject.Inject
 
 data class DayLogData(val profileId: String? = null, val tasks: List<ScheduledTask> = emptyList(),
-    val anchors: ScheduleAnchors = ScheduleAnchors(), val entries: List<DayLogEntry> = emptyList())
+    val anchors: ScheduleAnchors = ScheduleAnchors(), val entries: List<DayLogEntry> = emptyList(), val ageBand: String = "4-5")
 enum class DayLogError { INVALID, NO_PROFILE, PROFILE_CHANGED, STORAGE }
 
 @HiltViewModel
@@ -26,10 +26,11 @@ enum class DayLogError { INVALID, NO_PROFILE, PROFILE_CHANGED, STORAGE }
 class DayLogViewModel @Inject constructor(private val logs: DayLogRepository, profiles: ChildProfileRepository,
     tasks: ScheduledTaskRepository, anchors: ScheduleAnchorsRepository, private val sync: DayLogSyncManager) : ViewModel() {
     val data: StateFlow<DayLogData> = combine(profiles.profiles, profiles.activeProfileId) { rows, id ->
-        rows.firstOrNull { it.id == id }?.id
-    }.flatMapLatest { id ->
+        rows.firstOrNull { it.id == id }
+    }.flatMapLatest { profile ->
+        val id = profile?.id
         if (id == null) flowOf(DayLogData()) else combine(tasks.allTasks, anchors.all, logs.observe(id)) { allTasks, allAnchors, entries ->
-            DayLogData(id, allTasks.filter { it.childProfileId == id }, allAnchors[id] ?: ScheduleAnchors(), entries)
+            DayLogData(id, allTasks.filter { it.childProfileId == id }, allAnchors[id] ?: ScheduleAnchors(), entries, profile.ageBand)
         }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, DayLogData())
     private val _date = MutableStateFlow(LocalDate.now())

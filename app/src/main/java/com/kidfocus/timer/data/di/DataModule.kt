@@ -19,6 +19,9 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object DataModule {
     @Provides
+    fun provideScheduleLogger(api: com.kidfocus.timer.data.remote.ScheduleAiApi): com.kidfocus.timer.data.remote.ScheduleLogger = api
+
+    @Provides
     fun provideScheduleAdviser(api: com.kidfocus.timer.data.remote.ScheduleAiApi): com.kidfocus.timer.data.remote.ScheduleAdviser = api
 
     @Provides

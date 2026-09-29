@@ -115,4 +115,25 @@ class DayLogRecordingTest {
         db.dayLogDao().merge(DayLogEntryEntity.fromEntry(e.copy(updatedAt=3000)))
         assertTrue(logs.get(e.id)!!.deleted)
     }
+    @Test fun aiBatchIsAtomicAndUndoUsesTombstonesWithoutDeletingOtherEntries() = runTest {
+        fun entry(name:String)=DayLogEntry(profileId="default",date=LocalDate.parse("2026-09-29"),name=name,
+            category=DayLogCategory.OTHER,startMinute=600,endMinute=630,source=DayLogSource.AI,createdAt=1000)
+        val old=entry("Old");logs.add(old)
+        val batch=listOf(entry("First"),entry("Second"));logs.addAiBatch(batch)
+        logs.undoAiBatch(batch)
+        assertFalse(logs.get(old.id)!!.deleted)
+        batch.forEach { assertTrue(logs.get(it.id)!!.deleted);assertTrue(logs.get(it.id)!!.updatedAt>it.updatedAt) }
+        val new=entry("New")
+        assertTrue(runCatching { logs.addAiBatch(listOf(new,old)) }.isFailure)
+        assertNull(logs.get(new.id))
+    }
+    @Test fun undoCannotOverwriteAManualEditOrDeletePartOfAChangedAiBatch() = runTest {
+        val batch=(1..2).map { DayLogEntry(profileId="default",date=LocalDate.parse("2026-09-29"),name="AI $it",
+            category=DayLogCategory.OTHER,startMinute=600,source=DayLogSource.AI,createdAt=1000) }
+        logs.addAiBatch(batch);logs.edit(batch.first().copy(name="Parent edited",updatedAt=2000))
+        assertTrue(runCatching { logs.undoAiBatch(batch) }.isFailure)
+        assertEquals("Parent edited",logs.get(batch.first().id)!!.name)
+        assertFalse(logs.get(batch.last().id)!!.deleted)
+    }
+
 }

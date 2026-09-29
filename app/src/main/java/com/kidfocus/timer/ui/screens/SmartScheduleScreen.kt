@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kidfocus.timer.R
@@ -111,6 +112,9 @@ private fun findingMessage(finding: Finding): String = when (finding.ruleId) {
     RuleId.LATE_HOMEWORK -> stringResource(R.string.smart_late_homework)
     RuleId.FOCUS_TOO_LONG -> stringResource(R.string.smart_focus_long, finding.params.getValue("maximum"))
     RuleId.NO_FREE_TIME -> stringResource(R.string.smart_no_free_time)
+    RuleId.BED_DRIFT -> pluralStringResource(R.plurals.smart_bed_drift, finding.params.getValue("count"), finding.params.getValue("count"))
+    RuleId.TASK_OVERRUN -> pluralStringResource(R.plurals.smart_task_overrun, finding.params.getValue("count"), finding.params.getValue("count"))
+    RuleId.OFTEN_SKIPPED -> pluralStringResource(R.plurals.smart_often_skipped, finding.params.getValue("count"), finding.params.getValue("count"))
     RuleId.MORNING_LATE_PATTERN -> stringResource(R.string.smart_morning_late, finding.params.getValue("count"))
 }
 

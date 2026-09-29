@@ -606,4 +606,39 @@
     <string name="daylog_actual_and_compare">Actual &amp; comparison</string>
     <string name="daylog_end_not_set">Not recorded</string>
     <string name="daylog_clear_end">Clear end time</string>
+    <string name="log_today_title">Log today quickly</string>
+    <string name="log_input">Activities done and actual times</string>
+    <string name="log_speak">Speak Vietnamese</string>
+    <plurals name="log_preview">
+        <item quantity="one">Preview (%1$d credit)</item>
+        <item quantity="other">Preview (%1$d credits)</item>
+    </plurals>
+    <string name="log_mic_unavailable">Speech recognition is unavailable. You can type instead.</string>
+    <string name="log_sign_in">A parent account is required to use AI.</string>
+    <string name="log_review_hint">Check dates and times before saving. Uncertain items start unchecked.</string>
+    <string name="log_incidental">Extra activity · keeps the plan</string>
+    <string name="log_matched">Matched plan: %1$s</string>
+    <string name="log_low_confidence">Uncertain — select only after checking</string>
+    <string name="log_save">Save AI actual records</string>
+    <string name="log_saved">Actual records saved. You can undo this batch.</string>
+    <string name="log_restored">The last batch was undone.</string>
+    <string name="log_quota">Today’s requests or credits are exhausted.</string>
+    <string name="log_stale">Data changed. Review it before saving or undoing.</string>
+    <string name="log_failed">Could not read the input. Retry; processing errors refund credits.</string>
+    <plurals name="smart_bed_drift">
+        <item quantity="one">Bedtime was at least 30 minutes late on %1$d recorded day.</item>
+        <item quantity="other">Bedtime was at least 30 minutes late on %1$d recorded days.</item>
+    </plurals>
+    <plurals name="smart_task_overrun">
+        <item quantity="one">This activity exceeded 150%% of its planned duration %1$d time.</item>
+        <item quantity="other">This activity exceeded 150%% of its planned duration %1$d times.</item>
+    </plurals>
+    <plurals name="smart_often_skipped">
+        <item quantity="one">This activity was missed %1$d time on recorded days.</item>
+        <item quantity="other">This activity was missed %1$d times on recorded days.</item>
+    </plurals>
+    <string name="advise_rule_bed_drift">Actual bedtime drift</string>
+    <string name="advise_rule_task_overrun">Actual task overrun</string>
+    <string name="advise_rule_often_skipped">Often skipped activities</string>
+    <string name="log_empty">No entries to save. Add what happened and when.</string>
 </resources>

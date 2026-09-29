@@ -23,6 +23,18 @@ abstract class DayLogDao {
         if (newerDayLog(old?.toEntry(), row.toEntry()) != old?.toEntry()) put(row)
     }
     @Transaction
+    open suspend fun addAiBatch(rows: List<DayLogEntryEntity>) {
+        require(rows.isNotEmpty() && rows.size <= 30 && rows.map { it.id }.distinct().size == rows.size)
+        rows.forEach { require(get(it.id) == null && it.source == "AI" && !it.deleted); it.toEntry().validate() }
+        rows.forEach { put(it) }
+    }
+    @Transaction
+    open suspend fun undoAiBatch(expected: List<DayLogEntryEntity>) {
+        val current = expected.map { get(it.id) }
+        check(current == expected && expected.all { it.source == "AI" && !it.deleted }) { "STALE" }
+        expected.forEach { put(it.copy(deleted = true, updatedAt = maxOf(System.currentTimeMillis(), it.updatedAt + 1))) }
+    }
+    @Transaction
     open suspend fun edit(id: String, transform: (DayLogEntryEntity) -> DayLogEntryEntity) {
         val old = get(id) ?: return
         val row = transform(old)

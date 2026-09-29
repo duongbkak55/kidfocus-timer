@@ -16,6 +16,10 @@ interface ScheduleParser {
     suspend fun parse(text: String, ageBand: String, current: ScheduleState): ScheduleParseReply
     suspend fun parseImage(text: String, image: String, ageBand: String, current: ScheduleState): ScheduleParseReply
 }
+interface ScheduleLogger {
+    suspend fun log(request: com.kidfocus.timer.domain.daylog.DayLogRequest): ScheduleLogReply
+}
+data class ScheduleLogReply(val preview: com.kidfocus.timer.domain.daylog.DayLogPreview, val usage: AiUsage)
 interface ScheduleAdviser {
     suspend fun advise(payload: Map<String, Any>): ScheduleAdviseReply
 }
@@ -23,9 +27,19 @@ data class ScheduleAdviseReply(val advice: ScheduleAdvice, val usage: AiUsage)
 data class ScheduleParseReply(val draft: ScheduleDraft, val usage: AiUsage)
 
 @Singleton
-class ScheduleAiApi @Inject constructor(private val account: FirebaseAccountRepository) : ScheduleParser, ScheduleAdviser {
+class ScheduleAiApi @Inject constructor(private val account: FirebaseAccountRepository) : ScheduleParser, ScheduleAdviser, ScheduleLogger {
     private fun functions(): FirebaseFunctions = FirebaseFunctions.getInstance(
         account.firebaseApp() ?: error("FIREBASE_NOT_CONFIGURED"), "asia-southeast1")
+
+    override suspend fun log(request: com.kidfocus.timer.domain.daylog.DayLogRequest): ScheduleLogReply = withTimeout(30_000) {
+        val reply = functions().getHttpsCallable("aiSchedule").also { it.setTimeout(30, TimeUnit.SECONDS) }
+            .call(request.payload).await().data as? Map<*, *> ?: error("AI_LOG_FAILED")
+        val usage = reply["usage"] as? Map<*, *> ?: error("AI_LOG_FAILED")
+        ScheduleLogReply(com.kidfocus.timer.domain.daylog.DayLogDraft.fromMap(reply["log"] as? Map<*, *> ?: error("AI_LOG_FAILED"), request),
+            AiUsage((usage["remainingQuestions"] as? Number)?.toInt() ?: 0, (usage["remainingCredits"] as? Number)?.toInt() ?: 0,
+                usage["premium"] == true, usage["tier"] as? String ?: "free", (usage["earlyAccessUntil"] as? Number)?.toLong(),
+                (usage["remainingScheduleParses"] as? Number)?.toInt()))
+    }
 
     suspend fun claimEarlyAccess() {
         withTimeout(30_000) { functions().getHttpsCallable("claimEarlyAccess").call().await() }

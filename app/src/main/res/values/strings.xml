@@ -632,4 +632,39 @@
     <string name="daylog_actual_and_compare">Thực tế &amp; So sánh</string>
     <string name="daylog_end_not_set">Chưa ghi</string>
     <string name="daylog_clear_end">Bỏ giờ kết thúc</string>
+    <string name="log_today_title">Ghi nhanh hôm nay</string>
+    <string name="log_input">Việc đã làm và giờ thực tế</string>
+    <string name="log_speak">Nói tiếng Việt</string>
+    <plurals name="log_preview">
+        <item quantity="one">Xem trước (%1$d credit)</item>
+        <item quantity="other">Xem trước (%1$d credit)</item>
+    </plurals>
+    <string name="log_mic_unavailable">Máy chưa có ứng dụng nhận giọng nói. Bạn vẫn có thể gõ.</string>
+    <string name="log_sign_in">Cần tài khoản phụ huynh để dùng AI.</string>
+    <string name="log_review_hint">Kiểm tra ngày và giờ trước khi lưu. Mục chưa rõ được bỏ chọn sẵn.</string>
+    <string name="log_incidental">Phát sinh · không thay kế hoạch</string>
+    <string name="log_matched">Khớp kế hoạch: %1$s</string>
+    <string name="log_low_confidence">Chưa chắc chắn — chỉ chọn khi đã kiểm tra</string>
+    <string name="log_save">Lưu thực tế AI</string>
+    <string name="log_saved">Đã lưu thực tế. Có thể Hoàn tác lô vừa lưu.</string>
+    <string name="log_restored">Đã hoàn tác lô vừa lưu.</string>
+    <string name="log_quota">Đã hết lượt hoặc credit hôm nay.</string>
+    <string name="log_stale">Dữ liệu đã thay đổi. Kiểm tra lại trước khi lưu hoặc hoàn tác.</string>
+    <string name="log_failed">Chưa đọc được nội dung. Thử lại; lỗi xử lý sẽ được hoàn credit.</string>
+    <plurals name="smart_bed_drift">
+        <item quantity="one">Ngủ muộn hơn kế hoạch ít nhất 30 phút trong %1$d ngày có ghi thực tế.</item>
+        <item quantity="other">Ngủ muộn hơn kế hoạch ít nhất 30 phút trong %1$d ngày có ghi thực tế.</item>
+    </plurals>
+    <plurals name="smart_task_overrun">
+        <item quantity="one">Việc này dài hơn 150%% thời lượng kế hoạch %1$d lần.</item>
+        <item quantity="other">Việc này dài hơn 150%% thời lượng kế hoạch %1$d lần.</item>
+    </plurals>
+    <plurals name="smart_often_skipped">
+        <item quantity="one">Bỏ lỡ việc này %1$d lần trong các ngày có ghi thực tế.</item>
+        <item quantity="other">Bỏ lỡ việc này %1$d lần trong các ngày có ghi thực tế.</item>
+    </plurals>
+    <string name="advise_rule_bed_drift">Ngủ thực tế muộn</string>
+    <string name="advise_rule_task_overrun">Thực tế quá thời lượng</string>
+    <string name="advise_rule_often_skipped">Hay bỏ lỡ việc</string>
+    <string name="log_empty">Chưa có mục để lưu. Bổ sung việc đã làm và giờ thực tế.</string>
 </resources>

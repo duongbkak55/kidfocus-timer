@@ -2,6 +2,8 @@ package com.kidfocus.timer.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -21,6 +23,13 @@ fun DayLogsScreen(
     dayLogs: DayLogViewModel = androidx.hilt.navigation.compose.hiltViewModel(),
     onCompare: () -> Unit = {},
     onEditPlan: () -> Unit = {},
+    quickEntry: @Composable (DayLogData, LocalDate) -> Unit = { data, date ->
+        val log: QuickDayLogViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+        val access: ScheduleAccessViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+        val config by access.config.collectAsState()
+        val account by access.account.collectAsState()
+        QuickDayLogPanel(log, data, date, config, account.isSignedIn, access::updateUsage, ownerId = account.userId)
+    },
 ) {
     val date by dayLogs.date.collectAsState()
     val data by dayLogs.data.collectAsState()
@@ -29,7 +38,7 @@ fun DayLogsScreen(
     val wakeName = stringResource(R.string.daylog_wake)
     Column(Modifier.fillMaxSize()) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
-            TextButton(onClick = onBack) { Text(stringResource(R.string.back)) }
+            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back)) }
             Text(stringResource(R.string.daylog_actual_and_compare), Modifier.padding(top = 12.dp), style = MaterialTheme.typography.titleLarge)
         }
         DayLogTimeline(dayLogs, onEdit = {}, onStart = onStartTask, header = {
@@ -44,6 +53,7 @@ fun DayLogsScreen(
                 TextButton(onClick = onEditPlan) { Text(stringResource(R.string.daylog_edit_plan)) }
                 TextButton(onClick = onCompare) { Text(stringResource(R.string.daylog_compare_title)) }
             }
+            quickEntry(data, date)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 TextButton(onClick = { dayLogs.openNew(DayLogCategory.OTHER, "") }, enabled = data.profileId != null) { Text(stringResource(R.string.daylog_add_incidental)) }
                 TextButton(onClick = { dayLogs.openNew(DayLogCategory.SLEEP, sleepName) }, enabled = data.profileId != null) { Text(stringResource(R.string.daylog_sleep)) }

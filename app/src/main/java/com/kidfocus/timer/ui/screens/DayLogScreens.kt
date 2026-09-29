@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -187,7 +189,7 @@ fun WeeklyComparisonScreen(viewModel: DayLogViewModel, onBack: () -> Unit) {
     val current = compareWeek(week, data.tasks, data.anchors, data.entries, nowMinute = now.hour * 60 + now.minute)
     val previous = compareWeek(week.minusWeeks(1), data.tasks, data.anchors, data.entries, nowMinute = now.hour * 60 + now.minute)
     Column(Modifier.fillMaxSize()) {
-        TextButton(onClick = onBack) { Text(stringResource(R.string.back)) }
+        IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back)) }
         Text(stringResource(R.string.daylog_compare_title), Modifier.padding(horizontal = 16.dp), style = MaterialTheme.typography.headlineSmall)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             TextButton(onClick = { viewModel.moveWeek(-1) }) { Text(stringResource(R.string.daylog_previous_week)) }
