@@ -1,0 +1,4 @@
+E/TestRunner( 2873): java.lang.RuntimeException: java.util.concurrent.ExecutionException: java.lang.RuntimeException: java.lang.NoSuchMethodException: android.hardware.input.InputManager.getInstance []
+E/TestRunner( 2873): Caused by: java.util.concurrent.ExecutionException: java.lang.RuntimeException: java.lang.NoSuchMethodException: android.hardware.input.InputManager.getInstance []
+E/TestRunner( 2873): Caused by: java.lang.RuntimeException: java.lang.NoSuchMethodException: android.hardware.input.InputManager.getInstance []
+E/TestRunner( 2873): Caused by: java.lang.NoSuchMethodException: android.hardware.input.InputManager.getInstance []

@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-09-29T13:11:12.572893+00:00",
+  "transport": "wireless TLS ADB",
+  "discovery": "adb mdns services had no new Pixel connect advertisement; existing authorized wireless Pixel connection was available in adb devices",
+  "pairing_required": false,
+  "initially_locked": true,
+  "waited_for_manual_unlock": true,
+  "unlocked_confirmed_before_install_and_test": true,
+  "wireless_disconnect": false,
+  "phone_pin_entered": false,
+  "endpoint_and_pairing_code_recorded": false,
+  "screenshot_note": "30-home-after-failed-instrumentation.png shows the normal app after relaunch; it does not prove the Quick Entry scenarios passed."
+}

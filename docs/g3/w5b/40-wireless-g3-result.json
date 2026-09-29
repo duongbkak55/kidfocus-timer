@@ -1,0 +1,19 @@
+{
+  "source_commit": "0d7310a",
+  "stage": "instrumentation test-rule initialization before test body",
+  "status": "BLOCKED_TEST_HARNESS",
+  "device_model": "Pixel 9",
+  "android_release": "17",
+  "api_level": "37",
+  "error": "java.lang.NoSuchMethodException: android.hardware.input.InputManager.getInstance []",
+  "tests_run": 1,
+  "test_failures": 1,
+  "wireless_connection_lost": false,
+  "all_six_tables_and_daylogs_unchanged": true,
+  "alive_logs_before": 3,
+  "alive_logs_after": 3,
+  "new_ai_logs": 0,
+  "new_ai_tombstones": 0,
+  "screenshots_from_test": 0,
+  "provider_calls": 0
+}

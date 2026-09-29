@@ -4,7 +4,7 @@ Ngày: 2026-09-29 · Dev: Codex · Reviewer: Claude · Nghiệm thu: Duong.
 
 Branch **feature/smart-schedule-w5**, worktree **KidFocusTimer-w5a**, tiếp nối W5a `b4a2bbb` (code fixes `5245e5e`). Đã đọc phần **Re-review** trong `CLAUDE_AI_SCHEDULE_W5A_REVIEW.md`: W5a G2/G3 PASS. Chỉ thực hiện W5b theo task W5 và giao việc mới của Duong.
 
-**Trạng thái hiện tại:** F-W5B-1 đã sửa và kiểm tự động PASS (chi tiết bên dưới); **G3 Pixel chưa chạy, ADB đã thấy máy nhưng Pixel đang khoá**. G2 của `7217b5b` là PASS có điều kiện; bản fix cần Claude re-review. Không coi test host hoặc build instrumentation là G3 PASS. Chưa push/merge/deploy.
+**Trạng thái hiện tại:** Claude re-review F-W5B-1 (`0d7310a`) **G2 PASS**. Đã thử **G3 qua wireless trên Pixel 9**, cài `-r` đúng APK và giữ nguyên dữ liệu; **G3 bị chặn ở khởi tạo Espresso**, trước khi chạy luồng Ghi nhanh. Chưa có kết quả PASS cho nhập/Lưu/So sánh/Hoàn tác hoặc câu thiếu giờ trên Pixel. Không sửa code trong lần chạy G3 này; chưa push/merge/deploy.
 
 ## LOG và credit
 
@@ -90,9 +90,49 @@ Pixel đã xuất hiện trên ADB transport wireless được pair trước đ�
 
 Đã bổ sung vào `DayLogQuickEntryG3Test`: sau nhập hai mục/Lưu/So sánh/Undo, gõ **“Ngủ lúc 22h, làm bài mất 1 tiếng rưỡi”**, preview chỉ còn ngủ và câu hỏi giờ bắt đầu làm bài; xác nhận câu hỏi hiển thị, preview không ghi thêm Room. Response cho câu này được tạo từ validator thật bằng Node offline, đặt trong **androidTest assets** vi/en, chọn theo locale của request; không đưa fixture vào APK app. Test sẽ chụp thêm `07-missing-start-question.png` khi được chạy.
 
+## G3 W5b wireless — 2026-09-29, source 0d7310a
+
+Đã đọc **Re-review F-W5B-1** trong `CLAUDE_AI_SCHEDULE_W5B_REVIEW.md`: Claude xác nhận **G2 PASS** và các ca validator cũ đã đạt. Đợt này chỉ cài/chạy kiểm trên thiết bị và cập nhật bằng chứng/báo cáo; không thay application code, test code hoặc dependencies.
+
+### Kết nối và giữ dữ liệu
+
+- Đã kiểm `adb mdns services`; không có quảng bá connect mới của Pixel, nhưng `adb devices` đã có **Pixel 9 qua wireless TLS ADB** được cấp quyền từ trước. Không cần pair lại; không lưu địa chỉ/mã pairing vào repo hoặc log.
+- Ban đầu `deviceLocked=1`: dừng trước cài/thao tác, báo Duong và chờ. Sau đó xác nhận `deviceLocked=0` trước mỗi bước thiết bị. Không nhập PIN mở khoá điện thoại. Kết nối wireless không mất trong lần chạy.
+- Cài app `-r` và test APK `-r -t` đều **Success**, không uninstall/clear data/grant permission/reboot. Hash khớp bản fix đã build rồi commit `0d7310a`: app **a2c00a729c4b2772350e50480de01d06b528e8c69bc71ffaa119e70b2279d11b**, androidTest **717f4c20d235ce073bcf1bc5f9e2f56b0f4e5ba764ee25a06574d20259845b9d**.
+- Room vẫn **v6**. Trước/sau cài và sau test thất bại, toàn bộ sáu bảng hiện có cùng bảng `day_log_entries` giữ nguyên số dòng và hash toàn dòng. **3 log còn hiệu lực → 3**, không có log AI/tombstone mới. Bản chụp DB thô chỉ ở thư mục tạm ngoài repo; bằng chứng đã lọc chỉ chứa count/hash.
+
+Bằng chứng: [wireless/mở khoá](g3/w5b/20-wireless-status.json), [cài APK](g3/w5b/21-wireless-install.json), [DB trước](g3/w5b/22-db-before-install.json), [sau cài](g3/w5b/22-db-after-install.json), [sau test](g3/w5b/22-db-after-failed-test.json).
+
+### G3-W5B-01 — công cụ test lỗi trước kịch bản
+
+Chạy `DayLogQuickEntryG3Test` bằng AndroidJUnitRunner trên **Pixel 9, Android 17 / API 37**. Kết quả: **1 test, 1 failure**, lỗi trong bước `Espresso.onIdle` / `InputManagerEventInjectionStrategy.initialize` của test rule:
+
+```text
+java.lang.NoSuchMethodException: android.hardware.input.InputManager.getInstance []
+```
+
+Dependency Espresso đang khai báo **3.6.1**. Stack cho thấy lỗi reflection khi khởi tạo công cụ test trên máy này; test body chưa chạy. Đây là trở ngại của lần chạy instrumentation, chưa phải bằng chứng lỗi nghiệp vụ W5b. Không tự nâng dependency hoặc thay test trong task G3.
+
+| Bước nghiệm thu | Kết quả lần này |
+| --- | --- |
+| Cài đúng APK `0d7310a`, giữ dữ liệu | PASS |
+| Gõ câu hai mục → preview | Chưa tới bước này |
+| Lưu source AI → So sánh đổi | Chưa chạy |
+| Hoàn tác → So sánh trở về cũ | Chưa chạy |
+| “Ngủ lúc 22h, làm bài mất 1 tiếng rưỡi” hiện câu hỏi | Chưa chạy |
+| Dữ liệu cũ giữ nguyên | PASS — hash toàn bộ bảng/log không đổi |
+| Crash app trong lần kiểm | Không có bản ghi crash mới của KidFocus trong crash buffer đã lọc |
+
+[Toàn bộ stack instrumentation](g3/w5b/23-wireless-instrumentation.txt), [kết quả máy](g3/w5b/40-wireless-g3-result.json), [crash logcat đã lọc](g3/w5b/42-filtered-crash-logcat.txt), [dòng TestRunner liên quan](g3/w5b/43-test-engine-logcat.txt). Không đưa log ứng dụng khác, địa chỉ wireless hoặc credential vào bằng chứng.
+
+Đã mở lại app bình thường và chụp [màn Home sau lần test lỗi](g3/w5b/30-home-after-failed-instrumentation.png). Ảnh này chỉ xác nhận app mở được và kế hoạch hiện có; **không thay thế ảnh Ghi nhanh/Lưu/So sánh/Hoàn tác/câu hỏi**, vì test chưa tới các màn đó. Không gọi production/OpenRouter, không đăng nhập/mua. Main APK giữ Firebase/RevenueCat config rỗng; offline provider chỉ ở androidTest và chưa được gọi trong lần lỗi này.
+
+**Còn lại:** chuẩn bị androidTest tương thích với Pixel API 37 trong một thay đổi được review, giữ nguyên APK app `0d7310a`, rồi chạy lại toàn bộ kịch bản và thu bảy ảnh/result.json. G3 W5b vẫn **chưa PASS**. Kiểm docs bằng `git diff --check`; không chạy lại build/unit test vì lần này không sửa code. 19 file dở ở working tree gốc vẫn nguyên hash như bên dưới.
+
 ## Checklist trước triển khai (chỉ ghi, chưa thực hiện)
 
-- [ ] Claude review G2 W5b, Duong nghiệm thu G3 Pixel nhập ≥2 mục/Lưu/Undo/So sánh và câu có mục thiếu giờ nhận câu hỏi, chụp ảnh vào `docs/g3/w5b`, thu crash logcat có lọc. Test gõ tay dùng fixture offline như mô tả; thử RecognizerIntent bằng tay khi được phép, không thêm RECORD_AUDIO.
+- [x] Claude review G2 W5b và re-review F-W5B-1 (`0d7310a`): PASS.
+- [ ] G3 Pixel nhập ≥2 mục/Lưu/Undo/So sánh và câu thiếu giờ nhận câu hỏi: cần xử lý lỗi khởi tạo công cụ test G3-W5B-01 rồi chạy lại; ảnh Home/log lỗi đã thu, chưa có ảnh/kết quả các bước này. Test gõ tay dùng fixture offline như mô tả; thử RecognizerIntent bằng tay khi được phép, không thêm RECORD_AUDIO.
 - [ ] Khi đã được duyệt triển khai, deploy **aiSchedule** và **getAiConfig** tại `asia-southeast1` cùng module `schedule-log.js`/`schedule-log-grounding.js`/`schedule-advise.js`; không bỏ module mới khi đóng gói. Không cần function LOG mới.
 - [ ] Remote Config: bổ sung **ai_schedule_log_cost = 1**; xác nhận `ai_schedule_enabled`, `ai_enabled`, `ai_schedule_model`, `ai_schedule_free_daily_parses`, cap credit/global, early access và guest policy hiện có. Public config và UI phải cùng cost; rollout chỉ sau review, có thể tắt bằng cờ schedule hiện có.
 - [ ] Dùng môi trường test được duyệt để kiểm model tương thích schema LOG/date/null end, quota PARSE+LOG dùng chung, early grant và refund lỗi/thời điểm qua ngày. Runtime Node 22 của Functions chưa được chạy cục bộ ở task này.
