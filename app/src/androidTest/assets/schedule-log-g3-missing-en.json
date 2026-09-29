@@ -1,0 +1,16 @@
+{
+  "entries": [
+    {
+      "date": "2026-09-29",
+      "planRef": null,
+      "name": "Giờ ngủ",
+      "category": "SLEEP",
+      "start": "22:00",
+      "end": null,
+      "confidence": 0.95
+    }
+  ],
+  "questions": [
+    "Làm bài: what time did this activity start?"
+  ]
+}

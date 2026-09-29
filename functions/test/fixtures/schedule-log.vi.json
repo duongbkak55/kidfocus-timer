@@ -2172,6 +2172,945 @@
         "mustAsk": true,
         "lowConfidenceUnselected": false
       }
+    },
+    {
+      "id": "log-vi-26",
+      "input": {
+        "mode": "LOG",
+        "requestId": "log-vi-26",
+        "text": "Tối nay con ngủ 10 rưỡi",
+        "date": "2026-09-29",
+        "plans": [
+          {
+            "ref": "p0",
+            "date": "2026-09-29",
+            "name": "Làm bài",
+            "category": "STUDY",
+            "start": "19:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p1",
+            "date": "2026-09-29",
+            "name": "Giờ ngủ",
+            "category": "SLEEP",
+            "start": "22:00",
+            "durationMin": 480
+          },
+          {
+            "ref": "p2",
+            "date": "2026-09-29",
+            "name": "Đọc sách",
+            "category": "STUDY",
+            "start": "20:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p3",
+            "date": "2026-09-29",
+            "name": "Học thêm",
+            "category": "STUDY",
+            "start": "18:00",
+            "durationMin": 60
+          },
+          {
+            "ref": "p10",
+            "date": "2026-09-28",
+            "name": "Làm bài",
+            "category": "STUDY",
+            "start": "19:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p11",
+            "date": "2026-09-28",
+            "name": "Giờ ngủ",
+            "category": "SLEEP",
+            "start": "22:00",
+            "durationMin": 480
+          }
+        ],
+        "ageBand": "l1",
+        "locale": "vi-VN"
+      },
+      "providerFixture": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p1",
+            "name": "Giờ ngủ",
+            "category": "SLEEP",
+            "start": "22:30",
+            "end": null,
+            "confidence": 0.95
+          }
+        ],
+        "questions": []
+      },
+      "constraints": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p1",
+            "category": "SLEEP",
+            "start": "22:30",
+            "end": null
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      }
+    },
+    {
+      "id": "log-vi-27",
+      "input": {
+        "mode": "LOG",
+        "requestId": "log-vi-27",
+        "text": "Tắm lúc 10g",
+        "date": "2026-09-29",
+        "plans": [
+          {
+            "ref": "p0",
+            "date": "2026-09-29",
+            "name": "Làm bài",
+            "category": "STUDY",
+            "start": "19:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p1",
+            "date": "2026-09-29",
+            "name": "Giờ ngủ",
+            "category": "SLEEP",
+            "start": "22:00",
+            "durationMin": 480
+          },
+          {
+            "ref": "p2",
+            "date": "2026-09-29",
+            "name": "Đọc sách",
+            "category": "STUDY",
+            "start": "20:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p3",
+            "date": "2026-09-29",
+            "name": "Học thêm",
+            "category": "STUDY",
+            "start": "18:00",
+            "durationMin": 60
+          },
+          {
+            "ref": "p10",
+            "date": "2026-09-28",
+            "name": "Làm bài",
+            "category": "STUDY",
+            "start": "19:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p11",
+            "date": "2026-09-28",
+            "name": "Giờ ngủ",
+            "category": "SLEEP",
+            "start": "22:00",
+            "durationMin": 480
+          }
+        ],
+        "ageBand": "l1",
+        "locale": "vi-VN"
+      },
+      "providerFixture": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": null,
+            "name": "Tắm",
+            "category": "HYGIENE",
+            "start": "10:00",
+            "end": null,
+            "confidence": 0.95
+          }
+        ],
+        "questions": []
+      },
+      "constraints": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": null,
+            "category": "HYGIENE",
+            "start": "10:00",
+            "end": null
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      }
+    },
+    {
+      "id": "log-vi-28",
+      "input": {
+        "mode": "LOG",
+        "requestId": "log-vi-28",
+        "text": "Sáng nay dậy 7 giờ kém 15",
+        "date": "2026-09-29",
+        "plans": [
+          {
+            "ref": "p0",
+            "date": "2026-09-29",
+            "name": "Làm bài",
+            "category": "STUDY",
+            "start": "19:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p1",
+            "date": "2026-09-29",
+            "name": "Giờ ngủ",
+            "category": "SLEEP",
+            "start": "22:00",
+            "durationMin": 480
+          },
+          {
+            "ref": "p2",
+            "date": "2026-09-29",
+            "name": "Đọc sách",
+            "category": "STUDY",
+            "start": "20:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p3",
+            "date": "2026-09-29",
+            "name": "Học thêm",
+            "category": "STUDY",
+            "start": "18:00",
+            "durationMin": 60
+          },
+          {
+            "ref": "p10",
+            "date": "2026-09-28",
+            "name": "Làm bài",
+            "category": "STUDY",
+            "start": "19:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p11",
+            "date": "2026-09-28",
+            "name": "Giờ ngủ",
+            "category": "SLEEP",
+            "start": "22:00",
+            "durationMin": 480
+          }
+        ],
+        "ageBand": "l1",
+        "locale": "vi-VN"
+      },
+      "providerFixture": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": null,
+            "name": "Giờ thức",
+            "category": "WAKE",
+            "start": "06:45",
+            "end": null,
+            "confidence": 0.95
+          }
+        ],
+        "questions": []
+      },
+      "constraints": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": null,
+            "category": "WAKE",
+            "start": "06:45",
+            "end": null
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      }
+    },
+    {
+      "id": "log-en-01",
+      "input": {
+        "mode": "LOG",
+        "requestId": "log-en-01",
+        "text": "slept at 10pm",
+        "date": "2026-09-29",
+        "plans": [
+          {
+            "ref": "p0",
+            "date": "2026-09-29",
+            "name": "Làm bài",
+            "category": "STUDY",
+            "start": "19:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p1",
+            "date": "2026-09-29",
+            "name": "Giờ ngủ",
+            "category": "SLEEP",
+            "start": "22:00",
+            "durationMin": 480
+          },
+          {
+            "ref": "p2",
+            "date": "2026-09-29",
+            "name": "Đọc sách",
+            "category": "STUDY",
+            "start": "20:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p3",
+            "date": "2026-09-29",
+            "name": "Học thêm",
+            "category": "STUDY",
+            "start": "18:00",
+            "durationMin": 60
+          },
+          {
+            "ref": "p10",
+            "date": "2026-09-28",
+            "name": "Làm bài",
+            "category": "STUDY",
+            "start": "19:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p11",
+            "date": "2026-09-28",
+            "name": "Giờ ngủ",
+            "category": "SLEEP",
+            "start": "22:00",
+            "durationMin": 480
+          }
+        ],
+        "ageBand": "l1",
+        "locale": "en-US"
+      },
+      "providerFixture": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p1",
+            "name": "Sleep",
+            "category": "SLEEP",
+            "start": "22:00",
+            "end": null,
+            "confidence": 0.95
+          }
+        ],
+        "questions": []
+      },
+      "constraints": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p1",
+            "category": "SLEEP",
+            "start": "22:00",
+            "end": null
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      }
+    },
+    {
+      "id": "log-en-02",
+      "input": {
+        "mode": "LOG",
+        "requestId": "log-en-02",
+        "text": "Did homework at 7 and read at 8pm",
+        "date": "2026-09-29",
+        "plans": [
+          {
+            "ref": "p0",
+            "date": "2026-09-29",
+            "name": "Làm bài",
+            "category": "STUDY",
+            "start": "19:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p1",
+            "date": "2026-09-29",
+            "name": "Giờ ngủ",
+            "category": "SLEEP",
+            "start": "22:00",
+            "durationMin": 480
+          },
+          {
+            "ref": "p2",
+            "date": "2026-09-29",
+            "name": "Đọc sách",
+            "category": "STUDY",
+            "start": "20:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p3",
+            "date": "2026-09-29",
+            "name": "Học thêm",
+            "category": "STUDY",
+            "start": "18:00",
+            "durationMin": 60
+          },
+          {
+            "ref": "p10",
+            "date": "2026-09-28",
+            "name": "Làm bài",
+            "category": "STUDY",
+            "start": "19:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p11",
+            "date": "2026-09-28",
+            "name": "Giờ ngủ",
+            "category": "SLEEP",
+            "start": "22:00",
+            "durationMin": 480
+          }
+        ],
+        "ageBand": "l1",
+        "locale": "en-US"
+      },
+      "providerFixture": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p0",
+            "name": "Homework",
+            "category": "STUDY",
+            "start": "19:00",
+            "end": null,
+            "confidence": 0.95
+          },
+          {
+            "date": "2026-09-29",
+            "planRef": "p2",
+            "name": "Reading",
+            "category": "STUDY",
+            "start": "20:00",
+            "end": null,
+            "confidence": 0.95
+          }
+        ],
+        "questions": []
+      },
+      "constraints": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p0",
+            "category": "STUDY",
+            "start": "19:00",
+            "end": null
+          },
+          {
+            "date": "2026-09-29",
+            "planRef": "p2",
+            "category": "STUDY",
+            "start": "20:00",
+            "end": null
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      }
+    },
+    {
+      "id": "log-en-03",
+      "input": {
+        "mode": "LOG",
+        "requestId": "log-en-03",
+        "text": "Woke at 7am and did homework for 90 minutes",
+        "date": "2026-09-29",
+        "plans": [
+          {
+            "ref": "p0",
+            "date": "2026-09-29",
+            "name": "Làm bài",
+            "category": "STUDY",
+            "start": "19:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p1",
+            "date": "2026-09-29",
+            "name": "Giờ ngủ",
+            "category": "SLEEP",
+            "start": "22:00",
+            "durationMin": 480
+          },
+          {
+            "ref": "p2",
+            "date": "2026-09-29",
+            "name": "Đọc sách",
+            "category": "STUDY",
+            "start": "20:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p3",
+            "date": "2026-09-29",
+            "name": "Học thêm",
+            "category": "STUDY",
+            "start": "18:00",
+            "durationMin": 60
+          },
+          {
+            "ref": "p10",
+            "date": "2026-09-28",
+            "name": "Làm bài",
+            "category": "STUDY",
+            "start": "19:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p11",
+            "date": "2026-09-28",
+            "name": "Giờ ngủ",
+            "category": "SLEEP",
+            "start": "22:00",
+            "durationMin": 480
+          }
+        ],
+        "ageBand": "l1",
+        "locale": "en-US"
+      },
+      "providerFixture": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": null,
+            "name": "Wake",
+            "category": "WAKE",
+            "start": "07:00",
+            "end": null,
+            "confidence": 0.95
+          },
+          {
+            "date": "2026-09-29",
+            "planRef": "p0",
+            "name": "Homework",
+            "category": "STUDY",
+            "start": "08:00",
+            "end": "09:30",
+            "confidence": 0.95
+          }
+        ],
+        "questions": []
+      },
+      "constraints": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": null,
+            "category": "WAKE",
+            "start": "07:00",
+            "end": null
+          }
+        ],
+        "mustAsk": true,
+        "lowConfidenceUnselected": false
+      }
+    },
+    {
+      "id": "log-vi-29",
+      "input": {
+        "mode": "LOG",
+        "requestId": "log-vi-29",
+        "text": "Ngủ lúc 22h, làm bài mất 1 tiếng rưỡi",
+        "date": "2026-09-29",
+        "plans": [
+          {
+            "ref": "p0",
+            "date": "2026-09-29",
+            "name": "Làm bài",
+            "category": "STUDY",
+            "start": "19:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p1",
+            "date": "2026-09-29",
+            "name": "Giờ ngủ",
+            "category": "SLEEP",
+            "start": "22:00",
+            "durationMin": 480
+          },
+          {
+            "ref": "p2",
+            "date": "2026-09-29",
+            "name": "Đọc sách",
+            "category": "STUDY",
+            "start": "20:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p3",
+            "date": "2026-09-29",
+            "name": "Học thêm",
+            "category": "STUDY",
+            "start": "18:00",
+            "durationMin": 60
+          },
+          {
+            "ref": "p10",
+            "date": "2026-09-28",
+            "name": "Làm bài",
+            "category": "STUDY",
+            "start": "19:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p11",
+            "date": "2026-09-28",
+            "name": "Giờ ngủ",
+            "category": "SLEEP",
+            "start": "22:00",
+            "durationMin": 480
+          }
+        ],
+        "ageBand": "l1",
+        "locale": "vi-VN"
+      },
+      "providerFixture": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p1",
+            "name": "Giờ ngủ",
+            "category": "SLEEP",
+            "start": "22:00",
+            "end": null,
+            "confidence": 0.95
+          },
+          {
+            "date": "2026-09-29",
+            "planRef": "p0",
+            "name": "Làm bài",
+            "category": "STUDY",
+            "start": "19:00",
+            "end": "20:30",
+            "confidence": 0.95
+          }
+        ],
+        "questions": []
+      },
+      "constraints": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p1",
+            "category": "SLEEP",
+            "start": "22:00",
+            "end": null
+          }
+        ],
+        "mustAsk": true,
+        "lowConfidenceUnselected": false
+      }
+    },
+    {
+      "id": "log-vi-30",
+      "input": {
+        "mode": "LOG",
+        "requestId": "log-vi-30",
+        "text": "Ngủ lúc 22h và làm bài mất 90 phút",
+        "date": "2026-09-29",
+        "plans": [
+          {
+            "ref": "p0",
+            "date": "2026-09-29",
+            "name": "Làm bài",
+            "category": "STUDY",
+            "start": "19:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p1",
+            "date": "2026-09-29",
+            "name": "Giờ ngủ",
+            "category": "SLEEP",
+            "start": "22:00",
+            "durationMin": 480
+          },
+          {
+            "ref": "p2",
+            "date": "2026-09-29",
+            "name": "Đọc sách",
+            "category": "STUDY",
+            "start": "20:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p3",
+            "date": "2026-09-29",
+            "name": "Học thêm",
+            "category": "STUDY",
+            "start": "18:00",
+            "durationMin": 60
+          },
+          {
+            "ref": "p10",
+            "date": "2026-09-28",
+            "name": "Làm bài",
+            "category": "STUDY",
+            "start": "19:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p11",
+            "date": "2026-09-28",
+            "name": "Giờ ngủ",
+            "category": "SLEEP",
+            "start": "22:00",
+            "durationMin": 480
+          }
+        ],
+        "ageBand": "l1",
+        "locale": "vi-VN"
+      },
+      "providerFixture": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p1",
+            "name": "Giờ ngủ",
+            "category": "SLEEP",
+            "start": "22:00",
+            "end": null,
+            "confidence": 0.95
+          },
+          {
+            "date": "2026-09-29",
+            "planRef": "p0",
+            "name": "Làm bài",
+            "category": "STUDY",
+            "start": "22:00",
+            "end": "23:30",
+            "confidence": 0.95
+          }
+        ],
+        "questions": []
+      },
+      "constraints": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p1",
+            "category": "SLEEP",
+            "start": "22:00",
+            "end": null
+          }
+        ],
+        "mustAsk": true,
+        "lowConfidenceUnselected": false
+      }
+    },
+    {
+      "id": "log-en-04",
+      "input": {
+        "mode": "LOG",
+        "requestId": "log-en-04",
+        "text": "Finished homework at 8pm, took 90 minutes",
+        "date": "2026-09-29",
+        "plans": [
+          {
+            "ref": "p0",
+            "date": "2026-09-29",
+            "name": "Làm bài",
+            "category": "STUDY",
+            "start": "19:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p1",
+            "date": "2026-09-29",
+            "name": "Giờ ngủ",
+            "category": "SLEEP",
+            "start": "22:00",
+            "durationMin": 480
+          },
+          {
+            "ref": "p2",
+            "date": "2026-09-29",
+            "name": "Đọc sách",
+            "category": "STUDY",
+            "start": "20:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p3",
+            "date": "2026-09-29",
+            "name": "Học thêm",
+            "category": "STUDY",
+            "start": "18:00",
+            "durationMin": 60
+          },
+          {
+            "ref": "p10",
+            "date": "2026-09-28",
+            "name": "Làm bài",
+            "category": "STUDY",
+            "start": "19:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p11",
+            "date": "2026-09-28",
+            "name": "Giờ ngủ",
+            "category": "SLEEP",
+            "start": "22:00",
+            "durationMin": 480
+          }
+        ],
+        "ageBand": "l1",
+        "locale": "en-US"
+      },
+      "providerFixture": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p0",
+            "name": "Homework",
+            "category": "STUDY",
+            "start": "18:30",
+            "end": "20:00",
+            "confidence": 0.95
+          }
+        ],
+        "questions": []
+      },
+      "constraints": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p0",
+            "category": "STUDY",
+            "start": "18:30",
+            "end": "20:00"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      }
+    },
+    {
+      "id": "log-vi-31",
+      "input": {
+        "mode": "LOG",
+        "requestId": "log-vi-31",
+        "text": "Ngủ lúc mười rưỡi tối và thức dậy lúc sáu giờ kém mười lăm sáng",
+        "date": "2026-09-29",
+        "plans": [
+          {
+            "ref": "p0",
+            "date": "2026-09-29",
+            "name": "Làm bài",
+            "category": "STUDY",
+            "start": "19:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p1",
+            "date": "2026-09-29",
+            "name": "Giờ ngủ",
+            "category": "SLEEP",
+            "start": "22:00",
+            "durationMin": 480
+          },
+          {
+            "ref": "p2",
+            "date": "2026-09-29",
+            "name": "Đọc sách",
+            "category": "STUDY",
+            "start": "20:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p3",
+            "date": "2026-09-29",
+            "name": "Học thêm",
+            "category": "STUDY",
+            "start": "18:00",
+            "durationMin": 60
+          },
+          {
+            "ref": "p10",
+            "date": "2026-09-28",
+            "name": "Làm bài",
+            "category": "STUDY",
+            "start": "19:00",
+            "durationMin": 30
+          },
+          {
+            "ref": "p11",
+            "date": "2026-09-28",
+            "name": "Giờ ngủ",
+            "category": "SLEEP",
+            "start": "22:00",
+            "durationMin": 480
+          }
+        ],
+        "ageBand": "l1",
+        "locale": "vi-VN"
+      },
+      "providerFixture": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p1",
+            "name": "Giờ ngủ",
+            "category": "SLEEP",
+            "start": "22:30",
+            "end": null,
+            "confidence": 0.95
+          },
+          {
+            "date": "2026-09-29",
+            "planRef": null,
+            "name": "Giờ thức",
+            "category": "WAKE",
+            "start": "05:45",
+            "end": null,
+            "confidence": 0.95
+          }
+        ],
+        "questions": []
+      },
+      "constraints": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p1",
+            "category": "SLEEP",
+            "start": "22:30",
+            "end": null
+          },
+          {
+            "date": "2026-09-29",
+            "planRef": null,
+            "category": "WAKE",
+            "start": "05:45",
+            "end": null
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      }
     }
   ]
 }

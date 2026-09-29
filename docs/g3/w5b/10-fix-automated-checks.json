@@ -1,0 +1,31 @@
+{
+  "tests": 300,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "suites": 46,
+  "lint": {
+    "Error": 0,
+    "Fatal": 0,
+    "Warning": 172
+  },
+  "android_command": "./gradlew testDebugUnitTest assembleDebug lintDebug assembleDebugAndroidTest",
+  "gradle_result": "BUILD SUCCESSFUL in 9s",
+  "functions_tests": 158,
+  "functions_lint": "PASS",
+  "golden_cases": 35,
+  "golden_vi": 31,
+  "golden_en": 4,
+  "live_model_evaluated": false,
+  "source_base": "7217b5b",
+  "fix": "F-W5B-1",
+  "room_version": 6,
+  "production_calls": false,
+  "openrouter_calls": false,
+  "apk_sha256": "a2c00a729c4b2772350e50480de01d06b528e8c69bc71ffaa119e70b2279d11b",
+  "android_test_apk_sha256": "717f4c20d235ce073bcf1bc5f9e2f56b0f4e5ba764ee25a06574d20259845b9d",
+  "debug_client_config_blank": true,
+  "original_dirty_diff_sha256": "667b37fae661a56e01d326cdaa98c9494e0535303ef36c9222e82cabb1c04725",
+  "checked_at_utc": "2026-09-29T12:36:23.639762+00:00",
+  "g3": "PENDING: Pixel connected via ADB but locked (deviceLocked=1); waiting for Duong manual unlock"
+}

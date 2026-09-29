@@ -4,7 +4,7 @@ Ngày: 2026-09-29 · Dev: Codex · Reviewer: Claude · Nghiệm thu: Duong.
 
 Branch **feature/smart-schedule-w5**, worktree **KidFocusTimer-w5a**, tiếp nối W5a `b4a2bbb` (code fixes `5245e5e`). Đã đọc phần **Re-review** trong `CLAUDE_AI_SCHEDULE_W5A_REVIEW.md`: W5a G2/G3 PASS. Chỉ thực hiện W5b theo task W5 và giao việc mới của Duong.
 
-**Trạng thái:** phần triển khai và kiểm tự động PASS; **G3 Pixel chưa chạy vì ADB không thấy thiết bị**. Không coi test host hoặc build instrumentation là G3 PASS. Chưa push/merge/deploy.
+**Trạng thái hiện tại:** F-W5B-1 đã sửa và kiểm tự động PASS (chi tiết bên dưới); **G3 Pixel chưa chạy, ADB đã thấy máy nhưng Pixel đang khoá**. G2 của `7217b5b` là PASS có điều kiện; bản fix cần Claude re-review. Không coi test host hoặc build instrumentation là G3 PASS. Chưa push/merge/deploy.
 
 ## LOG và credit
 
@@ -12,7 +12,7 @@ Branch **feature/smart-schedule-w5**, worktree **KidFocusTimer-w5a**, tiếp n�
 - Prompt hiểu hôm nay/hôm qua/tối qua, giờ số/chữ, khoảng giờ, suy giờ còn lại khi có một mốc + thời lượng rõ; chỉ thời lượng thì hỏi giờ bắt đầu. Không lấy giờ kế hoạch làm giờ thực tế; end không biết để null. “Không đi học thêm” không tạo mục đã học hoặc xoá kế hoạch. Các mục đủ dữ liệu vẫn được preview bên cạnh câu hỏi cho mục thiếu.
 - Provider chỉ nhận văn bản, ngày, kế hoạch ref tạm, ageBand và locale; không nhận requestId, ID hồ sơ, ID task hoặc UUID log. `data_collection: deny`, temperature 0, token limit 2500; dùng secret backend hiện có, không thêm key trong APK/repo/log.
 - Remote Config **`ai_schedule_log_cost` mặc định 1**, giới hạn 1–100, được trả qua `getAiConfig`. LOG dùng model `ai_schedule_model`, quota câu hỏi/credit/pool global/early access hiện có và dùng chung lượt `ai_schedule_free_daily_parses` với PARSE. Không tạo ledger riêng.
-- Giữ ngày quota tại lúc reservation. Provider lỗi, JSON/schema/ref/giờ sai → refund reservation cùng ngày: credit, câu hỏi, lượt schedule, model count và global pool. Log lỗi chỉ có code `AI_LOG_FAILED`/`AI_REFUND_FAILED`, không ghi input/response/key. Câu hỏi hợp lệ cũng là một lần xử lý AI có phí; lỗi ghi Room sau khi đã nhận preview không phải lỗi provider.
+- Giữ ngày quota tại lúc reservation. Provider lỗi, JSON/schema/ref hoặc định dạng giờ sai → refund reservation cùng ngày: credit, câu hỏi, lượt schedule, model count và global pool. Log lỗi chỉ có code `AI_LOG_FAILED`/`AI_REFUND_FAILED`, không ghi input/response/key. Câu hỏi hợp lệ cũng là một lần xử lý AI có phí; lỗi ghi Room sau khi đã nhận preview không phải lỗi provider.
 
 ## Ghi nhanh ở màn phụ huynh
 
@@ -41,7 +41,7 @@ Branch **feature/smart-schedule-w5**, worktree **KidFocusTimer-w5a**, tiếp n�
 4. Thời lượng thực tế tập trung so với **focus**, không gộp break; giữ quyết định W5a. “Không đi học thêm” không tạo giờ giả; nếu ngày đó có ghi việc khác và task đã đến giờ, So sánh/rule mới suy ra bỏ lỡ. Chỉ một câu phủ định không tạo một log trạng thái mới ngoài mô hình đã duyệt.
 5. Không tăng Room: database vẫn **v6**, entities, migration, schema export, sessions và manifest nguyên như W5a. Chỉ thêm DAO transaction cho lô AI và Undo.
 
-## Kiểm tự động
+## Kiểm tự động ban đầu — 7217b5b
 
 Môi trường JDK 17, Android SDK hiện có; Node **24.14.0** (package Functions khai báo runtime 22, không đổi engines/dependencies/lockfile). Firebase/RevenueCat/OpenRouter build config được đặt rỗng; không gọi production/OpenRouter thật.
 
@@ -60,7 +60,7 @@ Test mới bao phủ ngưỡng BED_DRIFT/150%/skip/no-data/chưa đến giờ, q
 
 **Giới hạn eval:** 25 câu thực tế tiếng Việt có annotation ngày/giờ/ref và provider response giả. Chạy qua validator và handler/quota thật trong test, so với annotation; chứng minh hợp đồng, an toàn và regression. **Không phải phép đo chất lượng hiểu ngôn ngữ của model thật**. Không gọi OpenRouter để đánh giá model trong task này.
 
-## G3 Pixel — chưa chạy
+## G3 Pixel — trạng thái tại 7217b5b
 
 [ADB/mDNS tại thời điểm kiểm](g3/w5b/02-adb-status.txt): không có thiết bị. Chưa cài APK W5b, chưa có screenshot mới hoặc logcat crash của W5b, chưa thay dữ liệu Pixel. Đã nhờ Duong nối lại USB/mở khoá qua câu hỏi trong task; nếu có “Allow USB debugging” hoặc cần thao tác tay, dừng để Duong xử lý. Không reboot/reset/uninstall/clear app.
 
@@ -68,10 +68,32 @@ Test mới bao phủ ngưỡng BED_DRIFT/150%/skip/no-data/chưa đến giờ, q
 
 Kịch bản đã chuẩn bị: gõ **“Hôm nay làm bài từ 21h08 đến 21h55 và đọc sách từ 23h15 đến 23h45.”** → ≥2 mục khớp Homework/Reading → Lưu source AI → xem So sánh → quay lại Hoàn tác → So sánh trở về số liệu cũ; kiểm các log cũ còn nguyên. Ảnh preview/saved/comparison/undo và result.json được tạo trên máy nếu test chạy. Fixture này kiểm UI/Room trên phần cứng, không thay thế đánh giá model thật hay cloud quota/sync.
 
+## Fixes G2 W5b — F-W5B-1
+
+Theo review `CLAUDE_AI_SCHEDULE_W5B_REVIEW.md` (2026-09-29), đã bỏ `hasClock` toàn văn bản. JSON và mọi entry vẫn được kiểm schema/ref/ngày/category/confidence/HH:mm trước khi xét căn cứ giờ; lỗi hợp đồng vẫn fail/refund như cũ.
+
+- Kiểm **từng entry**, gắn tên hoạt động/nhóm từ tương ứng với câu chứa hoạt động đó, tách các mục qua dấu câu/liên từ và ranh giới hoạt động. Giữ phần thời lượng không có tên hoạt động với mục trước, ví dụ “làm bài xong lúc 20h, mất 1 tiếng rưỡi”. Hai mục cùng nhóm STUDY cũng không mượn giờ khi có tên cụ thể (học thêm vs học toán). Không dùng giờ/thời lượng kế hoạch làm căn cứ.
+- Start phải khớp mốc HH:mm trong phần văn bản phù hợp, gồm giờ H/H−12 khi chưa rõ buổi, số chữ tiếng Việt, giờ rưỡi/kém, `10g`, `10pm/7am`, `at 7`. Có sáng/tối/am/pm thì giới hạn theo buổi; kém phút tính sau quy đổi buổi, đúng cả biên 12 giờ. Loại số lượng bài và thời lượng khỏi mốc giờ; phân biệt “tám” (số) với “tắm” (hoạt động).
+- Cho phép suy start từ **mốc kết thúc đã nói + thời lượng rõ trong cùng hoạt động**, kể cả qua nửa đêm. Không lấy thời lượng từ kế hoạch hoặc từ mục khác, không coi mốc “từ 19h” là giờ kết thúc để tính lùi.
+- Entry thiếu căn cứ start bị **bỏ riêng**, thêm câu hỏi giờ bắt đầu theo locale vi/en. Mục hợp lệ vẫn ở preview. Câu hỏi mới được ưu tiên, dedupe và giới hạn 30; không đổi schema response. Mục phủ định chưa thực hiện không trở thành log giờ giả hoặc lỗi cả response.
+- “Tối nay con ngủ 10 rưỡi” và “slept at 10pm” hợp lệ. “Ngủ lúc 22h, làm bài mất 1 tiếng rưỡi” giữ mục ngủ, bỏ giờ làm bài bị bịa và hỏi giờ bắt đầu. Kể cả model cho làm bài **22:00 giống giờ ngủ**, mục làm bài vẫn bị bỏ. Kết quả có câu hỏi là xử lý AI hợp lệ, reservation complete/có phí bình thường; chỉ lỗi JSON/schema/provider mới refund.
+
+Đã thêm **10 golden: 6 vi + 4 en** (tổng **35 = 31 vi + 4 en**), gồm các mẫu Claude nêu, mục thiếu giờ xen giữa mục hợp lệ, cùng giờ của mục khác và start tính từ end. Test còn kiểm không mượn thời lượng, không lấy số bài/phút làm giờ, am khác pm, giờ kém quanh trưa/nửa đêm, câu hỏi có giới hạn và schema sai trong một response vẫn bị phát hiện.
+
+Kiểm sau fix: **Functions 158/158 PASS**, lint PASS, **eval 35/35 PASS**; Android **300/300, 46 suite**, assemble/lint/instrumentation build PASS, lint **0 lỗi / 172 cảnh báo**; diff-check PASS. [Số liệu và hash APK](g3/w5b/10-fix-automated-checks.json), [Functions](g3/w5b/11-fix-functions-tests.txt), [lint](g3/w5b/12-fix-functions-lint.txt), [eval](g3/w5b/13-fix-log-eval.txt), [Android](g3/w5b/14-fix-android-checks.txt).
+
+Guard này kiểm bằng chứng giờ và gắn hoạt động một cách bảo thủ, không thay model hoặc chứng minh hiểu mọi cách diễn đạt. Cách gọi hoạt động không ghép được sẽ nhận câu hỏi thay vì lỗi toàn bộ. Golden vẫn là provider fixture offline, không đo chất lượng model thật, không gọi production/OpenRouter. Room v6, manifest/permissions, Android main code và 19 file dở không đổi.
+
+### G3 sau fix — chờ mở khoá
+
+Pixel đã xuất hiện trên ADB transport wireless được pair trước đó, nhưng đọc `dumpsys trust` cho thấy **deviceLocked=1**, focus NotificationShade. Đã dừng trước cài APK/thao tác và nhờ Duong mở khoá bằng tay. [Trạng thái](g3/w5b/15-fix-device-status.txt). Chưa có ảnh/logcat chạy W5b; không gọi đó là G3 PASS.
+
+Đã bổ sung vào `DayLogQuickEntryG3Test`: sau nhập hai mục/Lưu/So sánh/Undo, gõ **“Ngủ lúc 22h, làm bài mất 1 tiếng rưỡi”**, preview chỉ còn ngủ và câu hỏi giờ bắt đầu làm bài; xác nhận câu hỏi hiển thị, preview không ghi thêm Room. Response cho câu này được tạo từ validator thật bằng Node offline, đặt trong **androidTest assets** vi/en, chọn theo locale của request; không đưa fixture vào APK app. Test sẽ chụp thêm `07-missing-start-question.png` khi được chạy.
+
 ## Checklist trước triển khai (chỉ ghi, chưa thực hiện)
 
-- [ ] Claude review G2 W5b, Duong nghiệm thu G3 Pixel nhập ≥2 mục/Lưu/Undo/So sánh, chụp ảnh vào `docs/g3/w5b`, thu crash logcat có lọc. Test gõ tay dùng fixture offline như mô tả; thử RecognizerIntent bằng tay khi được phép, không thêm RECORD_AUDIO.
-- [ ] Khi đã được duyệt triển khai, deploy **aiSchedule** và **getAiConfig** tại `asia-southeast1` cùng module `schedule-log.js`/`schedule-advise.js`; không bỏ module mới khi đóng gói. Không cần function LOG mới.
+- [ ] Claude review G2 W5b, Duong nghiệm thu G3 Pixel nhập ≥2 mục/Lưu/Undo/So sánh và câu có mục thiếu giờ nhận câu hỏi, chụp ảnh vào `docs/g3/w5b`, thu crash logcat có lọc. Test gõ tay dùng fixture offline như mô tả; thử RecognizerIntent bằng tay khi được phép, không thêm RECORD_AUDIO.
+- [ ] Khi đã được duyệt triển khai, deploy **aiSchedule** và **getAiConfig** tại `asia-southeast1` cùng module `schedule-log.js`/`schedule-log-grounding.js`/`schedule-advise.js`; không bỏ module mới khi đóng gói. Không cần function LOG mới.
 - [ ] Remote Config: bổ sung **ai_schedule_log_cost = 1**; xác nhận `ai_schedule_enabled`, `ai_enabled`, `ai_schedule_model`, `ai_schedule_free_daily_parses`, cap credit/global, early access và guest policy hiện có. Public config và UI phải cùng cost; rollout chỉ sau review, có thể tắt bằng cờ schedule hiện có.
 - [ ] Dùng môi trường test được duyệt để kiểm model tương thích schema LOG/date/null end, quota PARSE+LOG dùng chung, early grant và refund lỗi/thời điểm qua ngày. Runtime Node 22 của Functions chưa được chạy cục bộ ở task này.
 - [ ] Secret OpenRouter vẫn ở Secret Manager/backend; ENFORCE_APP_CHECK giữ cấu hình đã duyệt. Không đưa secret vào client/artifact/log.

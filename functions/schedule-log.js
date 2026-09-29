@@ -1,3 +1,4 @@
+const {grounding} = require("./schedule-log-grounding");
 // LOG describes actual activity, never changes the recurring plan.
 const CATEGORIES = ["STUDY", "HYGIENE", "CHORES", "ENTERTAINMENT", "SCHOOL", "SLEEP", "WAKE", "ROUTINE", "OTHER"];
 const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -7,6 +8,7 @@ Trả JSON entries và questions. Mỗi entry có date (ngày lịch ISO), planR
 name, category, start HH:mm, end HH:mm nếu biết, confidence 0..1. Không chép giờ kế hoạch làm giờ thực tế.
 date đầu vào là ngày tham chiếu: hôm nay = date, hôm qua/tối qua = ngày trước. Có nhiều ngày thì giữ ngày riêng từng entry.
 Tối qua ngủ sau nửa đêm (vd 1h sáng) thuộc ngày lịch tiếp theo. End < start nghĩa là kết thúc ngày kế tiếp.
+Hiểu 10 rưỡi, 10g, 7 giờ kém 15 = 06:45; tiếng Anh 10pm = 22:00, 7am = 07:00, at 7 (hỏi sáng/tối nếu không rõ).
 Hiểu từ 8h đến 9h15 = 08:00–09:15, 7h15, 19:30, 6 rưỡi sáng = 06:30, 10 rưỡi tối = 22:30.
 Một giờ + thời lượng rõ ràng cho phép tính giờ còn lại: từ 19h làm bài mất 1 tiếng rưỡi = 19:00–20:30.
 Chỉ thời lượng ("làm bài mất 1 tiếng rưỡi") KHÔNG đủ giờ bắt đầu: hỏi giờ, bỏ entry đó.
@@ -52,10 +54,6 @@ function validateInput(raw) {
 function validateLog(raw, input) {
   const v = typeof raw === "string" ? JSON.parse(raw) : raw;
   shape(v, ["entries", "questions"]); check(Array.isArray(v.entries) && v.entries.length <= 30 && Array.isArray(v.questions) && v.questions.length <= 30);
-  // A duration alone cannot justify a start, even if the provider supplies valid JSON.
-  const clockText = input.text.replace(/(?:mất|trong|kéo dài|suốt)\s+(?:[0-9]+(?:[.,][0-9]+)?|một|hai|ba|bốn|năm|sáu|bảy|tám|chín|mười)\s*(?:h\b|giờ|tiếng)(?:\s+rưỡi)?/gi, "");
-  const hasClock = /\d{1,2}\s*(?:h\b|h\d|giờ(?!\s*(?:rưỡi|đồng hồ))|:\d{2})|lúc\s+\d/i.test(clockText) || /(?:từ|đến|lúc)\s+(?:một|hai|ba|bốn|năm|sáu|bảy|tám|chín|mười)[^,.;]{0,25}giờ/i.test(clockText);
-  check(v.entries.length === 0 || hasClock);
   const entries = v.entries.map((e) => {
     shape(e, ["date", "name", "category", "start", "confidence"], ["planRef", "end"]);
     check(CATEGORIES.includes(e.category) && typeof e.confidence === "number" && Number.isFinite(e.confidence) && e.confidence >= 0 && e.confidence <= 1);
@@ -64,12 +62,19 @@ function validateLog(raw, input) {
     check(ref === null || plan && plan.category === e.category && (plan.date === d ||
       Date.parse(d) - Date.parse(plan.date) === 86400000 && Number(e.start.slice(0, 2)) < 6 && Number(plan.start.slice(0, 2)) >= 18));
     const name = text(e.name, 60);
-    check(!(/không\s+(?:đi\s+)?học thêm/i.test(input.text) && /học thêm/i.test(name)));
     return {date: d, planRef: ref, name, category: e.category, start: time(e.start), end: e.end == null ? null : time(e.end), confidence: e.confidence};
   });
   const keys = entries.map((e) => JSON.stringify([e.date, e.planRef, e.name, e.category, e.start, e.end]));
   check(new Set(keys).size === keys.length);
-  return {entries, questions: v.questions.map((q) => text(q, 300))};
+  const questions = v.questions.map((q) => text(q, 300));
+  const verify = grounding(input, entries); const added = [];
+  const grounded = entries.filter((entry) => {
+    const missing = verify(entry); if (!missing) return true;
+    added.push(input.locale.startsWith("en") ? missing === "not_done" ? "What completed activity would you like to record instead?" : `${entry.name}: what time did this activity start?` :
+      missing === "not_done" ? "Bạn có hoạt động đã làm nào muốn ghi thay cho mục chưa thực hiện không?" : `${entry.name}: hoạt động này bắt đầu lúc mấy giờ?`);
+    return false;
+  });
+  return {entries: grounded, questions: [...new Set([...added, ...questions])].slice(0, 30)};
 }
 function providerBody(input, model) {
   const {text, date, plans, ageBand, locale} = input;

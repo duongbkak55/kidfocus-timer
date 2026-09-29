@@ -57,6 +57,7 @@ class DayLogQuickEntryG3Test {
         assertTrue(BuildConfig.FIREBASE_APP_ID.isBlank() && BuildConfig.FIREBASE_PROJECT_ID.isBlank())
         val calls = AtomicInteger()
         val sentence = "Hôm nay làm bài từ 21h08 đến 21h55 và đọc sách từ 23h15 đến 23h45."
+        val missingSentence = "Ngủ lúc 22h, làm bài mất 1 tiếng rưỡi"
         val today = LocalDate.now()
         val now = LocalTime.now()
         val nowMinute = now.hour * 60 + now.minute
@@ -74,9 +75,23 @@ class DayLogQuickEntryG3Test {
             val repository = field.get(dayLogs) as DayLogRepository
             val logger = object : ScheduleLogger {
                 override suspend fun log(request: DayLogRequest): ScheduleLogReply {
-                    assertEquals(sentence, request.payload["text"])
                     assertEquals(today.toString(), request.payload["date"])
                     calls.incrementAndGet()
+                    if (request.payload["text"] == missingSentence) {
+                        // Actual validator output generated offline from log-vi-29; test assets only.
+                        val asset = if ((request.payload["locale"] as String).startsWith("en")) "schedule-log-g3-missing-en.json" else "schedule-log-g3-missing.json"
+                        val fixture = JSONObject(InstrumentationRegistry.getInstrumentation().context.assets
+                            .open(asset).bufferedReader().use { it.readText() })
+                        val rows = fixture.getJSONArray("entries")
+                        val mapped = (0 until rows.length()).map { i ->
+                            val row = rows.getJSONObject(i)
+                            row.keys().asSequence().associateWith { key -> if (key == "date") today.toString() else row.get(key).takeUnless { it == JSONObject.NULL } }
+                        }
+                        val questions = fixture.getJSONArray("questions")
+                        return ScheduleLogReply(DayLogDraft.fromMap(mapOf("entries" to mapped,
+                            "questions" to (0 until questions.length()).map(questions::getString)), request), AiUsage(8, 8, false))
+                    }
+                    assertEquals(sentence, request.payload["text"])
                     val due = dayLogs.data.value.tasks.associateBy { it.id }
                     val homework = request.plans.entries.single { (_, p) -> p.date == today && due[p.taskId]?.taskType == TaskType.HOMEWORK }
                     val reading = request.plans.entries.single { (_, p) -> p.date == today && due[p.taskId]?.taskType == TaskType.READING }
@@ -158,11 +173,23 @@ class DayLogQuickEntryG3Test {
         screenshot("05-undone")
         compose.onNodeWithText(label(R.string.daylog_compare_title)).performScrollTo().performClick()
         screenshot("06-comparison-restored")
+        compose.onNodeWithContentDescription(label(R.string.back)).performClick()
+        compose.onNodeWithTag("log_text").performScrollTo().performTextReplacement(missingSentence)
+        compose.onNodeWithText(compose.activity.resources.getQuantityString(R.plurals.log_preview, 1, 1)).performScrollTo().performClick()
+        compose.waitUntil(10_000) { quick.state.value.preview?.questions?.isNotEmpty() == true && !quick.state.value.busy }
+        val partial = quick.state.value.preview!!
+        assertEquals(1, partial.entries.size)
+        assertEquals(DayLogCategory.SLEEP, partial.entries.single().category)
+        val question = partial.questions.single { it.contains("bắt đầu lúc mấy giờ") || it.contains("what time did this activity start") }
+        compose.onNodeWithText(question).performScrollTo().assertIsDisplayed()
+        screenshot("07-missing-start-question")
+        assertEquals(before, dayLogs.data.value.entries.filter { it.id !in batch.map(DayLogEntry::id) })
+        assertEquals(baseline, comparison()) // Preview alone writes nothing.
         File(output(), "result.json").writeText(JSONObject().put("fixture", "offline provider and account/config, androidTest only")
             .put("date", today.toString()).put("previewEntries", 2).put("savedSource", "AI").put("providerCalls", calls.get())
             .put("beforePercent", baseline.completedPercent).put("afterPercent", after.completedPercent)
             .put("undoPercent", comparison().completedPercent).put("existingEntriesPreserved", true)
-            .put("comparisonRestored", true).put("batchTombstones", 2).toString(2))
+            .put("comparisonRestored", true).put("batchTombstones", 2).put("missingStartQuestionVisible", true).put("partialEntries", 1).toString(2))
     }
 
     private fun label(id: Int) = compose.activity.getString(id)
