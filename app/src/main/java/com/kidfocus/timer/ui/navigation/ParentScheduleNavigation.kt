@@ -57,7 +57,7 @@ internal fun NavGraphBuilder.parentScheduleDestinations(
     parentScheduleDestination(NavRoutes.QuickSchedule.route, navController, settingsViewModel, quickScreen)
 }
 
-private fun NavGraphBuilder.parentScheduleDestination(
+internal fun NavGraphBuilder.parentScheduleDestination(
     route: String,
     navController: NavHostController,
     settingsViewModel: SettingsViewModel,

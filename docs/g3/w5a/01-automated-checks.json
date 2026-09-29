@@ -1,0 +1,14 @@
+{
+  "tests": 281,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "suites": 42,
+  "lint": {
+    "Warning": 183
+  },
+  "apk_sha256": "1c29e42435dcb861b8771309d919fa638111157cecd7f0a9547868c02216939e",
+  "test_apk_sha256": "e85a690d3232713a3055b6040da0179164aca8834ae23a9ac5bd3d44adcfdfef",
+  "commands": "./gradlew testDebugUnitTest assembleDebug lintDebug assembleDebugAndroidTest",
+  "result": "BUILD SUCCESSFUL"
+}

@@ -15,6 +15,8 @@ import javax.inject.Singleton
 @Singleton
 class RoutineRepository @Inject constructor(
     private val routineDao: RoutineDao,
+    private val dayLogs: DayLogRepository? = null,
+    private val profiles: com.kidfocus.timer.data.database.ChildProfileDao? = null,
 ) {
     fun observeAll(): Flow<List<RoutineEntity>> = routineDao.observeAll()
 
@@ -75,6 +77,21 @@ class RoutineRepository @Inject constructor(
                 status = if (completedAtMillis <= deadline) RoutineStatus.ON_TIME.name else RoutineStatus.LATE.name,
             )
         )
+        recordActual(routine, occurrenceDate, zoneId)
+    }
+
+    private suspend fun recordActual(routine: RoutineEntity, occurrenceDate: LocalDate, zoneId: ZoneId) {
+        val logs = dayLogs ?: return
+        if (logs.activeProfileId() != routine.childProfileId) return
+        if (profiles?.getById(routine.childProfileId)?.archived != false) return
+        val best = routineDao.getCompletion(routine.id, occurrenceDate.toString()) ?: return
+        val id = java.util.UUID.nameUUIDFromBytes("routine:${routine.id}:$occurrenceDate".toByteArray(Charsets.UTF_8)).toString()
+        if (logs.get(id) != null) return // Repeated ticks cannot recreate an edited/deleted record.
+        val tick = java.time.Instant.ofEpochMilli(best.completedAtMillis).atZone(zoneId)
+        logs.add(com.kidfocus.timer.domain.daylog.DayLogEntry(id = id, profileId = routine.childProfileId,
+            date = tick.toLocalDate(), name = routine.title, category = com.kidfocus.timer.domain.daylog.DayLogCategory.ROUTINE,
+            startMinute = tick.hour * 60 + tick.minute, endMinute = tick.hour * 60 + tick.minute,
+            source = com.kidfocus.timer.domain.daylog.DayLogSource.ROUTINE, createdAt = best.completedAtMillis))
     }
 
     private fun validate(routine: RoutineEntity) {

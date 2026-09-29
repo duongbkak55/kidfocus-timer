@@ -1,0 +1,9 @@
+W5a G3 preflight, 2026-09-29
+No W5a APK installed. No device UI tests performed.
+
+adb devices -l
+List of devices attached
+
+
+adb mdns services
+List of discovered mdns services

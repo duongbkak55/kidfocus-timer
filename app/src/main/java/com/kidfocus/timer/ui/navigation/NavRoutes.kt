@@ -50,6 +50,9 @@ sealed class NavRoutes(val route: String) {
 
     data object QuickSchedule : NavRoutes("quick_schedule")
 
+    data object DayLogs : NavRoutes("day_logs")
+    data object WeeklyComparison : NavRoutes("weekly_comparison")
+
     data object SmartSchedule : NavRoutes("smart_schedule")
 
     /** Daily timeline view showing today's (or any day's) tasks. */

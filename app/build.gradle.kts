@@ -185,6 +185,7 @@ dependencies {
 
     // Testing
     testImplementation("org.robolectric:robolectric:4.16.1")
+    testImplementation(libs.androidx.room.testing)
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)

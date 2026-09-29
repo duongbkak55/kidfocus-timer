@@ -70,6 +70,7 @@ class CloudSyncManager @Inject constructor(
     private val routineAlarmScheduler: RoutineAlarmScheduler,
     private val childProfileDao: ChildProfileDao,
     private val schedulePlans: com.kidfocus.timer.data.schedule.SchedulePlansRepository,
+    private val dayLogSync: com.kidfocus.timer.data.daylog.DayLogSyncManager,
     private val scheduleAnchors: com.kidfocus.timer.data.schedule.ScheduleAnchorsRepository,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -97,6 +98,7 @@ class CloudSyncManager @Inject constructor(
         if (started) return
         started = true
         accountRepository.start()
+        dayLogSync.start()
         observeAccount()
         observeLocalChanges()
     }
@@ -118,6 +120,7 @@ class CloudSyncManager @Inject constructor(
     suspend fun deleteAccount() = accountRepository.deleteAccount()
 
     fun syncNow() {
+        dayLogSync.syncNow()
         val uid = activeUid ?: return
         scope.launch { upload(uid) }
     }
@@ -254,7 +257,10 @@ class CloudSyncManager @Inject constructor(
         applyingRemote = true
         _status.value = CloudSyncStatus.Syncing
         try {
-            val sessions = snapshot.mapList("sessions").mapNotNull(::sessionFromCloud)
+            val localSessions = sessionDao.getAllForSync().associateBy { it.id }
+            val sessions = snapshot.mapList("sessions").mapNotNull(::sessionFromCloud).map { remote ->
+                remote.copy(scheduledTaskId = localSessions[remote.id]?.scheduledTaskId)
+            }
             val localTasks = scheduledTaskDao.getAllForSync().associateBy { it.id }
             val tasks = snapshot.mapList("scheduledTasks").mapNotNull(::taskFromCloud).map { remote ->
                 remote.copy(photoUri = localTasks[remote.id]?.photoUri)

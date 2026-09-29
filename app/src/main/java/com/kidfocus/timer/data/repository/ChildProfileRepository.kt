@@ -46,6 +46,12 @@ class ChildProfileRepository @Inject constructor(
         }
     }
 
+    suspend fun currentProfileIdOrNull(): String? {
+        val rows = profiles.first()
+        val selected = storedActiveProfileId.first()
+        return rows.firstOrNull { it.id == selected }?.id ?: rows.firstOrNull()?.id
+    }
+
     suspend fun currentProfileId(): String = activeProfile.first().id
 
     suspend fun select(profileId: String) {

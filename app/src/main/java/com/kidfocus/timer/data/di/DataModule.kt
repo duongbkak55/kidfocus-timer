@@ -45,6 +45,7 @@ object DataModule {
             SessionDatabase.MIGRATION_2_3,
             SessionDatabase.MIGRATION_3_4,
             SessionDatabase.MIGRATION_4_5,
+            SessionDatabase.MIGRATION_5_6,
         )
         .build()
 
@@ -67,6 +68,10 @@ object DataModule {
     @Singleton
     fun provideLearningAttemptDao(database: SessionDatabase): LearningAttemptDao =
         database.learningAttemptDao()
+
+    @Provides
+    @Singleton
+    fun provideDayLogDao(database: SessionDatabase) = database.dayLogDao()
 
     @Provides
     @Singleton

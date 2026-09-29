@@ -57,6 +57,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class ParentScheduleNavigationTest {
     @get:Rule val compose = createAndroidComposeRule<ComponentActivity>()
     private lateinit var vm: SettingsViewModel
+    private lateinit var logs: DayLogViewModel
     private lateinit var nav: TestNavHostController
     private val profile = ChildProfileEntity.default()
     private val schedule = ScheduleState(emptyList(), ScheduleAnchors())
@@ -89,6 +90,14 @@ class ParentScheduleNavigationTest {
         every { quick.profile } returns MutableStateFlow(profile)
         every { quick.current } returns MutableStateFlow(schedule)
         every { quick.events } returns MutableSharedFlow()
+        logs = mockk(relaxed = true)
+        every { logs.data } returns MutableStateFlow(DayLogData(profileId = "default"))
+        every { logs.date } returns MutableStateFlow(java.time.LocalDate.parse("2026-09-28"))
+        every { logs.syncError } returns MutableStateFlow(false)
+        every { logs.week } returns MutableStateFlow(java.time.LocalDate.parse("2026-09-28"))
+        every { logs.draft } returns MutableStateFlow(null)
+        every { logs.error } returns MutableStateFlow(null)
+        every { logs.saving } returns MutableStateFlow(false)
         compose.setContent {
             ParentSessionLifecycle(vm)
             val settings by vm.settings.collectAsState()
@@ -104,6 +113,11 @@ class ParentScheduleNavigationTest {
                         composable(NavRoutes.Home.route) { Text("Home") }
                         composable(NavRoutes.PinSetup.route) { Text("PIN setup") }
                         parentPinEntry(nav, vm)
+                        parentScheduleDestination(NavRoutes.DayLogs.route, nav, vm) {
+                            com.kidfocus.timer.ui.screens.DailyScheduleScreen(viewModel = mockk(relaxed = true),
+                                onBack = {}, onStartTask = {}, dayLogs = logs, alarmPermission = alarmPermission, editable = true)
+                        }
+                        parentScheduleDestination(NavRoutes.WeeklyComparison.route, nav, vm) { com.kidfocus.timer.ui.screens.WeeklyComparisonScreen(logs, {}) }
                         parentScheduleDestinations(nav, vm,
                             smartScreen = { SmartScheduleScreen({}, access = access, viewModel = smart, alarmPermission = alarmPermission) },
                             quickScreen = { QuickScheduleScreen({}, access, quick) })
@@ -185,6 +199,21 @@ class ParentScheduleNavigationTest {
         graph(NavRoutes.SmartSchedule.route); enterPin("0000")
         compose.onNodeWithText("Nhập PIN phụ huynh").assertIsDisplayed()
         compose.onNodeWithText("PIN không đúng").assertIsDisplayed()
+    }
+
+    @Test fun `actual timeline editing action requires real PIN`() {
+        graph(NavRoutes.DayLogs.route)
+        compose.onNodeWithText(compose.activity.getString(R.string.daylog_add_incidental)).assertDoesNotExist()
+        enterPin("2468")
+        assertDestination(NavRoutes.DayLogs.route, R.string.daily_schedule_title)
+        compose.onNodeWithText(compose.activity.getString(R.string.daylog_add_incidental))
+            .assertIsEnabled()
+            .performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick) { it() }
+        io.mockk.verify(exactly = 1) { logs.openNew(com.kidfocus.timer.domain.daylog.DayLogCategory.OTHER, "") }
+    }
+
+    @Test fun `weekly comparison requires real PIN and locks after background`() {
+        backgroundAndReenter(NavRoutes.WeeklyComparison.route, R.string.daylog_compare_title)
     }
 
     private fun onboarding(title: String, next: String) {
