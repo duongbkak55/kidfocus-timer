@@ -114,8 +114,8 @@ class ParentScheduleNavigationTest {
                         composable(NavRoutes.PinSetup.route) { Text("PIN setup") }
                         parentPinEntry(nav, vm)
                         parentScheduleDestination(NavRoutes.DayLogs.route, nav, vm) {
-                            com.kidfocus.timer.ui.screens.DailyScheduleScreen(viewModel = mockk(relaxed = true),
-                                onBack = {}, onStartTask = {}, dayLogs = logs, alarmPermission = alarmPermission, editable = true)
+                            com.kidfocus.timer.ui.screens.DayLogsScreen(
+                                onBack = {}, onStartTask = {}, dayLogs = logs, alarmPermission = alarmPermission)
                         }
                         parentScheduleDestination(NavRoutes.WeeklyComparison.route, nav, vm) { com.kidfocus.timer.ui.screens.WeeklyComparisonScreen(logs, {}) }
                         parentScheduleDestinations(nav, vm,
@@ -205,7 +205,7 @@ class ParentScheduleNavigationTest {
         graph(NavRoutes.DayLogs.route)
         compose.onNodeWithText(compose.activity.getString(R.string.daylog_add_incidental)).assertDoesNotExist()
         enterPin("2468")
-        assertDestination(NavRoutes.DayLogs.route, R.string.daily_schedule_title)
+        assertDestination(NavRoutes.DayLogs.route, R.string.daylog_actual_and_compare)
         compose.onNodeWithText(compose.activity.getString(R.string.daylog_add_incidental))
             .assertIsEnabled()
             .performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick) { it() }

@@ -560,8 +560,8 @@
     <string name="daylog_source_ai">AI</string>
     <string name="daylog_edit_title">Record actual activity</string>
     <string name="daylog_name">Activity name</string>
-    <string name="daylog_start">Start (HH:mm)</string>
-    <string name="daylog_end">End (HH:mm, optional)</string>
+    <string name="daylog_start">Start time</string>
+    <string name="daylog_end">End time (optional)</string>
     <string name="daylog_midnight_hint">An end time earlier than the start means the next day.</string>
     <string name="daylog_delete">Delete entry</string>
     <string name="daylog_save">Save actual activity</string>
@@ -603,4 +603,7 @@
     <string name="daylog_drift_item">%1$s · %2$s · start difference %3$d min · duration difference %4$d min</string>
     <string name="daylog_planned_sleep">Bedtime</string>
     <string name="daylog_planned_wake">Wake time</string>
+    <string name="daylog_actual_and_compare">Actual &amp; comparison</string>
+    <string name="daylog_end_not_set">Not recorded</string>
+    <string name="daylog_clear_end">Clear end time</string>
 </resources>

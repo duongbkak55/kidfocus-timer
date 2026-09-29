@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
+import com.kidfocus.timer.ui.components.TaskVisual
 import com.kidfocus.timer.R
 import com.kidfocus.timer.domain.daylog.*
 import com.kidfocus.timer.domain.model.ScheduledTask
@@ -52,6 +53,13 @@ fun DayLogTimeline(viewModel: DayLogViewModel, onEdit: () -> Unit, onStart: (Sch
                         val displayName = planName(plan)
                         OutlinedCard(Modifier.fillMaxWidth().clickable { viewModel.openPlan(plan.copy(name = displayName)); onEdit() }) {
                             Column(Modifier.padding(10.dp)) {
+                                val task = data.tasks.firstOrNull { it.id == plan.taskId }
+                                TaskVisual(photoUri = task?.photoUri, emoji = task?.emoji ?: when(plan.category) {
+                                    DayLogCategory.SLEEP -> "🌙"
+                                    DayLogCategory.WAKE -> "☀️"
+                                    DayLogCategory.SCHOOL -> "🏫"
+                                    else -> "📅"
+                                }, modifier = Modifier.size(36.dp))
                                 Text(logTime(plan.startMinute), style = MaterialTheme.typography.labelMedium)
                                 Text(planName(plan), fontWeight = FontWeight.SemiBold)
                                 plan.durationMinutes?.let { duration ->
@@ -88,6 +96,7 @@ fun DayLogTimeline(viewModel: DayLogViewModel, onEdit: () -> Unit, onStart: (Sch
 }
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun DayLogEditor(viewModel: DayLogViewModel) {
     val entry by viewModel.draft.collectAsState()
     val error by viewModel.error.collectAsState()
@@ -97,13 +106,23 @@ fun DayLogEditor(viewModel: DayLogViewModel) {
     var start by remember(draft.id) { mutableStateOf(logTime(draft.startMinute)) }
     var end by remember(draft.id) { mutableStateOf(draft.endMinute?.let(::logTime).orEmpty()) }
     var category by remember(draft.id) { mutableStateOf(draft.category) }
+    var pickingStart by remember(draft.id) { mutableStateOf<Boolean?>(null) }
     AlertDialog(onDismissRequest = { if (!saving) viewModel.cancelEdit() },
         title = { Text(stringResource(R.string.daylog_edit_title)) },
         text = { Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(draft.date.toString())
             OutlinedTextField(name, { name = it }, label = { Text(stringResource(R.string.daylog_name)) }, singleLine = true)
-            OutlinedTextField(start, { start = it }, label = { Text(stringResource(R.string.daylog_start)) }, singleLine = true)
-            OutlinedTextField(end, { end = it }, label = { Text(stringResource(R.string.daylog_end)) }, singleLine = true)
+            TextButton(onClick = { pickingStart = true }, enabled = !saving) {
+                Text("${stringResource(R.string.daylog_start)}: $start")
+            }
+            Row {
+                TextButton(onClick = { pickingStart = false }, enabled = !saving, modifier = Modifier.weight(1f)) {
+                    Text("${stringResource(R.string.daylog_end)}: ${end.ifEmpty { stringResource(R.string.daylog_end_not_set) }}")
+                }
+                if (end.isNotEmpty()) TextButton(onClick = { end = "" }, enabled = !saving) {
+                    Text(stringResource(R.string.daylog_clear_end))
+                }
+            }
             Text(stringResource(R.string.daylog_midnight_hint), style = MaterialTheme.typography.bodySmall)
             if (draft.taskId == null) {
                 var expanded by remember { mutableStateOf(false) }
@@ -119,6 +138,26 @@ fun DayLogEditor(viewModel: DayLogViewModel) {
         } },
         confirmButton = { TextButton(onClick = { viewModel.save(name, start, end, category) }, enabled = !saving) { Text(stringResource(R.string.daylog_save)) } },
         dismissButton = { TextButton(onClick = viewModel::cancelEdit, enabled = !saving) { Text(stringResource(R.string.cancel)) } })
+    pickingStart?.let { isStart ->
+        val initial = LocalTime.parse(if (isStart || end.isEmpty()) start else end)
+        DayLogTimePickerDialog(initial.hour * 60 + initial.minute,
+            title = stringResource(if (isStart) R.string.daylog_start else R.string.daylog_end),
+            onDismiss = { pickingStart = null },
+            onConfirm = { minute ->
+                if (isStart) start = logTime(minute) else end = logTime(minute)
+                pickingStart = null
+            })
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun DayLogTimePickerDialog(initialMinute: Int, title: String, onDismiss: () -> Unit, onConfirm: (Int) -> Unit) {
+    val state = rememberTimePickerState(initialHour = initialMinute / 60, initialMinute = initialMinute % 60, is24Hour = true)
+    AlertDialog(onDismissRequest = onDismiss, title = { Text(title) },
+        text = { Box(Modifier.verticalScroll(rememberScrollState())) { TimePicker(state = state) } },
+        confirmButton = { TextButton(onClick = { onConfirm(state.hour * 60 + state.minute) }) { Text(stringResource(R.string.choose)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } })
 }
 
 @Composable

@@ -25,6 +25,9 @@ class DayLogSyncTest {
     private lateinit var ownership: DayLogOwnership
     private val account=mockk<FirebaseAccountRepository>()
     private val firestore=mockk<FirebaseFirestore>()
+    private val query=mockk<Query>()
+    private val lowerBounds=mutableListOf<String>()
+    private val upperBounds=mutableListOf<String>()
     private val user=MutableStateFlow(CloudAccount(true,"a"))
     private val remote=mutableMapOf<String,Map<String,Any?>>()
     private var writes=0
@@ -43,6 +46,9 @@ class DayLogSyncTest {
                 val uid=firstArg<String>(); val parent=mockk<DocumentReference>()
                 every { parent.collection("dayLogs") } answers {
                     val collection=mockk<CollectionReference>()
+                    every { collection.whereGreaterThanOrEqualTo("date",any()) } answers {
+                        lowerBounds += secondArg<String>(); query
+                    }
                     every { collection.document(any()) } answers {
                         val id=firstArg<String>(); val reference=mockk<DocumentReference>()
                         every { reference.path } returns "users/$uid/dayLogs/$id"
@@ -120,5 +126,34 @@ class DayLogSyncTest {
         assertNull(dayLogFromCloud(entry.id,null))
         val overnight=entry.copy(startMinute=1430,endMinute=30)
         assertEquals(overnight,dayLogFromCloud(overnight.id,overnight.toDayLogCloud()))
+    }
+    @Test fun bootstrapQueryIsBoundedAndExplicitHistoricalWeekIsFetchedWithoutErasingLocal()=runTest {
+        assertSame(query,sync.recentQuery("a",LocalDate.parse("2026-09-29")))
+        assertEquals(listOf("2026-07-31"),lowerBounds)
+        val old=entry.copy(date=LocalDate.parse("2026-01-01"))
+        db.dayLogDao().merge(DayLogEntryEntity.fromEntry(old))
+        val snapshot=mockk<QuerySnapshot>()
+        every { snapshot.documents } returns emptyList()
+        every { query.whereLessThanOrEqualTo("date",any()) } answers { upperBounds += secondArg<String>(); query }
+        every { query.get(Source.SERVER) } returns Tasks.forResult(snapshot)
+        sync.fetchHistory("a",LocalDate.parse("2026-01-01"),LocalDate.parse("2026-01-07"))
+        assertEquals("2026-01-01",lowerBounds.last());assertEquals(listOf("2026-01-07"),upperBounds)
+        assertEquals(old,db.dayLogDao().get(old.id)!!.toEntry())
+    }
+    @Test fun listenerUsesOnlyChangesAndRemovedFromTheWindowNeverDeletesLocal()=runTest {
+        db.dayLogDao().merge(DayLogEntryEntity.fromEntry(entry))
+        val added=entry.copy(id=java.util.UUID.randomUUID().toString(),name="New activity")
+        fun change(type:DocumentChange.Type,row:DayLogEntry):DocumentChange {
+            val doc=mockk<QueryDocumentSnapshot>()
+            every { doc.id } returns row.id;every { doc.data } returns row.toDayLogCloud()
+            return mockk<DocumentChange>().also { every { it.type } returns type;every { it.document } returns doc }
+        }
+        val snapshot=mockk<QuerySnapshot>()
+        every { snapshot.documentChanges } returns listOf(change(DocumentChange.Type.REMOVED,entry),change(DocumentChange.Type.ADDED,added))
+        every { snapshot.documents } throws AssertionError("Listener must not iterate the entire collection")
+        sync.receiveSnapshot("a",snapshot)
+        assertEquals(2,db.dayLogDao().getAll().size)
+        assertEquals(entry,db.dayLogDao().get(entry.id)!!.toEntry())
+        assertEquals(added,db.dayLogDao().get(added.id)!!.toEntry())
     }
 }

@@ -586,8 +586,8 @@
     <string name="daylog_source_ai">AI</string>
     <string name="daylog_edit_title">Ghi thực tế</string>
     <string name="daylog_name">Tên việc</string>
-    <string name="daylog_start">Bắt đầu (HH:mm)</string>
-    <string name="daylog_end">Kết thúc (HH:mm, có thể để trống)</string>
+    <string name="daylog_start">Giờ bắt đầu</string>
+    <string name="daylog_end">Giờ kết thúc (có thể để trống)</string>
     <string name="daylog_midnight_hint">Giờ kết thúc sớm hơn giờ bắt đầu nghĩa là kết thúc vào ngày sau.</string>
     <string name="daylog_delete">Xoá bản ghi</string>
     <string name="daylog_save">Lưu thực tế</string>
@@ -629,4 +629,7 @@
     <string name="daylog_drift_item">%1$s · %2$s · giờ lệch %3$d phút · thời lượng lệch %4$d phút</string>
     <string name="daylog_planned_sleep">Giờ ngủ</string>
     <string name="daylog_planned_wake">Giờ thức</string>
+    <string name="daylog_actual_and_compare">Thực tế &amp; So sánh</string>
+    <string name="daylog_end_not_set">Chưa ghi</string>
+    <string name="daylog_clear_end">Bỏ giờ kết thúc</string>
 </resources>

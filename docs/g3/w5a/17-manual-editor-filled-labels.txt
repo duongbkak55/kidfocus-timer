@@ -1,0 +1,12 @@
+Record actual activity
+2026-09-29
+Homework
+Activity name
+21:08
+Start (HH:mm)
+21:55
+End (HH:mm, optional)
+An end time earlier than the start means the next day.
+Delete entry
+Cancel
+Save actual activity

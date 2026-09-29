@@ -1,0 +1,35 @@
+Back
+Daily schedule
+Previous day
+2026-09-29
+Next day
+The same recurring weekly plan applies to every week.
+Edit weekly plan
+Weekly comparison
++ Extra activity
+Actual bedtime
+Actual wake time
+Plan
+Actual
+00:30
+Bedtime
+345 min
+Record when done…
+06:15
+Wake time
+Record when done…
+07:00
+School session
+570 min
+Record when done…
+21:00
+Homework
+45 min
+Record when done…
+Start
+21:08
+Homework
+Until 21:55
+Manual
+22:30
+Bedtime

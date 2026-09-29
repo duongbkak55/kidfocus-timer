@@ -27,6 +27,7 @@ import com.kidfocus.timer.ui.screens.OnboardingScreen
 import com.kidfocus.timer.ui.screens.ParentSettingsScreen
 import com.kidfocus.timer.ui.screens.PinEntryScreen
 import com.kidfocus.timer.ui.screens.DailyScheduleScreen
+import com.kidfocus.timer.ui.screens.DayLogsScreen
 import com.kidfocus.timer.ui.screens.SmartScheduleScreen
 import com.kidfocus.timer.ui.screens.ScheduleScreen
 import com.kidfocus.timer.ui.screens.TaskEditScreen
@@ -297,10 +298,10 @@ fun AppNavigation(
         composable(NavRoutes.DailySchedule.route) {
             DailyScheduleScreen(
                 viewModel = scheduleViewModel,
-                dayLogs = dayLogs,
-                onEditActual = { navController.navigate(parentGateRoute(settings?.hasPinSet == true, NavRoutes.DayLogs.route)) },
-                onCompare = { navController.navigate(parentGateRoute(settings?.hasPinSet == true, NavRoutes.WeeklyComparison.route)) },
-                onEditPlan = { navController.navigate(parentGateRoute(settings?.hasPinSet == true, NavRoutes.Schedule.route)) },
+                onActualAndComparison = { date ->
+                    dayLogs.selectDate(date)
+                    navController.navigate(parentGateRoute(settings?.hasPinSet == true, NavRoutes.DayLogs.route))
+                },
                 alarmPermission = alarmPermission,
                 quickEntryEnabled = scheduleConfig.scheduleEnabled,
                 onQuickEntry = { navController.navigate(parentGateRoute(settings?.hasPinSet == true, NavRoutes.QuickSchedule.route)) },
@@ -320,7 +321,7 @@ fun AppNavigation(
         }
 
         parentScheduleDestination(NavRoutes.DayLogs.route, navController, settingsViewModel) {
-            DailyScheduleScreen(viewModel = scheduleViewModel, dayLogs = dayLogs, editable = true,
+            DayLogsScreen(dayLogs = dayLogs,
                 alarmPermission = alarmPermission, onBack = { navController.popBackStack() },
                 onCompare = { navController.navigate(NavRoutes.WeeklyComparison.route) },
                 onEditPlan = { navController.navigate(NavRoutes.Schedule.route) },

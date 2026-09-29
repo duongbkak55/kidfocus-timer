@@ -24,7 +24,7 @@ enum class DayLogError { INVALID, NO_PROFILE, PROFILE_CHANGED, STORAGE }
 @HiltViewModel
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class DayLogViewModel @Inject constructor(private val logs: DayLogRepository, profiles: ChildProfileRepository,
-    tasks: ScheduledTaskRepository, anchors: ScheduleAnchorsRepository, sync: DayLogSyncManager) : ViewModel() {
+    tasks: ScheduledTaskRepository, anchors: ScheduleAnchorsRepository, private val sync: DayLogSyncManager) : ViewModel() {
     val data: StateFlow<DayLogData> = combine(profiles.profiles, profiles.activeProfileId) { rows, id ->
         rows.firstOrNull { it.id == id }?.id
     }.flatMapLatest { id ->
@@ -46,8 +46,11 @@ class DayLogViewModel @Inject constructor(private val logs: DayLogRepository, pr
     val syncError = sync.error
 
     init { viewModelScope.launch { data.map { it.profileId }.distinctUntilChanged().drop(1).collect { cancelEdit() } } }
-    fun selectDate(date: LocalDate) { _date.value = date }
-    fun moveWeek(offset: Long) { _week.value = _week.value.plusWeeks(offset) }
+    fun selectDate(date: LocalDate) { _date.value = date; sync.loadHistory(date, date) }
+    fun moveWeek(offset: Long) {
+        _week.value = _week.value.plusWeeks(offset)
+        sync.loadHistory(_week.value, _week.value.plusDays(6))
+    }
     fun thisWeek() { _week.value = monday(LocalDate.now()) }
     fun openPlan(plan: DayPlanItem) {
         val profile = data.value.profileId ?: run { _error.value = DayLogError.NO_PROFILE; return }
