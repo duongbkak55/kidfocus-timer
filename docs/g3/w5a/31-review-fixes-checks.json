@@ -12,5 +12,6 @@
   "apk_sha256": "28237ea18e8308a78f81512391a352275e3655c183eb3f2ee1fc02371b6293f7",
   "source_base": "85bc5db + F-W5A-1/2/3",
   "gradle_result": "BUILD SUCCESSFUL in 25s",
-  "commands": "testDebugUnitTest assembleDebug lintDebug assembleDebugAndroidTest"
+  "commands": "testDebugUnitTest assembleDebug lintDebug assembleDebugAndroidTest",
+  "code_commit": "5245e5e916620a6ac24c8bb2879f0c6ba7b0eb75"
 }

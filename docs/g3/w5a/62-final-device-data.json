@@ -1,0 +1,76 @@
+{
+  "code_commit": "5245e5e916620a6ac24c8bb2879f0c6ba7b0eb75",
+  "schema": 6,
+  "actual_entries": [
+    {
+      "id": "37b6e22e-34e6-469c-85c3-f0f1698c4b2a",
+      "profile_id": "default",
+      "date": "2026-09-29",
+      "task_id": null,
+      "name": "G3 walk",
+      "category": "OTHER",
+      "start_minute": 965,
+      "end_minute": 995,
+      "source": "MANUAL",
+      "created_at": 1790660616732,
+      "updated_at": 1790661188972,
+      "deleted": 0
+    },
+    {
+      "id": "7e053d32-6966-4798-a5b6-d4e7a4ffe35d",
+      "profile_id": "default",
+      "date": "2026-09-29",
+      "task_id": 1790608111341615,
+      "name": "Homework",
+      "category": "STUDY",
+      "start_minute": 1268,
+      "end_minute": 1315,
+      "source": "MANUAL",
+      "created_at": 1790647888566,
+      "updated_at": 1790660582743,
+      "deleted": 0
+    },
+    {
+      "id": "2552d0ef-4995-42ab-9000-2d484fa5ddfb",
+      "profile_id": "default",
+      "date": "2026-09-29",
+      "task_id": null,
+      "name": "G3 overnight",
+      "category": "OTHER",
+      "start_minute": 1435,
+      "end_minute": 15,
+      "source": "MANUAL",
+      "created_at": 1790661241593,
+      "updated_at": 1790661314927,
+      "deleted": 0
+    }
+  ],
+  "entry_count": 3,
+  "old_tables_unchanged": true,
+  "old_tables": {
+    "child_profiles": {
+      "count": 2,
+      "old_columns_sha256": "191a923ba6976dfd6f1a0a8eb6446660b186da882be4905bf91367064e5c5417"
+    },
+    "sessions": {
+      "count": 0,
+      "old_columns_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "scheduled_tasks": {
+      "count": 2,
+      "old_columns_sha256": "8e0d28b3c5ebcd28d7ff6528c3cb957dab298a421e835d44f2e8d5d79b2414bc"
+    },
+    "routines": {
+      "count": 0,
+      "old_columns_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "routine_completions": {
+      "count": 0,
+      "old_columns_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "learning_attempts": {
+      "count": 0,
+      "old_columns_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "code_commit": "5245e5e916620a6ac24c8bb2879f0c6ba7b0eb75",
+  "from_device_time": "09-29 12:48:43.000",
+  "through_device_time": "09-29 12:59:23.000",
+  "kidfocus_fatal_blocks": 0,
+  "kidfocus_anr_lines_in_ActivityManager_E": 0,
+  "unrelated_crashes_excluded": 0
+}

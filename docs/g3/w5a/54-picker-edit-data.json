@@ -1,0 +1,18 @@
+{
+  "entry": {
+    "id": "37b6e22e-34e6-469c-85c3-f0f1698c4b2a",
+    "profile_id": "default",
+    "date": "2026-09-29",
+    "task_id": null,
+    "name": "G3 walk",
+    "category": "OTHER",
+    "start_minute": 965,
+    "end_minute": 995,
+    "source": "MANUAL",
+    "created_at": 1790660616732,
+    "updated_at": 1790661188972,
+    "deleted": 0
+  },
+  "same_id_profile_task_created": true,
+  "timepicker_changes_persisted": true
+}

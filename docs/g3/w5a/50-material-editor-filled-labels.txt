@@ -1,0 +1,12 @@
+Record actual activity
+2026-09-29
+G3 walk
+Activity name
+Start time: 16:05
+End time (optional): 16:35
+Clear end time
+An end time earlier than the start means the next day.
+Extra / other
+Delete entry
+Cancel
+Save actual activity

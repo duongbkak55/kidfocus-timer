@@ -1,0 +1,16 @@
+{
+  "code_commit": "5245e5e916620a6ac24c8bb2879f0c6ba7b0eb75",
+  "child_week_strip_visible": true,
+  "child_task_icons_visually_confirmed": true,
+  "child_parent_edit_controls_absent": true,
+  "child_day_navigation_29_to_30_September": true,
+  "gap_editor_initial_16_30_without_save": true,
+  "daylogs_entered_via_real_parent_pin": true,
+  "parent_plan_anchor_and_task_visuals_present": true,
+  "clock_highlight_note": "W4 logic restored unchanged; current/past task highlighting not exercised on Pixel because both existing tasks are later tonight.",
+  "material_timepicker_edit_persisted": true,
+  "overnight_extra_persisted_as_20_minutes": true,
+  "comparison_current_and_previous_week": true,
+  "parent_pin_required_after_background": true,
+  "returned_to_child_schedule": true
+}

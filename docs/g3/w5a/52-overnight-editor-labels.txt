@@ -1,0 +1,11 @@
+Record actual activity
+2026-09-29
+G3 overnight
+Activity name
+Start time: 23:55
+End time (optional): 00:15
+Clear end time
+An end time earlier than the start means the next day.
+Extra / other
+Cancel
+Save actual activity

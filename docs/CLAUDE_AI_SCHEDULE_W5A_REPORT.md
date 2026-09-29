@@ -52,6 +52,8 @@ Branch `feature/smart-schedule-w5`, tạo từ HEAD W4 `868993b111e30f748d95ebdf
 
 ## Fixes G2 W5a — theo review commit 85bc5db
 
+Commit sửa **`5245e5e916620a6ac24c8bb2879f0c6ba7b0eb75`** trên `feature/smart-schedule-w5`, sau khi hoàn tất G3 APK cũ.
+
 - **F-W5A-1 (P1):** khôi phục `DailyScheduleScreen` từ W4 `868993b`. Giữ WeekStrip, giờ hiện tại/mục đã qua, `TaskVisual`, ô trống thêm việc tại giờ này và các callback cũ. Chỉ bổ sung một liên kết nhỏ vào `DayLogs` qua cổng PIN. Tách timeline phụ huynh thành `DayLogsScreen`; plan cards dùng `TaskVisual` với photo/emoji của task hoặc icon anchor. Không đổi quyền PIN/session hiện có.
 - **F-W5A-2 (P2):** listener dùng các document thay đổi và query date ≥ hôm nay − 60 ngày; bỏ lần get toàn collection trùng với snapshot khởi tạo. Giữ dữ liệu cũ local; khi phụ huynh mở ngày/tuần ngoài cửa sổ thì fetch giới hạn đúng khoảng đó, giữ LWW/owner/tombstone.
 - **F-W5A-3 (P2):** thay hai ô text HH:mm bằng Material3 TimePicker 24 giờ; vẫn cho end trống hoặc bỏ end đã chọn. End < start vẫn nghĩa là ngày kế tiếp; chuỗi mới có vi/en.
@@ -72,7 +74,7 @@ Lần kiểm đầy đủ sau fixes: **BUILD SUCCESSFUL in 25s**, 96 task (6 exe
 
 APK sau fixes SHA-256: `28237ea18e8308a78f81512391a352275e3655c183eb3f2ee1fc02371b6293f7`.
 
-Test bao phủ migration giữ cả sáu bảng cũ; kế hoạch lặp qua tuần/nửa đêm; timer/routine/profile/stop/manual/tombstone; so sánh ±10/muộn/sớm/thời lượng/chưa ghi/phát sinh/ngủ/top 3; sync bản mới/tombstone/tie/owner/cửa sổ/lịch sử; ViewModel nhập tay và PIN/navigation thật. MigrationTestHelper trong Robolectric chạy SQLite và validate schema thật; có instrumentation riêng trên Pixel. Hộp thoại TimePicker dành cho G3 trên Pixel; không dùng fixture dialog Robolectric để khẳng định UI PASS.
+Test bao phủ migration giữ cả sáu bảng cũ; kế hoạch lặp qua tuần/nửa đêm; timer/routine/profile/stop/manual/tombstone; so sánh ±10/muộn/sớm/thời lượng/chưa ghi/phát sinh/ngủ/top 3; sync bản mới/tombstone/tie/owner/cửa sổ/lịch sử; ViewModel nhập tay và PIN/navigation thật. MigrationTestHelper trong Robolectric chạy SQLite và validate schema thật; có instrumentation riêng trên Pixel. Hộp thoại TimePicker đã thao tác trên Pixel trong G3 sau fixes; không dùng fixture dialog Robolectric để khẳng định UI PASS.
 
 Môi trường: JDK 17, toolchain committed W4, SDK 35; Firebase/RevenueCat/OpenRouter key rỗng. Không đăng nhập Google, không mua, không gọi provider thật.
 
@@ -96,9 +98,22 @@ APK SHA-256 `1c29e42435dcb861b8771309d919fa638111157cecd7f0a9547868c02216939e`, 
 
 APK cũ vẫn có regression giao diện trẻ F-W5A-1 theo review; kết quả G3 dữ liệu trên không thay thế review UI. Không sửa task kế hoạch hoặc profile trên Pixel. Bản sao DB thô chỉ ở `/tmp`, artifact repo chỉ gồm số liệu kiểm, log đã lọc và ảnh app.
 
-### Chạy lại UI sau fixes
+### Chạy lại UI sau fixes — APK 5245e5e
 
-**PENDING sau commit sửa:** cài APK sửa bằng `-r`, kiểm màn trẻ WeekStrip/TaskVisual/ô trống và liên kết PIN; timeline phụ huynh, TimePicker sửa tay/Phát sinh và So sánh. Bổ sung ảnh và logcat riêng; không dùng ảnh APK cũ để khẳng định UI bản sửa đạt.
+Cài `-r` sau commit sửa; hash APK khớp bản build đã qua test/lint, schema vẫn v6, hai log trước update giữ nguyên toàn bộ cột. Cuối G3 có đúng ba UUID thực tế; sáu bảng cũ vẫn giữ nguyên, không thêm/sửa task kế hoạch hoặc profile. [DB cuối](g3/w5a/62-final-device-data.json). [Cài bản sửa](g3/w5a/40-review-apk-install.txt), [kiểm giữ dữ liệu](g3/w5a/42-review-apk-data-preserved.json).
+
+| Kiểm UI | Kết quả và bằng chứng |
+| --- | --- |
+| Màn trẻ DailySchedule | **PASS**. WeekStrip, ngày 29/9→30/9, TaskVisual Homework/Reading và ô thêm việc 16:30 đã có lại. Không có nút Phát sinh/Ngủ/Thức/Sửa kế hoạch/So sánh riêng hoặc hai làn. [Lịch trẻ](g3/w5a/43-child-daily-restored.png), [ngày sau](g3/w5a/44-child-next-day.png) |
+| Ô trống thêm việc | **PASS** mở màn cũ Create schedule với 16:30 điền sẵn; Back, không lưu/không thay kế hoạch. [Ảnh](g3/w5a/45-child-gap-editor.png) |
+| Route phụ huynh | **PASS** liên kết nhỏ Actual & comparison yêu cầu PIN thật; sau đúng PIN mới hiện DayLogs hai làn và nút phụ huynh. [PIN](g3/w5a/46-parent-only-pin.png), [timeline](g3/w5a/47-parent-daylogs-task-visuals.png), [TaskVisual của task](g3/w5a/53-parent-plan-task-visuals.png) |
+| Material3 TimePicker sửa tay | **PASS** chọn G3 walk từ 16:00–16:30 thành 16:05–16:35, giữ UUID/profile/task/created_at, updated_at tăng. [Picker](g3/w5a/49-material-timepicker.png), [đã chọn](g3/w5a/50-material-editor-filled.png), [đã lưu](g3/w5a/51-material-edit-saved.png), [DB](g3/w5a/54-picker-edit-data.json) |
+| Phát sinh qua nửa đêm | **PASS** G3 overnight, chọn 23:55–00:15 bằng TimePicker, lưu MANUAL/OTHER, task_id null, thời lượng 20 phút; timeline hiện “Until 00:15 next day”. [Nhập](g3/w5a/52-overnight-editor.png), [timeline](g3/w5a/55-overnight-next-day.png), [DB](g3/w5a/55-overnight-data.json) |
+| So sánh | **PASS** xem lại tuần hiện tại, Homework đúng giờ và dài hơn 2 phút; hai mục G3 walk/G3 overnight ở Phát sinh. Tuần trước vẫn không có dữ liệu, không đánh Bỏ lỡ ngày trống. [Tổng](g3/w5a/56-review-comparison-current.png), [chi tiết](g3/w5a/57-review-comparison-day.png), [tuần trước](g3/w5a/58-review-comparison-previous.png) |
+| Cổng PIN sau ra nền | **PASS** đưa app ra Home rồi mở lại: So sánh yêu cầu PIN, đúng PIN mở lại màn thật. Back về timeline rồi lịch trẻ. [PIN lại](g3/w5a/59-background-parent-pin.png), [mở lại](g3/w5a/60-background-parent-reentered.png), [lịch trẻ cuối](g3/w5a/61-return-child-daily.png) |
+| Logcat sau fixes | **Không thấy crash/ANR KidFocus** trong cửa sổ từ lúc cài bản sửa. [Log đã lọc](g3/w5a/64-review-ui-crash-logcat.txt) |
+
+**G3 các bước đang dở và UI sau fixes đã hoàn tất.** Dev không tự thay thế kết luận G2 của Claude hoặc nghiệm thu cuối của Duong. Màu/highlight task đang diễn ra/đã qua được giữ nguyên từ W4; chưa kích hoạt hai trạng thái đó trên Pixel vì hai task hiện có đều vào buổi tối, không đổi giờ máy/giờ task để tạo tình huống. Không chạy sync hai thiết bị hoặc đăng nhập để kiểm cloud thật; còn trong checklist. Không chạy lại timer sau fixes vì đường ghi timer/Room không đổi; lần timer thật ở trên và unit test đều đã qua.
 
 ## Checklist trước triển khai
 
