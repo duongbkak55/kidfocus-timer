@@ -40,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,6 +62,7 @@ fun DailyScheduleScreen(
     viewModel: ScheduleViewModel,
     onBack: () -> Unit,
     onStartTask: (ScheduledTask) -> Unit,
+    onActualAndComparison: (java.time.LocalDate) -> Unit = {},
     quickEntryEnabled: Boolean = false,
     onQuickEntry: () -> Unit = {},
     onAddTaskAtTime: (hour: Int, minute: Int) -> Unit = { _, _ -> },
@@ -104,6 +106,12 @@ fun DailyScheduleScreen(
                     fontWeight = FontWeight.Bold,
                 )
             }
+
+            androidx.compose.material3.TextButton(
+                onClick = { onActualAndComparison(java.time.LocalDate.of(
+                    displayCal.get(Calendar.YEAR), displayCal.get(Calendar.MONTH) + 1, displayCal.get(Calendar.DAY_OF_MONTH))) },
+                modifier = Modifier.padding(horizontal = 16.dp),
+            ) { Text(stringResource(R.string.daylog_actual_and_compare)) }
 
             if (quickEntryEnabled) androidx.compose.material3.TextButton(onClick = onQuickEntry, modifier = Modifier.padding(horizontal = 16.dp)) {
                 Text(stringResource(R.string.quick_title))
@@ -221,7 +229,7 @@ private fun WeekStrip(
     val colors = KidFocusTheme.colors
 
     LazyRow(
-        modifier = Modifier
+        modifier = Modifier.testTag("daily_week_strip")
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -342,12 +350,14 @@ private fun TimelineTaskItem(
                 .padding(12.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                TaskVisual(
-                    photoUri = task.photoUri,
-                    emoji = task.emoji,
-                    modifier = Modifier.size(40.dp),
-                    emojiSize = 22.sp,
-                )
+                Box(Modifier.testTag("daily_task_visual_${task.id}")) {
+                    TaskVisual(
+                        photoUri = task.photoUri,
+                        emoji = task.emoji,
+                        modifier = Modifier.size(40.dp),
+                        emojiSize = 22.sp,
+                    )
+                }
                 Spacer(modifier = Modifier.width(8.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {

@@ -1,0 +1,25 @@
+{
+  "source_commit": "0d7310a",
+  "wireless": true,
+  "device_unlocked_before_install": true,
+  "pairing_required": false,
+  "artifacts": [
+    {
+      "kind": "app",
+      "sha256": "a2c00a729c4b2772350e50480de01d06b528e8c69bc71ffaa119e70b2279d11b",
+      "install_replace": true,
+      "result": "Success"
+    },
+    {
+      "kind": "androidTest",
+      "sha256": "717f4c20d235ce073bcf1bc5f9e2f56b0f4e5ba764ee25a06574d20259845b9d",
+      "install_replace": true,
+      "result": "Success"
+    }
+  ],
+  "room_version": 6,
+  "all_six_tables_and_daylogs_unchanged": true,
+  "alive_logs": 3,
+  "no_permissions_granted": true,
+  "provider_configuration": "blank Firebase and RevenueCat configuration, no production or real OpenRouter"
+}

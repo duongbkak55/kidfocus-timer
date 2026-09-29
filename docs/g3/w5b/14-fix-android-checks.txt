@@ -1,0 +1,14 @@
+./gradlew testDebugUnitTest assembleDebug lintDebug assembleDebugAndroidTest
+BUILD SUCCESSFUL in 9s
+{
+  "tests": 300,
+  "suites": 46,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "lint": {
+    "Error": 0,
+    "Fatal": 0,
+    "Warning": 172
+  }
+}

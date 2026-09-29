@@ -1,0 +1,36 @@
+{
+  "schema": 6,
+  "tables": {
+    "child_profiles": {
+      "count": 2,
+      "sha256": "191a923ba6976dfd6f1a0a8eb6446660b186da882be4905bf91367064e5c5417"
+    },
+    "sessions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "scheduled_tasks": {
+      "count": 2,
+      "sha256": "8e0d28b3c5ebcd28d7ff6528c3cb957dab298a421e835d44f2e8d5d79b2414bc"
+    },
+    "routines": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "routine_completions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "learning_attempts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "day_log_entries": {
+      "count": 5,
+      "sha256": "3ab35456007d430836def44c8170ea0b16f71d19468e139d40fcf4aa2dbe9098"
+    }
+  },
+  "alive_logs": 3,
+  "ai_logs": 2,
+  "ai_tombstones": 2
+}

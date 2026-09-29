@@ -108,7 +108,7 @@ object ScheduleAdviceReview {
 }
 
 object ScheduleAdvicePayload {
-    fun build(state: ScheduleState, refs: AdviceRefs, findings: List<Finding>, routines: List<RoutineStat>, ageBand: String, today: String, locale: String, note: String, tags: Set<NoteTag>, requestId: String): Map<String, Any> {
+    fun build(state: ScheduleState, refs: AdviceRefs, findings: List<Finding>, routines: List<RoutineStat>, ageBand: String, today: String, locale: String, note: String, tags: Set<NoteTag>, requestId: String, actualStats: com.kidfocus.timer.domain.daylog.ActualScheduleStats = com.kidfocus.timer.domain.daylog.ActualScheduleStats()): Map<String, Any> {
         require(note.length <= 500)
         val taskRefs = refs.flatMap { (ref, days) -> days.values.map { it to ref } }.toMap()
         fun days(value: Set<DayOfWeek>) = value.sortedBy { it.value }.map { it.name.take(3) }
@@ -123,7 +123,7 @@ object ScheduleAdvicePayload {
                 "school" to state.anchors.school.take(30).map { mapOf("days" to days(it.days), "start" to it.start.toString(), "end" to it.end.toString()) }),
             "findings" to findings.take(1000).map { mapOf("ruleId" to it.ruleId.name, "severity" to it.severity.name, "days" to days(it.days),
                 "taskRefs" to it.taskIds.mapNotNull(taskRefs::get).distinct(), "params" to it.params) },
-            "routineStats" to routines.take(60).map { mapOf("name" to it.name.take(60), "lateOrMissedLast7" to it.lateOrMissedLast7) }, "note" to note, "noteTags" to tags.map { it.name })
+            "actualStats" to actualStats.payload(refs), "routineStats" to routines.take(60).map { mapOf("name" to it.name.take(60), "lateOrMissedLast7" to it.lateOrMissedLast7) }, "note" to note, "noteTags" to tags.map { it.name })
     }
     fun advice(raw: Map<*, *>): ScheduleAdvice {
         require(raw.keys == setOf("summary", "proposals", "tags"))

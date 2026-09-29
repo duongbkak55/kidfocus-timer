@@ -1,0 +1,8 @@
+{
+  "apk_source": "85bc5db",
+  "buffer": "adb logcat -d -b crash",
+  "fatal_blocks_total": 1,
+  "kidfocus_fatal_blocks": 0,
+  "unrelated_app_blocks_excluded": 1,
+  "kidfocus_anr_lines_in_ActivityManager_E": 0
+}

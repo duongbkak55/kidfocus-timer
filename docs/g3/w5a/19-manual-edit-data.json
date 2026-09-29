@@ -1,0 +1,19 @@
+{
+  "entry": {
+    "id": "7e053d32-6966-4798-a5b6-d4e7a4ffe35d",
+    "profile_id": "default",
+    "date": "2026-09-29",
+    "task_id": 1790608111341615,
+    "name": "Homework",
+    "category": "STUDY",
+    "start_minute": 1268,
+    "end_minute": 1315,
+    "source": "MANUAL",
+    "created_at": 1790647888566,
+    "updated_at": 1790660582743,
+    "deleted": 0
+  },
+  "same_identity_profile_task_created": true,
+  "manual_saved": true,
+  "updated_at_increased": true
+}

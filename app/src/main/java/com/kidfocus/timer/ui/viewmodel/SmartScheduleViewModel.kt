@@ -27,7 +27,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 
 data class SmartScheduleUiState(val profile: ChildProfileEntity, val schedule: ScheduleState, val findings: List<Finding>, val canUndo: Boolean,
-    val routineStats: List<RoutineStat> = emptyList(), val plan: SchedulePlan? = null)
+    val routineStats: List<RoutineStat> = emptyList(), val plan: SchedulePlan? = null,
+    val actualStats: com.kidfocus.timer.domain.daylog.ActualScheduleStats = com.kidfocus.timer.domain.daylog.ActualScheduleStats())
 enum class AdviceError { NETWORK, QUOTA, SIGN_IN, DISABLED, STALE, APPLY }
 data class AdviceUiState(val note: String = "", val tags: Set<NoteTag> = emptySet(), val advice: ScheduleAdvice? = null,
     val rows: List<AdviceRow> = emptyList(), val selected: Set<Int> = emptySet(), val expected: ScheduleState? = null,
@@ -44,6 +45,7 @@ class SmartScheduleViewModel @Inject constructor(
     private val store: RoomScheduleStore,
     private val adviser: ScheduleAdviser,
     private val plans: SchedulePlansRepository,
+    dayLogs: com.kidfocus.timer.data.repository.DayLogRepository,
 ) : ViewModel() {
     private val _advice = MutableStateFlow(AdviceUiState())
     val advice = _advice.asStateFlow()
@@ -69,8 +71,9 @@ class SmartScheduleViewModel @Inject constructor(
         }
     }
     val state = profiles.activeProfile.flatMapLatest { profile ->
-        val scheduleFlow = combine(tasks.allTasks, anchors.observe(profile.id), routines.observeAll(),
-            routines.observeCompletionsSince(profile.id, LocalDate.now().minusDays(ScheduleThresholds.HISTORY_DAYS - 1)), clock) { rows, hours, routineRows, completions, now ->
+        val scheduleFlow = combine(combine(tasks.allTasks, dayLogs.observe(profile.id)) { rows, actual -> rows to actual }, anchors.observe(profile.id), routines.observeAll(),
+            routines.observeCompletionsSince(profile.id, LocalDate.now().minusDays(ScheduleThresholds.HISTORY_DAYS - 1)), clock) { taskAndActual, hours, routineRows, completions, now ->
+            val (rows, actual) = taskAndActual
             val scoped = rows.filter { it.childProfileId == profile.id }.sortedBy { it.id }
             val patterns = routineRows.filter { it.childProfileId == profile.id && it.enabled }.mapNotNull {
                 runCatching {
@@ -83,7 +86,7 @@ class SmartScheduleViewModel @Inject constructor(
             val schedule = ScheduleState(scoped, hours)
             val snapshot = store.snapshot(profile.id)
             val findings = runCatching {
-                ScheduleAdvisor().advise(scoped, hours, profile.ageBand, patterns, observations, now.toLocalDate(), now.toLocalTime().minutes())
+                ScheduleAdvisor().advise(scoped, hours, profile.ageBand, patterns, observations, now.toLocalDate(), now.toLocalTime().minutes(), actual)
             }.getOrElse { error ->
                 Log.w("SmartScheduleViewModel", "Unable to evaluate weekly schedule", error)
                 emptyList()
@@ -99,7 +102,7 @@ class SmartScheduleViewModel @Inject constructor(
                 RoutineStat(routineRows.single { it.id == pattern.id }.title, count)
             }
             SmartScheduleUiState(profile, schedule, findings,
-                snapshot != null && snapshot.applied == schedule && System.currentTimeMillis() - snapshot.savedAtMillis in 0..604_800_000L, stats)
+                snapshot != null && snapshot.applied == schedule && System.currentTimeMillis() - snapshot.savedAtMillis in 0..604_800_000L, stats, actualStats = com.kidfocus.timer.domain.daylog.ActualScheduleAdvisor.evaluate(scoped, hours, actual, now.toLocalDate(), now.toLocalTime().minutes()).stats)
         }
         combine(scheduleFlow, plans.observe(profile.id)) { current, plan -> current.copy(plan = plan?.takeIf { it.matches(current.schedule.anchors) }) }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
@@ -124,7 +127,7 @@ class SmartScheduleViewModel @Inject constructor(
             try {
                 val reply = adviser.advise(ScheduleAdvicePayload.build(current.schedule, refs, current.findings, current.routineStats,
                     current.profile.ageBand, LocalDate.now().toString(), Locale.getDefault().let { it.language + (it.country.takeIf { country -> country.length == 2 }?.let { country -> "-$country" } ?: "") },
-                    input.note, input.tags, UUID.randomUUID().toString()))
+                    input.note, input.tags, UUID.randomUUID().toString(), current.actualStats))
                 if (revision != profileRevision || profile.value?.id != current.profile.id) return@launch
                 if (store.read(current.profile.id) != current.schedule) {
                     _advice.value = _advice.value.copy(error = AdviceError.STALE, usage = reply.usage)

@@ -33,6 +33,7 @@ data class AiConfig(
     val earlyAccessOpen: Boolean = false,
     val scheduleParseCost: Int = 1,
     val scheduleAdviseCost: Int = 2,
+    val scheduleLogCost: Int = 1,
     val scheduleImageCost: Int = 3,
     val scheduleImageTiers: Set<String> = emptySet(),
     val scheduleFreeDailyParses: Int = 0,
@@ -108,6 +109,7 @@ private fun Any?.asStringMap(): Map<String, Any?> =
 private fun Map<String, Any?>.toAiConfig(): AiConfig = AiConfig(
     scheduleEnabled = this["ai_schedule_enabled"] as? Boolean ?: false,
     earlyAccessOpen = this["early_access_open"] as? Boolean ?: false,
+    scheduleLogCost = (this["ai_schedule_log_cost"] as? Number)?.toInt()?.coerceIn(1,100) ?: 1,
     scheduleAdviseCost = (this["ai_schedule_advise_cost"] as? Number)?.toInt() ?: 2,
     scheduleParseCost = (this["ai_schedule_parse_cost"] as? Number)?.toInt() ?: 1,
     scheduleImageCost = (this["ai_schedule_image_cost"] as? Number)?.toInt() ?: 3,

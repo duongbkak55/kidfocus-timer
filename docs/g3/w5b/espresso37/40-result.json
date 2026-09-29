@@ -1,0 +1,15 @@
+{
+  "fixture": "offline provider and account\/config, androidTest only",
+  "date": "2026-09-29",
+  "previewEntries": 2,
+  "savedSource": "AI",
+  "providerCalls": 2,
+  "beforePercent": 25,
+  "afterPercent": 40,
+  "undoPercent": 25,
+  "existingEntriesPreserved": true,
+  "comparisonRestored": true,
+  "batchTombstones": 2,
+  "missingStartQuestionVisible": true,
+  "partialEntries": 1
+}

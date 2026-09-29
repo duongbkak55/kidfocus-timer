@@ -1,0 +1,5 @@
+USB Pixel 9 / Android 17 API 37
+APK SHA-256: 1c29e42435dcb861b8771309d919fa638111157cecd7f0a9547868c02216939e
+adb install -r
+Performing Streamed Install
+Success

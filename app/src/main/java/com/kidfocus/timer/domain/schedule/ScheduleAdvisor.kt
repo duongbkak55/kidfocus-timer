@@ -8,7 +8,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.math.abs
 
-enum class RuleId { SLEEP_SHORT, SOCIAL_JETLAG, SCREEN_BEFORE_BED, OVERLAP, LATE_HOMEWORK, FOCUS_TOO_LONG, NO_FREE_TIME, MORNING_LATE_PATTERN }
+enum class RuleId { SLEEP_SHORT, SOCIAL_JETLAG, SCREEN_BEFORE_BED, OVERLAP, LATE_HOMEWORK, FOCUS_TOO_LONG, NO_FREE_TIME, MORNING_LATE_PATTERN, BED_DRIFT, TASK_OVERRUN, OFTEN_SKIPPED }
 enum class Severity { HIGH, MEDIUM, LOW }
 
 sealed interface ScheduleChange {
@@ -65,6 +65,7 @@ class ScheduleAdvisor {
         completions: List<RoutineObservation> = emptyList(),
         today: LocalDate = LocalDate.now(),
         nowMinute: Int = LocalTime.now().minutes(),
+        actualEntries: List<com.kidfocus.timer.domain.daylog.DayLogEntry> = emptyList(),
     ): List<Finding> {
         val findings = mutableListOf<Finding>()
         val minSleep = ScheduleThresholds.sleepMinutes.getOrElse(ageBand) { ScheduleThresholds.sleepMinutes.getValue("4-5") }
@@ -157,6 +158,7 @@ class ScheduleAdvisor {
                     params = mapOf("count" to badDates.size))
             }
         }
+        findings += com.kidfocus.timer.domain.daylog.ActualScheduleAdvisor.evaluate(tasks, anchors, actualEntries, today, nowMinute).findings
         return findings.distinct().sortedBy { it.severity.ordinal }
     }
 

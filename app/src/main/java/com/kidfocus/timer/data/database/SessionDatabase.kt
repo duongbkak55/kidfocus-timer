@@ -13,8 +13,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         RoutineCompletionEntity::class,
         LearningAttemptEntity::class,
         ChildProfileEntity::class,
+        DayLogEntryEntity::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
 )
 abstract class SessionDatabase : RoomDatabase() {
@@ -23,6 +24,7 @@ abstract class SessionDatabase : RoomDatabase() {
     abstract fun scheduledTaskDao(): ScheduledTaskDao
     abstract fun routineDao(): RoutineDao
     abstract fun learningAttemptDao(): LearningAttemptDao
+    abstract fun dayLogDao(): DayLogDao
     abstract fun childProfileDao(): ChildProfileDao
 
     companion object {
@@ -124,6 +126,21 @@ abstract class SessionDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE routines ADD COLUMN child_profile_id TEXT NOT NULL DEFAULT 'default'")
                 db.execSQL("ALTER TABLE routines ADD COLUMN photo_uri TEXT")
                 db.execSQL("ALTER TABLE learning_attempts ADD COLUMN child_profile_id TEXT NOT NULL DEFAULT 'default'")
+            }
+        }
+
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE sessions ADD COLUMN scheduled_task_id INTEGER")
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS day_log_entries (
+                        id TEXT NOT NULL PRIMARY KEY, profile_id TEXT NOT NULL, date TEXT NOT NULL,
+                        task_id INTEGER, name TEXT NOT NULL, category TEXT NOT NULL,
+                        start_minute INTEGER NOT NULL, end_minute INTEGER, source TEXT NOT NULL,
+                        created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL, deleted INTEGER NOT NULL
+                    )
+                """.trimIndent())
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_day_log_entries_profile_id_date ON day_log_entries(profile_id, date)")
             }
         }
 

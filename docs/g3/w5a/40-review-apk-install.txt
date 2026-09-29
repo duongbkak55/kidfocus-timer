@@ -1,0 +1,7 @@
+commit 5245e5e916620a6ac24c8bb2879f0c6ba7b0eb75
+APK SHA256 28237ea18e8308a78f81512391a352275e3655c183eb3f2ee1fc02371b6293f7
+device unlocked, USB authorized
+window_start 09-29 12:48:43.000
+Performing Streamed Install
+Success
+Starting: Intent { cmp=com.kidfocusstudio.timer.debug/com.kidfocus.timer.MainActivity }

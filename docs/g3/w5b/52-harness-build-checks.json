@@ -1,0 +1,20 @@
+{
+  "command": "./gradlew testDebugUnitTest assembleDebug lintDebug assembleDebugAndroidTest --max-workers=2",
+  "result": "PASS",
+  "build_time": "10m 58s",
+  "initial_attempt": "Cancelled current build wrapper during packaging to reduce worker concurrency; no test failure or repo configuration edit",
+  "unit_tests": {
+    "suites": 46,
+    "tests": 300,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "lint": {
+    "errors": 0,
+    "warnings": 166
+  },
+  "main_source_manifest_room_changes": false,
+  "main_apk_0d7310a_sha256": "a2c00a729c4b2772350e50480de01d06b528e8c69bc71ffaa119e70b2279d11b",
+  "test_apk_sha256": "5a10f84792d53fc0c0503e139ffb11834512ed6e28530c7a45062408bd5232b0"
+}

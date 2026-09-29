@@ -1,0 +1,3 @@
+No new KidFocus crash-buffer records during G3 and normal app relaunch.
+Filter: records grouped by PID, containing com.kidfocus / com.kidfocusstudio.timer.debug, compared with the pre-test crash buffer.
+Unrelated applications, wireless endpoints and credentials excluded.

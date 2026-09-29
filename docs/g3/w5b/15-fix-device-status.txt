@@ -1,0 +1,5 @@
+2026-09-29: Pixel_9 connected through the previously paired ADB wireless transport.
+Read-only dumpsys trust: deviceLocked=1.
+Read-only window focus: NotificationShade.
+G3 stopped before install/input; Duong asked to unlock manually.
+No reboot, phone PIN input, permission changes, production or real provider calls.

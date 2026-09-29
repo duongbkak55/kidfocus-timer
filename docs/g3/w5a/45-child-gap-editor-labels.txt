@@ -1,0 +1,45 @@
+Back
+Create schedule
+Choose a suggested task
+⭐
+Custom
+Activity name
+Illustration photo
+Choose photo
+Photos stay on this device and are not uploaded to the cloud.
+Start time
+Hour
+Decrease Hour
+−
+16
+Increase Hour
++
+:
+Minute
+Decrease Minute
+−
+30
+Increase Minute
++
+Days of week
+Every day
+Weekdays
+Weekend
+Or select individual days
+Monday
+M
+Tuesday
+T
+Wednesday
+W
+Thursday
+T
+Friday
+F
+Saturday
+S
+Sunday
+S
+Duration
+Focus
+25 minutes

@@ -57,6 +57,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class ParentScheduleNavigationTest {
     @get:Rule val compose = createAndroidComposeRule<ComponentActivity>()
     private lateinit var vm: SettingsViewModel
+    private lateinit var logs: DayLogViewModel
     private lateinit var nav: TestNavHostController
     private val profile = ChildProfileEntity.default()
     private val schedule = ScheduleState(emptyList(), ScheduleAnchors())
@@ -70,7 +71,7 @@ class ParentScheduleNavigationTest {
 
     @After fun teardown() { vm.viewModelScope.cancel() }
 
-    private fun graph(destination: String) {
+    private fun graph(destination: String, logVm: QuickDayLogViewModel? = null, logData: DayLogData = DayLogData(profileId = "default")) {
         val access = mockk<ScheduleAccessViewModel>(relaxed = true)
         every { access.config } returns MutableStateFlow(AiConfig())
         every { access.account } returns MutableStateFlow(CloudAccount(configured = false))
@@ -89,6 +90,14 @@ class ParentScheduleNavigationTest {
         every { quick.profile } returns MutableStateFlow(profile)
         every { quick.current } returns MutableStateFlow(schedule)
         every { quick.events } returns MutableSharedFlow()
+        logs = mockk(relaxed = true)
+        every { logs.data } returns MutableStateFlow(logData)
+        every { logs.date } returns MutableStateFlow(java.time.LocalDate.parse("2026-09-28"))
+        every { logs.syncError } returns MutableStateFlow(false)
+        every { logs.week } returns MutableStateFlow(java.time.LocalDate.parse("2026-09-28"))
+        every { logs.draft } returns MutableStateFlow(null)
+        every { logs.error } returns MutableStateFlow(null)
+        every { logs.saving } returns MutableStateFlow(false)
         compose.setContent {
             ParentSessionLifecycle(vm)
             val settings by vm.settings.collectAsState()
@@ -104,6 +113,13 @@ class ParentScheduleNavigationTest {
                         composable(NavRoutes.Home.route) { Text("Home") }
                         composable(NavRoutes.PinSetup.route) { Text("PIN setup") }
                         parentPinEntry(nav, vm)
+                        parentScheduleDestination(NavRoutes.DayLogs.route, nav, vm) {
+                            com.kidfocus.timer.ui.screens.DayLogsScreen(
+                                onBack = {}, onStartTask = {}, dayLogs = logs, alarmPermission = alarmPermission, quickEntry = { data, date ->
+                                    if (logVm == null) Text("Quick logging") else com.kidfocus.timer.ui.screens.QuickDayLogPanel(logVm, data, date, AiConfig(scheduleEnabled = true), signedIn = true)
+                                })
+                        }
+                        parentScheduleDestination(NavRoutes.WeeklyComparison.route, nav, vm) { com.kidfocus.timer.ui.screens.WeeklyComparisonScreen(logs, {}) }
                         parentScheduleDestinations(nav, vm,
                             smartScreen = { SmartScheduleScreen({}, access = access, viewModel = smart, alarmPermission = alarmPermission) },
                             quickScreen = { QuickScheduleScreen({}, access, quick) })
@@ -185,6 +201,60 @@ class ParentScheduleNavigationTest {
         graph(NavRoutes.SmartSchedule.route); enterPin("0000")
         compose.onNodeWithText("Nhập PIN phụ huynh").assertIsDisplayed()
         compose.onNodeWithText("PIN không đúng").assertIsDisplayed()
+    }
+
+    @Test fun `actual timeline editing action requires real PIN`() {
+        graph(NavRoutes.DayLogs.route)
+        compose.onNodeWithText(compose.activity.getString(R.string.daylog_add_incidental)).assertDoesNotExist()
+        enterPin("2468")
+        assertDestination(NavRoutes.DayLogs.route, R.string.daylog_actual_and_compare)
+        compose.onNodeWithText(compose.activity.getString(R.string.daylog_add_incidental))
+            .assertIsEnabled()
+            .performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick) { it() }
+        io.mockk.verify(exactly = 1) { logs.openNew(com.kidfocus.timer.domain.daylog.DayLogCategory.OTHER, "") }
+    }
+
+    @Test fun `weekly comparison requires real PIN and locks after background`() {
+        backgroundAndReenter(NavRoutes.WeeklyComparison.route, R.string.daylog_compare_title)
+    }
+
+    @Test fun `real PIN navigation protects typed LOG preview save and undo controls`() {
+        val repository = mockk<com.kidfocus.timer.data.repository.DayLogRepository>(relaxed = true)
+        io.mockk.coEvery { repository.activeProfileId() } returns "default"
+        val captured = io.mockk.slot<List<com.kidfocus.timer.domain.daylog.DayLogEntry>>()
+        io.mockk.coEvery { repository.addAiBatch(capture(captured)) } returns Unit
+        val date = java.time.LocalDate.parse("2026-09-28")
+        val tasks = listOf(
+            com.kidfocus.timer.domain.model.ScheduledTask(42, com.kidfocus.timer.domain.model.TaskType.HOMEWORK, "Homework", "", 19, 0, (1..7).toSet(), 30, 0),
+            com.kidfocus.timer.domain.model.ScheduledTask(43, com.kidfocus.timer.domain.model.TaskType.READING, "Reading", "", 20, 0, (1..7).toSet(), 30, 0),
+        )
+        val logger = mockk<com.kidfocus.timer.data.remote.ScheduleLogger>()
+        io.mockk.coEvery { logger.log(any()) } returns com.kidfocus.timer.data.remote.ScheduleLogReply(
+            com.kidfocus.timer.domain.daylog.DayLogPreview(listOf(
+                com.kidfocus.timer.domain.daylog.DayLogCandidate(date, "p0", "Homework", com.kidfocus.timer.domain.daylog.DayLogCategory.STUDY, 1140, 1170, .95),
+                com.kidfocus.timer.domain.daylog.DayLogCandidate(date, "p1", "Reading", com.kidfocus.timer.domain.daylog.DayLogCategory.STUDY, 1200, 1230, .4),
+            ), emptyList()), com.kidfocus.timer.data.remote.AiUsage(9, 9, false))
+        val quick = QuickDayLogViewModel(logger, repository)
+        try {
+            graph(NavRoutes.DayLogs.route, quick, DayLogData("default", tasks))
+            compose.onNodeWithTag("log_text").assertDoesNotExist()
+            io.mockk.coVerify(exactly = 0) { logger.log(any()) }
+            enterPin("2468")
+            compose.onNodeWithText(compose.activity.getString(R.string.log_today_title)).performScrollTo().performClick()
+            compose.onNodeWithTag("log_text").performScrollTo().performTextInput("Làm bài từ 19h đến 19h30, đọc sách từ 20h đến 20h30")
+            compose.onNodeWithText(compose.activity.resources.getQuantityString(R.plurals.log_preview, 1, 1)).performScrollTo().performClick()
+            compose.waitUntil(5_000) { quick.state.value.preview?.entries?.size == 2 }
+            compose.onNodeWithTag("log_candidate_0").performScrollTo().assertIsOn()
+            compose.onNodeWithTag("log_candidate_1").performScrollTo().assertIsOff().performClick()
+            compose.onNodeWithTag("log_save").performScrollTo().performClick()
+            compose.waitUntil(5_000) { quick.state.value.saved }
+            assertEquals(listOf(42L, 43L), captured.captured.map { it.taskId })
+            assertTrue(captured.captured.all { it.source == com.kidfocus.timer.domain.daylog.DayLogSource.AI && it.profileId == "default" })
+            compose.onNodeWithTag("log_undo").performScrollTo().performClick()
+            compose.waitUntil(5_000) { quick.state.value.restored }
+            io.mockk.coVerify(exactly = 1) { repository.undoAiBatch(captured.captured) }
+            compose.onNodeWithText(compose.activity.getString(R.string.log_restored)).performScrollTo().assertIsDisplayed()
+        } finally { quick.viewModelScope.cancel() }
     }
 
     private fun onboarding(title: String, next: String) {

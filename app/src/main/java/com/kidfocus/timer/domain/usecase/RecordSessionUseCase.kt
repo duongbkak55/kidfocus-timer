@@ -25,13 +25,16 @@ class RecordSessionUseCase @Inject constructor(
         durationSeconds: Int,
         isFocus: Boolean,
         timestampMillis: Long = System.currentTimeMillis(),
+        scheduledTaskId: Long? = null,
+        profileId: String? = null,
     ) {
         if (durationSeconds <= 0) return
         val entity = SessionEntity(
             durationSeconds = durationSeconds,
             isFocus = isFocus,
             timestampMillis = timestampMillis,
-            childProfileId = childProfileRepository?.currentProfileId() ?: "default",
+            childProfileId = profileId ?: childProfileRepository?.currentProfileId() ?: "default",
+            scheduledTaskId = scheduledTaskId,
         )
         sessionRepository.insertSession(entity)
         val cutoffMillis = System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000

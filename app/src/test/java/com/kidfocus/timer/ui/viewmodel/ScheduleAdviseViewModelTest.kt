@@ -30,6 +30,7 @@ import org.robolectric.annotation.Config
 class ScheduleAdviseViewModelTest {
     private val dispatcher = StandardTestDispatcher()
     private val allDays = DayOfWeek.entries.toSet()
+    private val actualRows = MutableStateFlow<List<com.kidfocus.timer.domain.daylog.DayLogEntry>>(emptyList())
     private val active = MutableStateFlow(ChildProfileEntity.default().copy(ageBand = "l1"))
     private val rows = MutableStateFlow(listOf(ScheduledTask(12, TaskType.HOMEWORK, "Bài tập", "", 20, 30, setOf(2, 3), 30, 0)))
     private val hours = MutableStateFlow(mapOf("default" to ScheduleAnchors(allDays.associateWith { LocalTime.of(6, 15) }, allDays.associateWith { LocalTime.of(21, 15) })))
@@ -67,7 +68,7 @@ class ScheduleAdviseViewModelTest {
         }
         every { store.reschedule(any(), any()) } just Runs
         coEvery { adviser.advise(any()) } returns reply()
-        vm = SmartScheduleViewModel(profiles, tasks, routines, anchors, ApplyScheduleUseCase(store), store, adviser, plans)
+        vm = SmartScheduleViewModel(profiles, tasks, routines, anchors, ApplyScheduleUseCase(store), store, adviser, plans, dayLogsFixture())
     }
     @After fun teardown() { vm.viewModelScope.cancel(); Dispatchers.resetMain() }
     private fun TestScope.observe() { backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.state.collect() }; runCurrent() }
@@ -138,4 +139,38 @@ class ScheduleAdviseViewModelTest {
         vm.undo(); runCurrent(); assertTrue(state().anchors.bed.values.all { it == LocalTime.of(22, 15) })
         vm.cancelPlan(); runCurrent(); assertNull(planRows.value["default"])
     }
+    @Test fun `real actual flow drives findings and ADVISE sends aggregates with transient refs only`() = runTest(dispatcher) {
+        rows.value = rows.value.map { it.copy(daysOfWeek = (1..7).toSet()) }
+        val today = LocalDate.now()
+        actualRows.value = (1L..3L).flatMap { offset ->
+            listOf(
+                com.kidfocus.timer.domain.daylog.DayLogEntry(profileId = "default", date = today.minusDays(offset),
+                    name = "PRIVATE_SLEEP_TEXT", category = com.kidfocus.timer.domain.daylog.DayLogCategory.SLEEP,
+                    startMinute = 22 * 60, source = com.kidfocus.timer.domain.daylog.DayLogSource.AI, createdAt = 1000),
+                com.kidfocus.timer.domain.daylog.DayLogEntry(profileId = "default", date = today.minusDays(offset), taskId = 12,
+                    name = "PRIVATE_HOMEWORK_TEXT", category = com.kidfocus.timer.domain.daylog.DayLogCategory.STUDY,
+                    startMinute = 20 * 60 + 30, endMinute = 21 * 60 + 20,
+                    source = com.kidfocus.timer.domain.daylog.DayLogSource.AI, createdAt = 1000),
+            )
+        }
+        observe()
+        assertTrue(vm.state.value!!.findings.any { it.ruleId == RuleId.BED_DRIFT })
+        assertTrue(vm.state.value!!.findings.any { it.ruleId == RuleId.TASK_OVERRUN })
+        val payload = slot<Map<String, Any>>()
+        coEvery { adviser.advise(capture(payload)) } returns reply(emptyList())
+        vm.requestAdvice(); runCurrent()
+        val stats = payload.captured["actualStats"] as Map<*, *>
+        assertEquals(3, stats["recordedDays"]); assertEquals(3, stats["bedLateDays"])
+        val task = (stats["tasks"] as List<*>).single() as Map<*, *>
+        assertEquals("t0", task["taskRef"]); assertEquals(3, task["overrun"])
+        assertEquals(setOf("taskRef", "completed", "overrun", "missed", "averageDelayMin"), task.keys)
+        assertFalse(payload.captured.toString().contains("PRIVATE_"))
+        actualRows.value.forEach { assertFalse(payload.captured.toString().contains(it.id)) }
+        actualRows.value = emptyList(); runCurrent()
+        assertFalse(vm.state.value!!.findings.any { it.ruleId in setOf(RuleId.BED_DRIFT, RuleId.TASK_OVERRUN, RuleId.OFTEN_SKIPPED) })
+    }
+    private fun dayLogsFixture() = mockk<com.kidfocus.timer.data.repository.DayLogRepository>().also {
+        every { it.observe(any()) } returns actualRows
+    }
+
 }

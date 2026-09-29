@@ -1,0 +1,33 @@
+{
+  "tests": 300,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "suites": 46,
+  "lint": {
+    "Error": 0,
+    "Fatal": 0,
+    "Warning": 172
+  },
+  "android_commands": "./gradlew testDebugUnitTest assembleDebug lintDebug assembleDebugAndroidTest",
+  "gradle_result": "BUILD SUCCESSFUL in 33s",
+  "functions_tests": 144,
+  "functions_lint": "PASS",
+  "offline_log_golden": {
+    "passed": 25,
+    "total": 25,
+    "live_model_evaluated": false,
+    "provider": "synthetic fixture, no network"
+  },
+  "apk_sha256": "a2c00a729c4b2772350e50480de01d06b528e8c69bc71ffaa119e70b2279d11b",
+  "android_test_apk_sha256": "0d284102dd4b55886b6b842e3fd1c75decab12d124f792db49b83a37ac796440",
+  "source_base": "b4a2bbb3f1a3498522364378c1117efc764fa57b",
+  "room_version": 6,
+  "production_calls": false,
+  "openrouter_calls": false,
+  "g3": "PENDING: adb devices/mDNS show no device",
+  "checked_at_utc": "2026-09-29T07:16:32.636634+00:00",
+  "debug_client_config_all_blank": true,
+  "original_dirty_files": 19,
+  "original_dirty_diff_sha256": "667b37fae661a56e01d326cdaa98c9494e0535303ef36c9222e82cabb1c04725"
+}

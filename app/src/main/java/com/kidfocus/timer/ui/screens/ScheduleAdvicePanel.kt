@@ -149,5 +149,8 @@ private fun ruleLabel(rule: RuleId): String = stringResource(when (rule) {
     RuleId.LATE_HOMEWORK -> R.string.smart_late_homework
     RuleId.FOCUS_TOO_LONG -> R.string.advise_rule_focus
     RuleId.NO_FREE_TIME -> R.string.smart_no_free_time
+    RuleId.BED_DRIFT -> R.string.advise_rule_bed_drift
+    RuleId.TASK_OVERRUN -> R.string.advise_rule_task_overrun
+    RuleId.OFTEN_SKIPPED -> R.string.advise_rule_often_skipped
     RuleId.MORNING_LATE_PATTERN -> R.string.advise_rule_morning
 })

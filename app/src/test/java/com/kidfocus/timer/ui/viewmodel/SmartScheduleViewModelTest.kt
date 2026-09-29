@@ -69,7 +69,7 @@ class SmartScheduleViewModelTest {
         coEvery { store.snapshot(any()) } returns null
         val plans = mockk<com.kidfocus.timer.data.schedule.SchedulePlansRepository>()
         every { plans.observe(any()) } returns flowOf(null)
-        return SmartScheduleViewModel(profiles, tasks, routines, anchors, mockk<ApplyScheduleUseCase>(), store, mockk<com.kidfocus.timer.data.remote.ScheduleAdviser>(), plans)
+        return SmartScheduleViewModel(profiles, tasks, routines, anchors, mockk<ApplyScheduleUseCase>(), store, mockk<com.kidfocus.timer.data.remote.ScheduleAdviser>(), plans, dayLogsFixture())
             .also { viewModel = it }
     }
 
@@ -112,4 +112,8 @@ class SmartScheduleViewModelTest {
         runCurrent()
         assertTrue(vm.state.value!!.findings.any { it.ruleId == RuleId.FOCUS_TOO_LONG })
     }
+    private fun dayLogsFixture() = mockk<com.kidfocus.timer.data.repository.DayLogRepository>().also {
+        every { it.observe(any()) } returns kotlinx.coroutines.flow.MutableStateFlow(emptyList())
+    }
+
 }

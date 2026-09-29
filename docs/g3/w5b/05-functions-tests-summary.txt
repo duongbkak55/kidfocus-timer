@@ -1,0 +1,9 @@
+✔ Synthetic photo fixture: family-handwritten is a bounded JPEG with a valid expected draft (0.501417ms)
+ℹ tests 144
+ℹ suites 0
+ℹ pass 144
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 735.885542

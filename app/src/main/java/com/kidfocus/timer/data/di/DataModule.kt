@@ -19,6 +19,9 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object DataModule {
     @Provides
+    fun provideScheduleLogger(api: com.kidfocus.timer.data.remote.ScheduleAiApi): com.kidfocus.timer.data.remote.ScheduleLogger = api
+
+    @Provides
     fun provideScheduleAdviser(api: com.kidfocus.timer.data.remote.ScheduleAiApi): com.kidfocus.timer.data.remote.ScheduleAdviser = api
 
     @Provides
@@ -45,6 +48,7 @@ object DataModule {
             SessionDatabase.MIGRATION_2_3,
             SessionDatabase.MIGRATION_3_4,
             SessionDatabase.MIGRATION_4_5,
+            SessionDatabase.MIGRATION_5_6,
         )
         .build()
 
@@ -67,6 +71,10 @@ object DataModule {
     @Singleton
     fun provideLearningAttemptDao(database: SessionDatabase): LearningAttemptDao =
         database.learningAttemptDao()
+
+    @Provides
+    @Singleton
+    fun provideDayLogDao(database: SessionDatabase) = database.dayLogDao()
 
     @Provides
     @Singleton

@@ -27,6 +27,7 @@ import com.kidfocus.timer.ui.screens.OnboardingScreen
 import com.kidfocus.timer.ui.screens.ParentSettingsScreen
 import com.kidfocus.timer.ui.screens.PinEntryScreen
 import com.kidfocus.timer.ui.screens.DailyScheduleScreen
+import com.kidfocus.timer.ui.screens.DayLogsScreen
 import com.kidfocus.timer.ui.screens.SmartScheduleScreen
 import com.kidfocus.timer.ui.screens.ScheduleScreen
 import com.kidfocus.timer.ui.screens.TaskEditScreen
@@ -80,6 +81,7 @@ fun AppNavigation(
     val scheduleViewModel: ScheduleViewModel = hiltViewModel()
     val alarmPermission: com.kidfocus.timer.ui.viewmodel.ScheduleAlarmPermissionViewModel = hiltViewModel()
     com.kidfocus.timer.ui.components.ScheduleAlarmPermissionLifecycle(alarmPermission)
+    val dayLogs: com.kidfocus.timer.ui.viewmodel.DayLogViewModel = hiltViewModel()
     val routineViewModel: RoutineViewModel = hiltViewModel()
     val cloudSyncViewModel: CloudSyncViewModel = hiltViewModel()
     val scheduleAccess: com.kidfocus.timer.ui.viewmodel.ScheduleAccessViewModel = hiltViewModel()
@@ -296,6 +298,10 @@ fun AppNavigation(
         composable(NavRoutes.DailySchedule.route) {
             DailyScheduleScreen(
                 viewModel = scheduleViewModel,
+                onActualAndComparison = { date ->
+                    dayLogs.selectDate(date)
+                    navController.navigate(parentGateRoute(settings?.hasPinSet == true, NavRoutes.DayLogs.route))
+                },
                 alarmPermission = alarmPermission,
                 quickEntryEnabled = scheduleConfig.scheduleEnabled,
                 onQuickEntry = { navController.navigate(parentGateRoute(settings?.hasPinSet == true, NavRoutes.QuickSchedule.route)) },
@@ -304,8 +310,7 @@ fun AppNavigation(
                     if (task.taskType == TaskType.LEARNING_GAMES) {
                         navController.navigate(NavRoutes.LearningHub.route)
                     } else {
-                        val seconds = task.focusDurationMinutes * 60
-                        timerViewModel.startFocus(seconds)
+                        timerViewModel.startFocusForTask(task)
                         navController.navigate(NavRoutes.Focus.route)
                     }
                 },
@@ -313,6 +318,20 @@ fun AppNavigation(
                     navController.navigate(NavRoutes.TaskEdit.buildRoute(0L, TaskType.CUSTOM.name, hour, minute))
                 },
             )
+        }
+
+        parentScheduleDestination(NavRoutes.DayLogs.route, navController, settingsViewModel) {
+            DayLogsScreen(dayLogs = dayLogs,
+                alarmPermission = alarmPermission, onBack = { navController.popBackStack() },
+                onCompare = { navController.navigate(NavRoutes.WeeklyComparison.route) },
+                onEditPlan = { navController.navigate(NavRoutes.Schedule.route) },
+                onStartTask = { task ->
+                    if (task.taskType == TaskType.LEARNING_GAMES) navController.navigate(NavRoutes.LearningHub.route)
+                    else { timerViewModel.startFocusForTask(task); navController.navigate(NavRoutes.Focus.route) }
+                })
+        }
+        parentScheduleDestination(NavRoutes.WeeklyComparison.route, navController, settingsViewModel) {
+            com.kidfocus.timer.ui.screens.WeeklyComparisonScreen(dayLogs, onBack = { navController.popBackStack() })
         }
 
         // ---- AI Chat -------------------------------------------------------------------------

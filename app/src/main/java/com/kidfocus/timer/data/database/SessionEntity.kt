@@ -29,6 +29,8 @@ data class SessionEntity(
 
     @ColumnInfo(name = "child_profile_id")
     val childProfileId: String = ChildProfileEntity.DEFAULT_ID,
+    @ColumnInfo(name = "scheduled_task_id")
+    val scheduledTaskId: Long? = null,
 ) {
     /** Duration expressed as whole minutes, rounded down. */
     val durationMinutes: Int get() = durationSeconds / 60

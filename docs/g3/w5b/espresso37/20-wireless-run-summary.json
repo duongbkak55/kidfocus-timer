@@ -1,0 +1,22 @@
+{
+  "finished_at_utc": "2026-09-29T13:48:18.065576+00:00",
+  "device": "Pixel 9",
+  "android": "17",
+  "api": 37,
+  "transport": "wireless TLS ADB",
+  "unlocked_before_each_device_stage": true,
+  "pairing_required": false,
+  "connection_lost": false,
+  "phone_pin_entered": false,
+  "test": "DayLogQuickEntryG3Test",
+  "result": "PASS",
+  "tests": 1,
+  "failures": 0,
+  "duration_seconds": 6.326,
+  "seven_screenshots_visually_checked": true,
+  "normal_app_relaunched": true,
+  "new_kidfocus_crash_records": 0,
+  "original_room_logs_remain_unchanged": true,
+  "no_real_provider_calls": true,
+  "endpoint_pairing_code_and_app_pin_recorded": false
+}

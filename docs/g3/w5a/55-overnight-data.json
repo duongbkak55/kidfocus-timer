@@ -1,0 +1,19 @@
+{
+  "entry": {
+    "id": "2552d0ef-4995-42ab-9000-2d484fa5ddfb",
+    "profile_id": "default",
+    "date": "2026-09-29",
+    "task_id": null,
+    "name": "G3 overnight",
+    "category": "OTHER",
+    "start_minute": 1435,
+    "end_minute": 15,
+    "source": "MANUAL",
+    "created_at": 1790661241593,
+    "updated_at": 1790661314927,
+    "deleted": 0
+  },
+  "end_is_next_day": true,
+  "duration_minutes": 20,
+  "task_plan_unchanged": true
+}

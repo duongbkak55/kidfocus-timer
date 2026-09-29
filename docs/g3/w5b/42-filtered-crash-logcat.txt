@@ -1,0 +1,4 @@
+No new KidFocus crash-buffer entries during this G3 attempt.
+Filter: crash buffer records for com.kidfocus / com.kidfocusstudio.timer.debug.
+The Espresso exception is captured in 23-wireless-instrumentation.txt; it is a test failure, not an observed app crash.
+Unrelated applications, wireless endpoints and credentials omitted.

@@ -1,0 +1,32 @@
+{
+  "entries": [
+    {
+      "id": "7e053d32-6966-4798-a5b6-d4e7a4ffe35d",
+      "profile_id": "default",
+      "date": "2026-09-29",
+      "task_id": 1790608111341615,
+      "name": "Homework",
+      "category": "STUDY",
+      "start_minute": 551,
+      "end_minute": null,
+      "source": "TIMER",
+      "created_at": 1790647888566,
+      "updated_at": 1790647888566,
+      "deleted": 0
+    }
+  ],
+  "tasks": [
+    {
+      "id": 1790608111341615,
+      "name": "Homework",
+      "focusDurationMinutes": 45,
+      "childProfileId": "default"
+    },
+    {
+      "id": 1790608779858144,
+      "name": "Reading",
+      "focusDurationMinutes": 30,
+      "childProfileId": "default"
+    }
+  ]
+}

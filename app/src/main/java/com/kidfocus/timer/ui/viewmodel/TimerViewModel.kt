@@ -9,7 +9,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kidfocus.timer.domain.model.TimerPhase
 import com.kidfocus.timer.domain.model.TimerState
-import com.kidfocus.timer.domain.usecase.RecordSessionUseCase
 import com.kidfocus.timer.data.repository.RoutineRepository
 import com.kidfocus.timer.service.RoutineAlarmScheduler
 import com.kidfocus.timer.service.RoutineNotificationManager
@@ -30,13 +29,12 @@ import javax.inject.Inject
 /**
  * ViewModel that bridges the UI with [TimerService] via a [ServiceConnection].
  *
- * Session recording is guarded by [lastRecordedTotalSeconds] to prevent double-recording
- * when the service emits a finished state and the composition re-enters.
+ * Completion feedback and linked routine ticks are guarded by [lastRecordedTotalSeconds].
+ * The service owns session and actual-log recording, including background completion.
  */
 @HiltViewModel
 class TimerViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val recordSessionUseCase: RecordSessionUseCase,
     private val routineRepository: RoutineRepository,
     private val routineScheduler: RoutineAlarmScheduler,
     private val routineNotifications: RoutineNotificationManager,
@@ -59,6 +57,7 @@ class TimerViewModel @Inject constructor(
 
     private var timerBinder: TimerService.TimerBinder? = null
     private var lastRecordedTotalSeconds: Int = -1
+    private var awaitingPhase: TimerPhase? = null
     private var isBound = false
     private var linkedRoutineId: Long? = null
     private var linkedOccurrenceDate: LocalDate? = null
@@ -85,16 +84,14 @@ class TimerViewModel @Inject constructor(
     // ---- Internal helpers ----------------------------------------------------------------------
 
     private fun onTimerStateUpdated(state: TimerState) {
+        if (awaitingPhase != null && state.isFinished) return
+        if (awaitingPhase == state.phase && state.remainingSeconds > 0) awaitingPhase = null
         _timerState.update { state }
 
-        // Guard: only record when the timer has naturally finished (not manually stopped)
+        // Emit completion feedback only once after a natural finish (not a manual stop).
         if (state.isFinished && state.totalSeconds != lastRecordedTotalSeconds) {
             lastRecordedTotalSeconds = state.totalSeconds
             viewModelScope.launch {
-                recordSessionUseCase(
-                    durationSeconds = state.totalSeconds,
-                    isFocus = state.phase.isFocus,
-                )
                 if (state.phase.isFocus) {
                     _completedSessionMinutes.update { state.totalSeconds / 60 }
                     completeLinkedRoutineIfNeeded()
@@ -135,18 +132,29 @@ class TimerViewModel @Inject constructor(
         startFocusInternal(totalSeconds)
     }
 
-    private fun startFocusInternal(totalSeconds: Int) {
+    fun startFocusForTask(task: com.kidfocus.timer.domain.model.ScheduledTask) {
+        linkedRoutineId = null
+        linkedOccurrenceDate = null
+        startFocusInternal(task.focusDurationMinutes * 60, task.id)
+    }
+
+    private fun startFocusInternal(totalSeconds: Int, taskId: Long? = null) {
         lastRecordedTotalSeconds = -1
+        awaitingPhase = TimerPhase.Focus
+        _completedSessionMinutes.value = 0
         ensureServiceStarted()
-        timerBinder?.startFocus(totalSeconds) ?: startServiceWithAction(
+        timerBinder?.startFocus(totalSeconds, taskId) ?: startServiceWithAction(
             action = TimerService.ACTION_START_FOCUS,
             totalSeconds = totalSeconds,
+            taskId = taskId,
         )
     }
 
     /** Starts a break countdown of [totalSeconds] seconds. */
     fun startBreak(totalSeconds: Int) {
         lastRecordedTotalSeconds = -1
+        awaitingPhase = TimerPhase.Break
+        _completedSessionMinutes.value = 0
         ensureServiceStarted()
         timerBinder?.startBreak(totalSeconds) ?: startServiceWithAction(
             action = TimerService.ACTION_START_BREAK,
@@ -166,6 +174,7 @@ class TimerViewModel @Inject constructor(
 
     /** Stops the timer and resets to idle. */
     fun stop() {
+        awaitingPhase = null
         timerBinder?.stop() ?: sendServiceAction(TimerService.ACTION_STOP)
         _timerState.update { TimerState.IDLE }
     }
@@ -182,10 +191,11 @@ class TimerViewModel @Inject constructor(
         context.startForegroundService(intent)
     }
 
-    private fun startServiceWithAction(action: String, totalSeconds: Int) {
+    private fun startServiceWithAction(action: String, totalSeconds: Int, taskId: Long? = null) {
         val intent = Intent(context, TimerService::class.java).apply {
             this.action = action
             putExtra(TimerService.EXTRA_TOTAL_SECONDS, totalSeconds)
+            taskId?.let { putExtra(TimerService.EXTRA_TASK_ID, it) }
         }
         context.startForegroundService(intent)
     }
