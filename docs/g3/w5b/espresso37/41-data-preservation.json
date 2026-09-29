@@ -1,0 +1,10 @@
+{
+  "room_version": 6,
+  "six_existing_tables_unchanged": true,
+  "existing_daylogs_preserved": true,
+  "new_log_count": 2,
+  "alive_logs_before": 3,
+  "alive_logs_after": 3,
+  "new_ai_logs": 2,
+  "new_ai_tombstones": 2
+}

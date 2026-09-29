@@ -132,6 +132,22 @@ ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
 }
 
+// Compose also brings Espresso transitively. Pin only instrumentation configurations;
+// application and host unit-test dependencies keep their existing resolution.
+configurations.configureEach {
+    if (name.contains("AndroidTest")) {
+        resolutionStrategy.force(
+            "androidx.test.espresso:espresso-core:${libs.versions.espressoCore.get()}",
+            "androidx.test.espresso:espresso-idling-resource:${libs.versions.espressoCore.get()}",
+            "androidx.test:core:${libs.versions.androidxTest.get()}",
+            "androidx.test:core-ktx:${libs.versions.androidxTest.get()}",
+            "androidx.test:runner:${libs.versions.androidxTest.get()}",
+            "androidx.test:rules:${libs.versions.androidxTest.get()}",
+            "androidx.test.ext:junit:${libs.versions.junitVersion.get()}",
+        )
+    }
+}
+
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation("androidx.exifinterface:exifinterface:1.3.7")
@@ -193,6 +209,9 @@ dependencies {
     testImplementation("androidx.navigation:navigation-testing:${libs.versions.navigationCompose.get()}")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.test.core)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.rules)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     androidTestImplementation(libs.androidx.room.testing)

@@ -1,0 +1,26 @@
+{
+  "app_source_commit": "0d7310a",
+  "test_change": "androidTest-only Espresso 3.7.0 upgrade",
+  "wireless": true,
+  "device_unlocked_before_install": true,
+  "pairing_required": false,
+  "artifacts": [
+    {
+      "kind": "app",
+      "sha256": "a2c00a729c4b2772350e50480de01d06b528e8c69bc71ffaa119e70b2279d11b",
+      "install_replace": true,
+      "result": "Success"
+    },
+    {
+      "kind": "androidTest",
+      "sha256": "5a10f84792d53fc0c0503e139ffb11834512ed6e28530c7a45062408bd5232b0",
+      "install_replace": true,
+      "result": "Success"
+    }
+  ],
+  "room_version": 6,
+  "all_six_tables_and_daylogs_unchanged": true,
+  "alive_logs": 3,
+  "no_permissions_granted": true,
+  "provider_configuration": "blank Firebase and RevenueCat configuration, no production or real OpenRouter"
+}
