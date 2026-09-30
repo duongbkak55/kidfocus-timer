@@ -10,12 +10,13 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 import javax.inject.Inject
 
 enum class LogError { NETWORK, QUOTA, SIGN_IN, DISABLED, PROFILE_CHANGED, STALE, STORAGE }
 data class QuickDayLogState(val text: String = "", val busy: Boolean = false, val preview: DayLogPreview? = null,
-    val selected: Set<Int> = emptySet(), val request: DayLogRequest? = null, val profileId: String? = null,
+    val selected: Set<Int> = emptySet(), val future: Set<Int> = emptySet(), val request: DayLogRequest? = null, val profileId: String? = null,
     val error: LogError? = null, val usage: AiUsage? = null, val undoBatch: List<DayLogEntry> = emptyList(),
     val saved: Boolean = false, val restored: Boolean = false, val ownerId: String? = null)
 @HiltViewModel
@@ -30,7 +31,7 @@ class QuickDayLogViewModel @Inject constructor(private val logger: ScheduleLogge
         contextKey = key; revision++
         _state.value = QuickDayLogState(ownerId = ownerId) // Discard previews/undo for another child, date or account.
     }
-    fun editText(text: String) { if (!_state.value.busy) { revision++; _state.value = _state.value.copy(text = text.take(2000), preview = null, selected = emptySet(), request = null, error = null, saved = false, restored = false) } }
+    fun editText(text: String) { if (!_state.value.busy) { revision++; _state.value = _state.value.copy(text = text.take(2000), preview = null, selected = emptySet(), future = emptySet(), request = null, error = null, saved = false, restored = false) } }
     fun select(index: Int, selected: Boolean) {
         val s = state.value; if (s.busy || s.preview?.entries?.getOrNull(index) == null) return
         _state.value = s.copy(selected = if (selected) s.selected + index else s.selected - index)
@@ -40,13 +41,16 @@ class QuickDayLogViewModel @Inject constructor(private val logger: ScheduleLogge
         if (s.busy || s.text.isBlank()) return
         val request = DayLogDraft.request(s.text, date, data.tasks, data.anchors, data.ageBand, UUID.randomUUID().toString())
         val captured = revision
-        _state.value = s.copy(busy = true, error = null, preview = null, selected = emptySet(), saved = false, restored = false)
+        _state.value = s.copy(busy = true, error = null, preview = null, selected = emptySet(), future = emptySet(), saved = false, restored = false)
         viewModelScope.launch {
             try {
                 if (logs.activeProfileId() != profile) return@launch
                 val reply = logger.log(request)
                 if (captured != revision || logs.activeProfileId() != profile) return@launch
-                _state.value = _state.value.copy(preview = reply.preview, selected = reply.preview.entries.mapIndexedNotNull { i, e -> i.takeIf { e.selectedByDefault } }.toSet(),
+                val now = LocalDateTime.now()
+                val future = reply.preview.entries.mapIndexedNotNull { i, e -> i.takeIf { e.isFutureAt(now) } }.toSet()
+                _state.value = _state.value.copy(preview = reply.preview, future = future,
+                    selected = reply.preview.entries.mapIndexedNotNull { i, e -> i.takeIf { e.selectedByDefault && i !in future } }.toSet(),
                     request = request, profileId = profile, usage = reply.usage)
             } catch (_: TimeoutCancellationException) { if (captured == revision) _state.value = _state.value.copy(error = LogError.NETWORK) }
             catch (e: CancellationException) { throw e }

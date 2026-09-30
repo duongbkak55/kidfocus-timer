@@ -2,7 +2,7 @@
 
 Ngày: 2026-09-29. Dev: Codex. Duong duyệt thực hiện ba bước theo thứ tự, dừng nếu bước thất bại.
 
-**Trạng thái mới nhất 2026-10-01:** F-EVAL-3 đã đo hai lượt trên từng bộ và chi phí USD OpenRouter thật. PARSE text và LOG của Gemini 2.5 Flash đạt gate theo lượt thấp hơn; ADVISE và ảnh chưa đạt. Không merge/deploy/publish. Xem kết quả mới ở cuối mục 2; các số liệu trước đó là lịch sử chẩn đoán.
+**Trạng thái mới nhất 2026-10-01:** F-EVAL-4 đạt gate beta theo lượt thấp hơn của hai lần chạy: PARSE text 100%, LOG 91,4%, ADVISE sau retry 100% trên Gemini 2.5 Flash. Ảnh đã tắt trong template và mặc định server; chưa publish. Chi tiết mới ở cuối mục 2; các số liệu trước đó là lịch sử chẩn đoán. Chưa push/merge/deploy, chờ Claude review.
 
 ## 1. Merge, kiểm và push — PASS
 
@@ -15,9 +15,9 @@ Dùng worktree `KidFocusTimer-main-integration`, không checkout/reset/stash wor
 
 [Số liệu kiểm](release/smart-schedule-w5/01-main-merge-checks.json), [workflow](release/smart-schedule-w5/02-workflow-result.json), [artifacts](release/smart-schedule-w5/02-workflow-artifacts.json).
 
-## 2. Remote Config và live eval — DỪNG: provider chưa nhận request lịch
+## 2. Remote Config và live eval — lịch sử chẩn đoán và gate beta
 
-Template cục bộ: `ai_schedule_free_daily_parses=3` (đã là 3), thêm `ai_schedule_log_cost=1`. Chưa publish. Models text/image/ADVISE/LOG giữ **google/gemini-2.5-flash-lite**, đúng template sẽ triển khai. Key lấy từ biến môi trường có sẵn do Duong cấp, chỉ truyền cho process eval, không ghi vào repo/log/report.
+Trạng thái ban đầu trước F-EVAL-1–4: template cục bộ có `ai_schedule_free_daily_parses=3` và `ai_schedule_log_cost=1`; các model còn là **google/gemini-2.5-flash-lite**. Các giá trị model beta hiện tại đã đổi ở F-EVAL-4 bên dưới. Key chỉ truyền cho process eval, không ghi vào repo/log/report.
 
 Eval gọi model thật bằng prompt/providerBody/validator đã merge. Bộ text/image/ADVISE chạy qua `eval:schedule`; bộ LOG dùng 35 input/annotation hiện có và cùng `schedule-log`/offline comparison helper, thay provider fixture bằng response thật. Bộ đo/observer nằm ngoài repo. Bằng chứng chỉ có điểm, ID câu và mã lỗi đối chiếu; không lưu response thô/ảnh thật/key.
 
@@ -173,9 +173,31 @@ Các ca còn sai ở **lượt thấp hơn cuối**:
 
 **Gate release chưa đạt** do ADVISE và cả hai model ảnh. Theo quyết định Vòng 3, nếu beta ra trước thì cần tắt nhập ảnh bằng cờ Remote Config; chưa đổi/publish cờ ở task này. ADVISE vẫn cần Claude review trước quyết định beta; chưa chọn model ảnh production, chưa merge/deploy. Kiểm tra F-EVAL-3: Functions Node 22.23.3 **166/166 test PASS**, ESLint PASS; Android JDK 17 `testDebugUnitTest assembleDebug lintDebug` PASS; `git diff --check` PASS. Working tree gốc vẫn có cùng diff SHA-256 `667b37fae661a56e01d326cdaa98c9494e0535303ef36c9222e82cabb1c04725`.
 
-## 3. Triển khai và smoke — KHÔNG THỰC HIỆN do bước 2 thất bại
+### F-EVAL-4: quyết định beta Vòng 4 (2026-10-01)
 
-Chưa kiểm SHA-256 App Check/chưa deploy Functions/chưa publish Remote Config/chưa smoke PARSE hoặc LOG. CLI login inventory có một tài khoản đã đăng nhập; chưa kiểm quyền project/deploy. Không thay đổi cloud resources.
+Server ADVISE giữ **một lần giữ quota** cho cả yêu cầu. Chỉ khi `validateAdvice` từ chối output mới gọi model thêm đúng một lần; nếu lần thứ hai vẫn sai thì hoàn reservation như trước. HTTP/network failure không retry. Mỗi lần validator từ chối chỉ log mã check tĩnh (ví dụ `AI_ADVISE_VALIDATION_REASON`), không log prompt, response hay dữ liệu trẻ. Unit test chứng minh retry thành công chỉ tính một credit, hai output sai được hoàn credit, lỗi provider chỉ gọi một lần, và log JSON sai không chứa nội dung.
+
+Golden `log-vi-31` đổi WAKE 05:45 thành **2026-09-30** (`date+1`): câu “Ngủ 10 rưỡi tối và dậy 6 giờ kém 15” kể trình tự ngủ tối 29/9 rồi thức sáng hôm sau; cùng ngày sẽ đặt thức dậy *trước* lúc ngủ. Prompt LOG được đồng bộ với cách hiểu đó. Preview “Ghi nhanh” bỏ chọn sẵn mục AI có giờ bắt đầu sau thời điểm hiện tại và gắn nhãn **“Chưa tới giờ — chỉ chọn khi đã kiểm tra”** (en: “Not yet time — select only after checking”); phụ huynh vẫn có thể tự chọn. Test bao phủ ngày và giờ bắt đầu, cùng trạng thái chọn mặc định.
+
+Template Remote Config đặt `ai_schedule_image_tiers=none`, `ai_schedule_model=google/gemini-2.5-flash`, `ai_schedule_advise_model=google/gemini-2.5-flash`; vision model giữ nguyên vì ảnh tắt trong beta. Default Functions cho text/ADVISE cũng là Flash và image tiers rỗng để fail closed nếu chưa tải được Remote Config. Test `none`/rỗng chặn guest, free, early và premium **trước quota/provider**. Chưa publish template.
+
+Eval live gọi OpenRouter bằng model **google/gemini-2.5-flash**, `data_collection: deny`, strict JSON schema, `usage: {include: true}` để đo USD thật; không dùng model `:free`. Harness ADVISE dùng đúng chính sách retry production và ghi số response, tên check lỗi, diff expected/actual. Mỗi bộ chạy hai lượt trên cùng fixture, gate lấy lượt thấp hơn; không chạy lại ảnh vì đã tắt cho beta. Key chỉ được đọc từ môi trường riêng của tiến trình eval và không ghi vào repo, output hay báo cáo.
+
+| Bộ | Lượt 1 | Lượt 2 | Gate thấp hơn | USD/response lượt 1 | USD/response lượt 2 | Gate ≥90% |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| Text | 26/26 (100%) | 26/26 (100%) | 100% | $0.00055800 | $0.00056358 | Đạt |
+| LOG | 32/35 (91,4%) | 32/35 (91,4%) | 91,4% | $0.00071974 | $0.00062272 | Đạt |
+| ADVISE sau retry | 12/12 (100%), 14 response | 12/12 (100%), 12 response | 100% | $0.00085606 | $0.00072203 | Đạt |
+
+Chi phí ADVISE **theo yêu cầu logic, tính cả retry** là $0.00099874 ở lượt 1 và $0.00072203 ở lượt 2; lượt 1 retry `sleep-grade1` và `note-injection` do check `REASON`, đều có output hợp lệ ở lần hai. Token vào/ra trung bình mỗi response: text 722,5/136,5 và 722,5/138,7; LOG 1574,9/106,2 và 1574,9/106,3; ADVISE 1271,2/199,7 và 1269,8/197,1. Đây là số liệu OpenRouter trả cho các response thực tế, không phải giá ước tính.
+
+Ba ca LOG sai ở **cả hai lượt**, vẫn giữ fixture/grader: `log-vi-15` thiếu `end=00:10` cho khoảng 23:50–00:10 và hỏi dư; `log-vi-24` thiếu câu hỏi xác nhận cho diễn đạt “chắc/có thể”; `log-en-02` hiểu giờ bắt đầu 7pm thành 07:00 thay vì 19:00. `log-vi-31` đã PASS ở cả hai lượt. [Output và diff từng ca synthetic F-EVAL-4](release/provider-schema-round4/) ghi cả các lần chạy, không chứa ảnh/dữ liệu trẻ thật hay key.
+
+Kiểm tra trước commit: Functions Node **22.23.3** 169/169 test PASS, ESLint PASS; Android JDK 17 `testDebugUnitTest assembleDebug lintDebug` PASS; `git diff --check` PASS. Eval CLI cục bộ dùng Node 25.8.1; code Functions được kiểm lại trên runtime Node 22. Working tree gốc giữ nguyên 19 file tracked dở, SHA-256 diff `667b37fae661a56e01d326cdaa98c9494e0535303ef36c9222e82cabb1c04725`. Không sửa `.omc`, không push/merge/deploy/publish; chờ Claude review F-EVAL-4.
+
+## 3. Triển khai và smoke — chưa thực hiện, chờ Claude review F-EVAL-4
+
+Chưa kiểm SHA-256 App Check/chưa deploy Functions/chưa publish Remote Config/chưa smoke PARSE, LOG hoặc ADVISE. Gate eval beta đã đạt ở F-EVAL-4, nhưng theo yêu cầu hiện tại phải chờ Claude review trước các bước này. CLI login inventory trước đây có một tài khoản đã đăng nhập; chưa kiểm quyền project/deploy. Không thay đổi cloud resources.
 
 Nếu được giao tiếp sau khi eval đạt: kiểm App Check SHA-256 đúng bản ký, giữ enforcement; deploy riêng aiSchedule/getAiConfig/claimEarlyAccess tại asia-southeast1; backup/merge/publish Remote Config giữ các key/conditions khác; smoke 1 PARSE + 1 LOG bằng tài khoản test, không mua. Firebase CLI chưa đăng nhập/thiếu quyền thì dừng hỏi Duong.
 

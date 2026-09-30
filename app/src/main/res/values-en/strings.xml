@@ -619,6 +619,7 @@
     <string name="log_incidental">Extra activity · keeps the plan</string>
     <string name="log_matched">Matched plan: %1$s</string>
     <string name="log_low_confidence">Uncertain — select only after checking</string>
+    <string name="log_not_yet">Not yet time — select only after checking</string>
     <string name="log_save">Save AI actual records</string>
     <string name="log_saved">Actual records saved. You can undo this batch.</string>
     <string name="log_restored">The last batch was undone.</string>

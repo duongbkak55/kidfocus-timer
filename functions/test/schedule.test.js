@@ -235,9 +235,25 @@ test("free tier cannot send photos before quota or provider; enabled tier is con
   const disabled = harness(undefined, {scheduleImageTiers: []}, {premium: true});
   await assert.rejects(disabled.handler(imageRequest()), {message: "IMAGE_TIER_REQUIRED"});
 });
+test("none and empty image tiers deny photos to every tier before quota or provider", async () => {
+  for (const setting of ["none", "", "unknown"]) {
+    const tiers = gateway.parseScheduleImageTiers(setting, ["early", "premium"]);
+    assert.deepEqual(tiers, []);
+    for (const entitlement of [{}, {earlyAccessUntil: 200}, {premium: true}]) {
+      const h = harness(undefined, {scheduleImageTiers: tiers}, entitlement);
+      await assert.rejects(h.handler(imageRequest()), {message: "IMAGE_TIER_REQUIRED"});
+      assert.equal(h.calls(), 0); assert.equal(h.db.writes, 0);
+    }
+    const guest = harness(undefined, {scheduleImageTiers: tiers, scheduleGuestEnabled: true});
+    await assert.rejects(guest.handler({...imageRequest(), auth: null}), {message: "IMAGE_TIER_REQUIRED"});
+    assert.equal(guest.calls(), 0); assert.equal(guest.db.writes, 0);
+  }
+  assert.deepEqual(gateway.DEFAULT_CONFIG.scheduleImageTiers, []);
+});
 test("early and premium photos use vision model, multimodal prompt and image credits", async () => {
   for (const entitlement of [{earlyAccessUntil: 200}, {premium: true}]) {
-    const h = harness(JSON.stringify(imageFixtures.cases[0].expected), {scheduleVisionModel: "mock/vision", scheduleImageCost: 4}, entitlement);
+    const h = harness(JSON.stringify(imageFixtures.cases[0].expected), {scheduleVisionModel: "mock/vision", scheduleImageCost: 4,
+      scheduleImageTiers: ["early", "premium"]}, entitlement);
     const reply = await h.handler(imageRequest());
     const body = h.bodies[0];
     assert.equal(body.model, "mock/vision"); assert.equal(body.max_tokens, 2000);
@@ -257,7 +273,7 @@ test("early and premium photos use vision model, multimodal prompt and image cre
 });
 test("image failures refund cost and PARSE count idempotently, logging codes only", async () => {
   for (const payload of [null, new Error("private image contents"), "invalid JSON"]) {
-    const h = harness(payload, {scheduleImageCost: 3}, {earlyAccessUntil: 200});
+    const h = harness(payload, {scheduleImageCost: 3, scheduleImageTiers: ["early"]}, {earlyAccessUntil: 200});
     await assert.rejects(h.handler(imageRequest()), {message: "AI_PARSE_FAILED"});
     assert.equal(h.db.usage("uid_parent").credits, 0); assert.equal(h.db.usage("_global").credits, 0);
     assert.equal(h.db.usage("uid_parent").scheduleParses, 0);
@@ -299,11 +315,17 @@ test("free PARSE cap defaults unlimited, exempts early/premium, resets on a new 
 test("getAiConfig advertises image policy and code fallback preserves W2 free behavior", () => {
   assert.equal(gateway.DEFAULT_CONFIG.scheduleFreeDailyParses, 0);
   const publicConfig = gateway.publicConfig(gateway.DEFAULT_CONFIG, {});
-  assert.deepEqual(publicConfig.ai_schedule_image_tiers, ["early", "premium"]);
+  assert.deepEqual(publicConfig.ai_schedule_image_tiers, []);
   assert.equal(publicConfig.ai_schedule_image_cost, 3);
   assert.equal(publicConfig.ai_schedule_free_daily_parses, 0);
   const template = require("../../remoteconfig.template.json");
   assert.equal(template.parameters.ai_schedule_free_daily_parses.defaultValue.value, "3");
+  assert.equal(template.parameters.ai_schedule_image_tiers.defaultValue.value, "none");
+  for (const key of ["model", "advise_model"]) {
+    assert.equal(template.parameters["ai_schedule_" + key].defaultValue.value, "google/gemini-2.5-flash");
+  }
+  assert.equal(gateway.DEFAULT_CONFIG.scheduleModel, "google/gemini-2.5-flash");
+  assert.equal(gateway.DEFAULT_CONFIG.scheduleAdviseModel, "google/gemini-2.5-flash");
   for (const key of ["vision_model", "image_cost", "image_tiers", "free_daily_parses"]) assert.ok(template.parameters["ai_schedule_" + key]);
 });
 for (const fixture of imageFixtures.cases) {

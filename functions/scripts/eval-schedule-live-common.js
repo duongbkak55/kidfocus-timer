@@ -24,6 +24,7 @@ function usageMeter() {
       console.log(`${label} tokens per response with usage: in ${(input / Math.max(1, calls)).toFixed(1)}, out ${(output / Math.max(1, calls)).toFixed(1)} (${calls} responses)`);
       console.log(`${label} actual OpenRouter cost USD per response: ${costCalls ? `$${(costUsd / costCalls).toFixed(8)}` : "unavailable"} (${costCalls} responses)`);
     },
+    totals() { return {responses: calls, costResponses: costCalls, costUsd}; },
   };
 }
 function gradeParseCase(kind, expectedFields, actualFields, expectedHasQuestions, actualHasQuestions, valid) {

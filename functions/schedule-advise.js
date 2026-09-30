@@ -40,14 +40,18 @@ const ADVICE_SCHEMA = {type: "object", additionalProperties: false, required: ["
     variant("REMOVE", {taskRef: string(8)}), variant("SET_BED", {start: timeSchema}), variant("SET_WAKE", {start: timeSchema}),
   ]}},
 }};
-function check(condition) { if (!condition) throw new Error("AI_ADVISE_FAILED"); }
+function check(condition, checkName = "SCHEMA") {
+  if (!condition) {
+    const error = new Error("AI_ADVISE_FAILED"); error.checkName = checkName; throw error;
+  }
+}
 function object(v) { return v !== null && typeof v === "object" && !Array.isArray(v); }
-function shape(v, keys) { check(object(v) && Object.keys(v).length === keys.length && keys.every((k) => Object.hasOwn(v, k))); }
-function text(v, max, min = 0) { check(typeof v === "string" && v.length <= max && v.trim().length >= min); return v.trim(); }
-function time(v) { check(typeof v === "string" && TIME.test(v)); return v; }
-function days(v) { check(Array.isArray(v) && v.length > 0 && v.length <= 7 && new Set(v).size === v.length && v.every((d) => DAYS.includes(d))); return DAYS.filter((d) => v.includes(d)); }
+function shape(v, keys, checkName = "SHAPE") { check(object(v) && Object.keys(v).length === keys.length && keys.every((k) => Object.hasOwn(v, k)), checkName); }
+function text(v, max, min = 0, checkName = "TEXT") { check(typeof v === "string" && v.length <= max && v.trim().length >= min, checkName); return v.trim(); }
+function time(v, checkName = "TIME") { check(typeof v === "string" && TIME.test(v), checkName); return v; }
+function days(v, checkName = "DAYS") { check(Array.isArray(v) && v.length > 0 && v.length <= 7 && new Set(v).size === v.length && v.every((d) => DAYS.includes(d)), checkName); return DAYS.filter((d) => v.includes(d)); }
 function times(v) { check(object(v) && Object.keys(v).every((d) => DAYS.includes(d))); return Object.fromEntries(Object.entries(v).map(([d, t]) => [d, time(t)])); }
-function tags(v) { check(Array.isArray(v) && v.length <= TAGS.length && new Set(v).size === v.length && v.every((t) => TAGS.includes(t))); return v; }
+function tags(v, checkName = "TAGS") { check(Array.isArray(v) && v.length <= TAGS.length && new Set(v).size === v.length && v.every((t) => TAGS.includes(t)), checkName); return v; }
 function validateInput(raw) {
   if (object(raw)) raw = {note: "", noteTags: [], routineStats: [], actualStats: {recordedDays: 0, bedLateDays: 0, tasks: []}, ...raw};
   shape(raw, ["mode", "requestId", "ageBand", "today", "locale", "tasks", "anchors", "findings", "routineStats", "note", "noteTags", "actualStats"]);
@@ -107,34 +111,36 @@ function touchesSchool(selectedDays, start, duration, school) {
   })));
 }
 function validateAdvice(raw, input) {
-  const v = typeof raw === "string" ? JSON.parse(raw) : raw; shape(v, ["summary", "proposals", "tags"]);
-  check(Array.isArray(v.proposals) && v.proposals.length <= 10);
+  let v;
+  try { v = typeof raw === "string" ? JSON.parse(raw) : raw; } catch { check(false, "JSON"); }
+  shape(v, ["summary", "proposals", "tags"], "ROOT_SHAPE");
+  check(Array.isArray(v.proposals) && v.proposals.length <= 10, "PROPOSAL_COUNT");
   const proposals = v.proposals.map((p) => {
-    check(object(p) && OPS.includes(p.op));
+    check(object(p) && OPS.includes(p.op), "OP");
     const taskOp = ["MOVE", "RESIZE", "REMOVE"].includes(p.op);
-    shape(p, ["op", "days", "reason", "fixes", ...(taskOp ? ["taskRef"] : []), ...(["MOVE", "SET_BED", "SET_WAKE"].includes(p.op) ? ["start"] : []), ...(p.op === "RESIZE" ? ["durationMin"] : [])]);
-    const selected = days(p.days); const reason = text(p.reason, 200, 1);
-    check(Array.isArray(p.fixes) && p.fixes.length <= 8 && new Set(p.fixes).size === p.fixes.length && p.fixes.every((r) => input.findings.some((f) => f.ruleId === r)));
+    shape(p, ["op", "days", "reason", "fixes", ...(taskOp ? ["taskRef"] : []), ...(["MOVE", "SET_BED", "SET_WAKE"].includes(p.op) ? ["start"] : []), ...(p.op === "RESIZE" ? ["durationMin"] : [])], "PROPOSAL_SHAPE");
+    const selected = days(p.days, "PROPOSAL_DAYS"); const reason = text(p.reason, 200, 1, "REASON");
+    check(Array.isArray(p.fixes) && p.fixes.length <= 8 && new Set(p.fixes).size === p.fixes.length && p.fixes.every((r) => input.findings.some((f) => f.ruleId === r)), "FIXES");
     if (taskOp) {
-      const task = input.tasks.find((t) => t.ref === p.taskRef); check(task && selected.every((d) => task.days.includes(d)));
-      if (p.op === "REMOVE") check(!STUDY_TYPES.has(task.taskType));
+      const task = input.tasks.find((t) => t.ref === p.taskRef); check(task && selected.every((d) => task.days.includes(d)), "TASK_REF_DAYS");
+      if (p.op === "REMOVE") check(!STUDY_TYPES.has(task.taskType), "REMOVE_STUDY");
       else {
-        const start = p.op === "MOVE" ? time(p.start) : task.start;
-        if (p.op === "RESIZE") check(Number.isInteger(p.durationMin) && p.durationMin >= 1 && p.durationMin <= 120);
+        const start = p.op === "MOVE" ? time(p.start, "START_TIME") : task.start;
+        if (p.op === "RESIZE") check(Number.isInteger(p.durationMin) && p.durationMin >= 1 && p.durationMin <= 120, "DURATION");
         const duration = p.op === "RESIZE" ? p.durationMin : task.durationMin;
-        check(!touchesSchool(selected, start, duration, input.anchors.school));
+        check(!touchesSchool(selected, start, duration, input.anchors.school), "SCHOOL_OVERLAP");
       }
     } else {
-      time(p.start);
+      time(p.start, "START_TIME");
       // A MON bedtime after midnight belongs to Monday night, i.e. Tuesday's clock.
       const clockDays = p.op === "SET_BED" ? selected.map((d) => minutes(p.start) < (input.anchors.wake[d] ? minutes(input.anchors.wake[d]) : 720) ? DAYS[(DAYS.indexOf(d) + 1) % 7] : d) : selected;
-      check(!touchesSchool(clockDays, p.start, 1, input.anchors.school));
+      check(!touchesSchool(clockDays, p.start, 1, input.anchors.school), "SCHOOL_OVERLAP");
       const map = p.op === "SET_BED" ? input.anchors.bed : input.anchors.wake;
-      check(selected.every((d) => map[d] !== undefined));
+      check(selected.every((d) => map[d] !== undefined), "ANCHOR_DAYS");
     }
     return {...p, days: selected, reason};
   });
-  return {summary: text(v.summary, 600), proposals, tags: tags(v.tags)};
+  return {summary: text(v.summary, 600, 0, "SUMMARY"), proposals, tags: tags(v.tags, "TAGS")};
 }
 function providerBody(input, model) {
   const context = {...input}; delete context.requestId;

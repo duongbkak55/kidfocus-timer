@@ -75,6 +75,7 @@ fun QuickDayLogPanel(viewModel: QuickDayLogViewModel, data: DayLogData, date: Lo
                                 Text("${e.date} · ${e.name}")
                                 Text(logTime(e.startMinute) + (e.endMinute?.let { end -> " – " + logTime(end) + (if (end < e.startMinute) " (+1)" else "") } ?: ""))
                                 Text(if (plan == null) stringResource(R.string.log_incidental) else stringResource(R.string.log_matched, planName(plan)), style = MaterialTheme.typography.bodySmall)
+                                if (index in state.future) Text(stringResource(R.string.log_not_yet), color = MaterialTheme.colorScheme.error)
                                 if (!e.selectedByDefault) Text(stringResource(R.string.log_low_confidence), color = MaterialTheme.colorScheme.error)
                             }
                         }

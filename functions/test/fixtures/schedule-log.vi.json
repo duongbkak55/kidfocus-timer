@@ -3080,7 +3080,7 @@
             "confidence": 0.95
           },
           {
-            "date": "2026-09-29",
+            "date": "2026-09-30",
             "planRef": null,
             "name": "Giờ thức",
             "category": "WAKE",
@@ -3101,7 +3101,7 @@
             "end": null
           },
           {
-            "date": "2026-09-29",
+            "date": "2026-09-30",
             "planRef": null,
             "category": "WAKE",
             "start": "05:45",

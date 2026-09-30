@@ -141,7 +141,7 @@ function createScheduleHandler(deps) {
     try { input = request.data?.mode === "ADVISE" ? advise.validateInput(request.data) : request.data?.mode === "LOG" ? log.validateInput(request.data) : validateInput(request.data); } catch { throw deps.error("invalid-argument", "INVALID_SCHEDULE_INPUT"); }
     // Freeze the reservation day so a parse crossing midnight refunds the same ledger.
     const identity = {...await deps.resolveIdentity(request), quotaDate: deps.quotaDay()};
-    if (input.image && !(config.scheduleImageTiers || ["early", "premium"]).includes(identity.tier || (identity.premium ? "premium" : identity.signedIn ? "free" : "guest"))) {
+    if (input.image && !(config.scheduleImageTiers || []).includes(identity.tier || (identity.premium ? "premium" : identity.signedIn ? "free" : "guest"))) {
       throw deps.error("permission-denied", "IMAGE_TIER_REQUIRED");
     }
     const isAdvice = input.mode === "ADVISE";
@@ -150,15 +150,25 @@ function createScheduleHandler(deps) {
       creditCost: isAdvice ? config.scheduleAdviseCost ?? 2 : isLog ? config.scheduleLogCost ?? 1 : input.image ? config.scheduleImageCost ?? 3 : config.scheduleParseCost, dailyLimit: 1000, scheduleParse: !isAdvice};
     await deps.reserveQuota(identity, config, model, input.requestId);
     try {
-      const response = await deps.fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST", headers: {"Authorization": `Bearer ${deps.key()}`, "Content-Type": "application/json",
-          "HTTP-Referer": "https://kidfocus.app", "X-Title": "KidFocus Timer"},
-        body: JSON.stringify((isAdvice ? advise.providerBody : isLog ? log.providerBody : providerBody)(input, model.id)), signal: AbortSignal.timeout(25_000),
-      });
-      if (!response.ok) throw new Error("AI_PARSE_FAILED");
-      const payload = await response.json();
-      const content = payload.choices?.[0]?.message?.content;
-      const result = isAdvice ? {advice: advise.validateAdvice(content, input)} : isLog ? {log: log.validateLog(content, input)} : {draft: validateDraft(content)};
+      let result;
+      for (let attempt = 0; attempt < (isAdvice ? 2 : 1); attempt++) {
+        const response = await deps.fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST", headers: {"Authorization": `Bearer ${deps.key()}`, "Content-Type": "application/json",
+            "HTTP-Referer": "https://kidfocus.app", "X-Title": "KidFocus Timer"},
+          body: JSON.stringify((isAdvice ? advise.providerBody : isLog ? log.providerBody : providerBody)(input, model.id)), signal: AbortSignal.timeout(25_000),
+        });
+        if (!response.ok) throw new Error("AI_PARSE_FAILED");
+        const payload = await response.json();
+        const content = payload.choices?.[0]?.message?.content;
+        if (isAdvice) {
+          try { result = {advice: advise.validateAdvice(content, input)}; break; } catch (error) {
+            if (error?.message !== "AI_ADVISE_FAILED" || !/^[A-Z_]+$/.test(error?.checkName)) throw error;
+            const name = error.checkName;
+            deps.log(`AI_ADVISE_VALIDATION_${name}`);
+            if (attempt === 1) throw error;
+          }
+        } else { result = isLog ? {log: log.validateLog(content, input)} : {draft: validateDraft(content)}; break; }
+      }
       const usage = await deps.completeReservation(identity, config, input.requestId);
       return {...result, usage};
     } catch {
