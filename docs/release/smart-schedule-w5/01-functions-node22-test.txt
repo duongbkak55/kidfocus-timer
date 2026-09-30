@@ -1,0 +1,962 @@
+
+> test
+> node --test
+
+TAP version 13
+# Subtest: sanitizeMessages caps history and input length
+ok 1 - sanitizeMessages caps history and input length
+  ---
+  duration_ms: 3.497792
+  type: 'test'
+  ...
+# Subtest: normalizeModel rejects missing ids and clamps limits
+ok 2 - normalizeModel rejects missing ids and clamps limits
+  ---
+  duration_ms: 2.251292
+  type: 'test'
+  ...
+# Subtest: premium usage is credit based while free usage is question based
+ok 3 - premium usage is credit based while free usage is question based
+  ---
+  duration_ms: 0.268625
+  type: 'test'
+  ...
+# Subtest: ADVISE golden: sleep-grade1 fixes rule after valid changes
+ok 4 - ADVISE golden: sleep-grade1 fixes rule after valid changes
+  ---
+  duration_ms: 10.592917
+  type: 'test'
+  ...
+# Subtest: ADVISE golden: late-homework fixes rule after valid changes
+ok 5 - ADVISE golden: late-homework fixes rule after valid changes
+  ---
+  duration_ms: 1.600958
+  type: 'test'
+  ...
+# Subtest: ADVISE golden: screen-bed fixes rule after valid changes
+ok 6 - ADVISE golden: screen-bed fixes rule after valid changes
+  ---
+  duration_ms: 0.786959
+  type: 'test'
+  ...
+# Subtest: ADVISE golden: overlap fixes rule after valid changes
+ok 7 - ADVISE golden: overlap fixes rule after valid changes
+  ---
+  duration_ms: 0.511458
+  type: 'test'
+  ...
+# Subtest: ADVISE golden: weekend-drift fixes rule after valid changes
+ok 8 - ADVISE golden: weekend-drift fixes rule after valid changes
+  ---
+  duration_ms: 0.702167
+  type: 'test'
+  ...
+# Subtest: ADVISE golden: preschool-no-nap fixes rule after valid changes
+ok 9 - ADVISE golden: preschool-no-nap fixes rule after valid changes
+  ---
+  duration_ms: 0.5825
+  type: 'test'
+  ...
+# Subtest: ADVISE golden: long-focus fixes rule after valid changes
+ok 10 - ADVISE golden: long-focus fixes rule after valid changes
+  ---
+  duration_ms: 0.443542
+  type: 'test'
+  ...
+# Subtest: ADVISE golden: school-fixed fixes rule after valid changes
+ok 11 - ADVISE golden: school-fixed fixes rule after valid changes
+  ---
+  duration_ms: 0.49175
+  type: 'test'
+  ...
+# Subtest: ADVISE golden: midnight-bed fixes rule after valid changes
+ok 12 - ADVISE golden: midnight-bed fixes rule after valid changes
+  ---
+  duration_ms: 0.831917
+  type: 'test'
+  ...
+# Subtest: ADVISE golden: wake-later fixes rule after valid changes
+ok 13 - ADVISE golden: wake-later fixes rule after valid changes
+  ---
+  duration_ms: 0.772708
+  type: 'test'
+  ...
+# Subtest: ADVISE golden: remove-screen fixes rule after valid changes
+ok 14 - ADVISE golden: remove-screen fixes rule after valid changes
+  ---
+  duration_ms: 0.391791
+  type: 'test'
+  ...
+# Subtest: ADVISE golden: note-injection fixes rule after valid changes
+ok 15 - ADVISE golden: note-injection fixes rule after valid changes
+  ---
+  duration_ms: 0.3205
+  type: 'test'
+  ...
+# Subtest: ADVISE shared quota charges configured credits, uses separate model, never PARSE cap
+ok 16 - ADVISE shared quota charges configured credits, uses separate model, never PARSE cap
+  ---
+  duration_ms: 4.343208
+  type: 'test'
+  ...
+# Subtest: ADVISE defaults to 2 credits and PARSE model for every tier
+ok 17 - ADVISE defaults to 2 credits and PARSE model for every tier
+  ---
+  duration_ms: 1.473625
+  type: 'test'
+  ...
+# Subtest: invalid ADVISE input unknown metadata is rejected before quota
+ok 18 - invalid ADVISE input unknown metadata is rejected before quota
+  ---
+  duration_ms: 0.519166
+  type: 'test'
+  ...
+# Subtest: invalid ADVISE input db task id is rejected before quota
+ok 19 - invalid ADVISE input db task id is rejected before quota
+  ---
+  duration_ms: 0.2995
+  type: 'test'
+  ...
+# Subtest: invalid ADVISE input too many tasks is rejected before quota
+ok 20 - invalid ADVISE input too many tasks is rejected before quota
+  ---
+  duration_ms: 0.134958
+  type: 'test'
+  ...
+# Subtest: invalid ADVISE input bad days is rejected before quota
+ok 21 - invalid ADVISE input bad days is rejected before quota
+  ---
+  duration_ms: 0.285583
+  type: 'test'
+  ...
+# Subtest: invalid ADVISE input bad anchor time is rejected before quota
+ok 22 - invalid ADVISE input bad anchor time is rejected before quota
+  ---
+  duration_ms: 0.137042
+  type: 'test'
+  ...
+# Subtest: invalid ADVISE input note length is rejected before quota
+ok 23 - invalid ADVISE input note length is rejected before quota
+  ---
+  duration_ms: 0.291375
+  type: 'test'
+  ...
+# Subtest: invalid ADVISE input tags is rejected before quota
+ok 24 - invalid ADVISE input tags is rejected before quota
+  ---
+  duration_ms: 0.470333
+  type: 'test'
+  ...
+# Subtest: invalid ADVISE input routine raw history is rejected before quota
+ok 25 - invalid ADVISE input routine raw history is rejected before quota
+  ---
+  duration_ms: 0.502583
+  type: 'test'
+  ...
+# Subtest: invalid ADVISE input unknown finding task is rejected before quota
+ok 26 - invalid ADVISE input unknown finding task is rejected before quota
+  ---
+  duration_ms: 0.81
+  type: 'test'
+  ...
+# Subtest: invalid ADVISE input unknown finding is rejected before quota
+ok 27 - invalid ADVISE input unknown finding is rejected before quota
+  ---
+  duration_ms: 0.403208
+  type: 'test'
+  ...
+# Subtest: invalid ADVISE output task ref refunds ledger
+ok 28 - invalid ADVISE output task ref refunds ledger
+  ---
+  duration_ms: 3.867625
+  type: 'test'
+  ...
+# Subtest: invalid ADVISE output missing op field refunds ledger
+ok 29 - invalid ADVISE output missing op field refunds ledger
+  ---
+  duration_ms: 1.016042
+  type: 'test'
+  ...
+# Subtest: invalid ADVISE output extra op field refunds ledger
+ok 30 - invalid ADVISE output extra op field refunds ledger
+  ---
+  duration_ms: 0.797375
+  type: 'test'
+  ...
+# Subtest: invalid ADVISE output too many proposals refunds ledger
+ok 31 - invalid ADVISE output too many proposals refunds ledger
+  ---
+  duration_ms: 3.010625
+  type: 'test'
+  ...
+# Subtest: invalid ADVISE output wrong op refunds ledger
+ok 32 - invalid ADVISE output wrong op refunds ledger
+  ---
+  duration_ms: 1.244166
+  type: 'test'
+  ...
+# Subtest: invalid ADVISE output wrong time refunds ledger
+ok 33 - invalid ADVISE output wrong time refunds ledger
+  ---
+  duration_ms: 0.664083
+  type: 'test'
+  ...
+# Subtest: invalid ADVISE output reason length refunds ledger
+ok 34 - invalid ADVISE output reason length refunds ledger
+  ---
+  duration_ms: 0.730166
+  type: 'test'
+  ...
+# Subtest: invalid ADVISE output summary length refunds ledger
+ok 35 - invalid ADVISE output summary length refunds ledger
+  ---
+  duration_ms: 0.467416
+  type: 'test'
+  ...
+# Subtest: school overlap across Sunday midnight and REMOVE study are forbidden
+ok 36 - school overlap across Sunday midnight and REMOVE study are forbidden
+  ---
+  duration_ms: 0.495125
+  type: 'test'
+  ...
+# Subtest: ADVISE provider/JSON failure refunds
+ok 37 - ADVISE provider/JSON failure refunds
+  ---
+  duration_ms: 0.538917
+  type: 'test'
+  ...
+# Subtest: ADVISE provider/JSON failure refunds
+ok 38 - ADVISE provider/JSON failure refunds
+  ---
+  duration_ms: 0.90825
+  type: 'test'
+  ...
+# Subtest: ADVISE provider/JSON failure refunds
+ok 39 - ADVISE provider/JSON failure refunds
+  ---
+  duration_ms: 0.579625
+  type: 'test'
+  ...
+# Subtest: injected note remains user data and cannot widen schema; mocked injected output refunds
+ok 40 - injected note remains user data and cannot widen schema; mocked injected output refunds
+  ---
+  duration_ms: 1.350333
+  type: 'test'
+  ...
+# Subtest: ADVISE optional note data defaults empty and public config includes price
+ok 41 - ADVISE optional note data defaults empty and public config includes price
+  ---
+  duration_ms: 0.387375
+  type: 'test'
+  ...
+# Subtest: school and protected REMOVE output errors refund configured advice credits
+ok 42 - school and protected REMOVE output errors refund configured advice credits
+  ---
+  duration_ms: 1.892542
+  type: 'test'
+  ...
+# Subtest: bed after midnight checks school on the next calendar day
+ok 43 - bed after midnight checks school on the next calendar day
+  ---
+  duration_ms: 0.215334
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-01
+ok 44 - LOG offline golden: log-vi-01
+  ---
+  duration_ms: 28.587542
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-02
+ok 45 - LOG offline golden: log-vi-02
+  ---
+  duration_ms: 4.258584
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-03
+ok 46 - LOG offline golden: log-vi-03
+  ---
+  duration_ms: 6.930667
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-04
+ok 47 - LOG offline golden: log-vi-04
+  ---
+  duration_ms: 1.443542
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-05
+ok 48 - LOG offline golden: log-vi-05
+  ---
+  duration_ms: 2.156042
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-06
+ok 49 - LOG offline golden: log-vi-06
+  ---
+  duration_ms: 1.554958
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-07
+ok 50 - LOG offline golden: log-vi-07
+  ---
+  duration_ms: 1.142459
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-08
+ok 51 - LOG offline golden: log-vi-08
+  ---
+  duration_ms: 1.003709
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-09
+ok 52 - LOG offline golden: log-vi-09
+  ---
+  duration_ms: 1.914084
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-10
+ok 53 - LOG offline golden: log-vi-10
+  ---
+  duration_ms: 3.824334
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-11
+ok 54 - LOG offline golden: log-vi-11
+  ---
+  duration_ms: 1.219875
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-12
+ok 55 - LOG offline golden: log-vi-12
+  ---
+  duration_ms: 1.048125
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-13
+ok 56 - LOG offline golden: log-vi-13
+  ---
+  duration_ms: 0.690875
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-14
+ok 57 - LOG offline golden: log-vi-14
+  ---
+  duration_ms: 1.411958
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-15
+ok 58 - LOG offline golden: log-vi-15
+  ---
+  duration_ms: 1.122459
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-16
+ok 59 - LOG offline golden: log-vi-16
+  ---
+  duration_ms: 2.463208
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-17
+ok 60 - LOG offline golden: log-vi-17
+  ---
+  duration_ms: 2.547833
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-18
+ok 61 - LOG offline golden: log-vi-18
+  ---
+  duration_ms: 1.537292
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-19
+ok 62 - LOG offline golden: log-vi-19
+  ---
+  duration_ms: 5.729958
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-20
+ok 63 - LOG offline golden: log-vi-20
+  ---
+  duration_ms: 0.775083
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-21
+ok 64 - LOG offline golden: log-vi-21
+  ---
+  duration_ms: 0.809125
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-22
+ok 65 - LOG offline golden: log-vi-22
+  ---
+  duration_ms: 1.137583
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-23
+ok 66 - LOG offline golden: log-vi-23
+  ---
+  duration_ms: 1.203459
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-24
+ok 67 - LOG offline golden: log-vi-24
+  ---
+  duration_ms: 0.883125
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-25
+ok 68 - LOG offline golden: log-vi-25
+  ---
+  duration_ms: 1.063625
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-26
+ok 69 - LOG offline golden: log-vi-26
+  ---
+  duration_ms: 0.949375
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-27
+ok 70 - LOG offline golden: log-vi-27
+  ---
+  duration_ms: 0.945416
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-28
+ok 71 - LOG offline golden: log-vi-28
+  ---
+  duration_ms: 1.223292
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-en-01
+ok 72 - LOG offline golden: log-en-01
+  ---
+  duration_ms: 0.752917
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-en-02
+ok 73 - LOG offline golden: log-en-02
+  ---
+  duration_ms: 0.992125
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-en-03
+ok 74 - LOG offline golden: log-en-03
+  ---
+  duration_ms: 1.793417
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-29
+ok 75 - LOG offline golden: log-vi-29
+  ---
+  duration_ms: 0.968167
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-30
+ok 76 - LOG offline golden: log-vi-30
+  ---
+  duration_ms: 0.817709
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-en-04
+ok 77 - LOG offline golden: log-en-04
+  ---
+  duration_ms: 0.687333
+  type: 'test'
+  ...
+# Subtest: LOG offline golden: log-vi-31
+ok 78 - LOG offline golden: log-vi-31
+  ---
+  duration_ms: 0.940708
+  type: 'test'
+  ...
+# Subtest: LOG costs one by default, shares schedule cap/credits and carries no persisted IDs to provider
+ok 79 - LOG costs one by default, shares schedule cap/credits and carries no persisted IDs to provider
+  ---
+  duration_ms: 1.082375
+  type: 'test'
+  ...
+# Subtest: LOG respects configured cost and early access shares the existing pool
+ok 80 - LOG respects configured cost and early access shares the existing pool
+  ---
+  duration_ms: 0.536208
+  type: 'test'
+  ...
+# Subtest: provider failure/malformed LOG refunds credits, questions, schedule cap and global pool with safe error codes
+ok 81 - provider failure/malformed LOG refunds credits, questions, schedule cap and global pool with safe error codes
+  ---
+  duration_ms: 1.16625
+  type: 'test'
+  ...
+# Subtest: invalid input and missing sign-in never reserve or call provider
+ok 82 - invalid input and missing sign-in never reserve or call provider
+  ---
+  duration_ms: 0.375333
+  type: 'test'
+  ...
+# Subtest: LOG rejects malformed schema/refs but turns unsupported start times into questions
+ok 83 - LOG rejects malformed schema/refs but turns unsupported start times into questions
+  ---
+  duration_ms: 1.163458
+  type: 'test'
+  ...
+# Subtest: ADVISE accepts only aggregate actual stats/ref aliases and new rule IDs; raw logs are rejected
+ok 84 - ADVISE accepts only aggregate actual stats/ref aliases and new rule IDs; raw logs are rejected
+  ---
+  duration_ms: 2.433542
+  type: 'test'
+  ...
+# Subtest: LOG default cost is exposed as Remote Config's public field
+ok 85 - LOG default cost is exposed as Remote Config's public field
+  ---
+  duration_ms: 0.281666
+  type: 'test'
+  ...
+# Subtest: a hallucinated entry cannot borrow another activity's clock, even the identical hour; partial preview completes quota normally
+ok 86 - a hallucinated entry cannot borrow another activity's clock, even the identical hour; partial preview completes quota normally
+  ---
+  duration_ms: 1.626292
+  type: 'test'
+  ...
+# Subtest: start derivation uses an evidenced end and explicit duration, never planned duration or another activity's duration
+ok 87 - start derivation uses an evidenced end and explicit duration, never planned duration or another activity's duration
+  ---
+  duration_ms: 1.598208
+  type: 'test'
+  ...
+# Subtest: clock syntax handles Vietnamese words/quarters and English meridiem without treating counts as clocks
+ok 88 - clock syntax handles Vietnamese words/quarters and English meridiem without treating counts as clocks
+  ---
+  duration_ms: 2.99925
+  type: 'test'
+  ...
+# Subtest: grounding questions are deduplicated and bounded without hiding malformed response fields
+ok 89 - grounding questions are deduplicated and bounded without hiding malformed response fields
+  ---
+  duration_ms: 0.789416
+  type: 'test'
+  ...
+# Subtest: Vietnamese golden 1: expected draft validates and normalizes
+ok 90 - Vietnamese golden 1: expected draft validates and normalizes
+  ---
+  duration_ms: 10.020416
+  type: 'test'
+  ...
+# Subtest: Vietnamese golden 2: expected draft validates and normalizes
+ok 91 - Vietnamese golden 2: expected draft validates and normalizes
+  ---
+  duration_ms: 0.419791
+  type: 'test'
+  ...
+# Subtest: Vietnamese golden 3: expected draft validates and normalizes
+ok 92 - Vietnamese golden 3: expected draft validates and normalizes
+  ---
+  duration_ms: 0.523375
+  type: 'test'
+  ...
+# Subtest: Vietnamese golden 4: expected draft validates and normalizes
+ok 93 - Vietnamese golden 4: expected draft validates and normalizes
+  ---
+  duration_ms: 0.155125
+  type: 'test'
+  ...
+# Subtest: Vietnamese golden 5: expected draft validates and normalizes
+ok 94 - Vietnamese golden 5: expected draft validates and normalizes
+  ---
+  duration_ms: 1.050625
+  type: 'test'
+  ...
+# Subtest: Vietnamese golden 6: expected draft validates and normalizes
+ok 95 - Vietnamese golden 6: expected draft validates and normalizes
+  ---
+  duration_ms: 0.22875
+  type: 'test'
+  ...
+# Subtest: Vietnamese golden 7: expected draft validates and normalizes
+ok 96 - Vietnamese golden 7: expected draft validates and normalizes
+  ---
+  duration_ms: 0.259417
+  type: 'test'
+  ...
+# Subtest: Vietnamese golden 8: expected draft validates and normalizes
+ok 97 - Vietnamese golden 8: expected draft validates and normalizes
+  ---
+  duration_ms: 0.26225
+  type: 'test'
+  ...
+# Subtest: Vietnamese golden 9: expected draft validates and normalizes
+ok 98 - Vietnamese golden 9: expected draft validates and normalizes
+  ---
+  duration_ms: 1.407791
+  type: 'test'
+  ...
+# Subtest: Vietnamese golden 10: expected draft validates and normalizes
+ok 99 - Vietnamese golden 10: expected draft validates and normalizes
+  ---
+  duration_ms: 1.511334
+  type: 'test'
+  ...
+# Subtest: Vietnamese golden 11: expected draft validates and normalizes
+ok 100 - Vietnamese golden 11: expected draft validates and normalizes
+  ---
+  duration_ms: 0.597333
+  type: 'test'
+  ...
+# Subtest: Vietnamese golden 12: expected draft validates and normalizes
+ok 101 - Vietnamese golden 12: expected draft validates and normalizes
+  ---
+  duration_ms: 0.1595
+  type: 'test'
+  ...
+# Subtest: Vietnamese golden 13: expected draft validates and normalizes
+ok 102 - Vietnamese golden 13: expected draft validates and normalizes
+  ---
+  duration_ms: 0.295792
+  type: 'test'
+  ...
+# Subtest: Vietnamese golden 14: expected draft validates and normalizes
+ok 103 - Vietnamese golden 14: expected draft validates and normalizes
+  ---
+  duration_ms: 0.078375
+  type: 'test'
+  ...
+# Subtest: Vietnamese golden 15: expected draft validates and normalizes
+ok 104 - Vietnamese golden 15: expected draft validates and normalizes
+  ---
+  duration_ms: 0.159625
+  type: 'test'
+  ...
+# Subtest: Vietnamese golden 16: expected draft validates and normalizes
+ok 105 - Vietnamese golden 16: expected draft validates and normalizes
+  ---
+  duration_ms: 0.122666
+  type: 'test'
+  ...
+# Subtest: Vietnamese golden 17: expected draft validates and normalizes
+ok 106 - Vietnamese golden 17: expected draft validates and normalizes
+  ---
+  duration_ms: 0.157833
+  type: 'test'
+  ...
+# Subtest: Vietnamese golden 18: expected draft validates and normalizes
+ok 107 - Vietnamese golden 18: expected draft validates and normalizes
+  ---
+  duration_ms: 0.145167
+  type: 'test'
+  ...
+# Subtest: Vietnamese golden 19: expected draft validates and normalizes
+ok 108 - Vietnamese golden 19: expected draft validates and normalizes
+  ---
+  duration_ms: 0.140625
+  type: 'test'
+  ...
+# Subtest: Vietnamese golden 20: expected draft validates and normalizes
+ok 109 - Vietnamese golden 20: expected draft validates and normalizes
+  ---
+  duration_ms: 0.109584
+  type: 'test'
+  ...
+# Subtest: Vietnamese golden 21: expected draft validates and normalizes
+ok 110 - Vietnamese golden 21: expected draft validates and normalizes
+  ---
+  duration_ms: 0.07825
+  type: 'test'
+  ...
+# Subtest: Vietnamese golden 22: expected draft validates and normalizes
+ok 111 - Vietnamese golden 22: expected draft validates and normalizes
+  ---
+  duration_ms: 0.083791
+  type: 'test'
+  ...
+# Subtest: Vietnamese golden 23: expected draft validates and normalizes
+ok 112 - Vietnamese golden 23: expected draft validates and normalizes
+  ---
+  duration_ms: 0.3875
+  type: 'test'
+  ...
+# Subtest: Vietnamese golden 24: expected draft validates and normalizes
+ok 113 - Vietnamese golden 24: expected draft validates and normalizes
+  ---
+  duration_ms: 0.270166
+  type: 'test'
+  ...
+# Subtest: Vietnamese golden 25: expected draft validates and normalizes
+ok 114 - Vietnamese golden 25: expected draft validates and normalizes
+  ---
+  duration_ms: 0.076625
+  type: 'test'
+  ...
+# Subtest: Vietnamese golden 26: expected draft validates and normalizes
+ok 115 - Vietnamese golden 26: expected draft validates and normalizes
+  ---
+  duration_ms: 0.085084
+  type: 'test'
+  ...
+# Subtest: valid parse uses schema and zero temperature, shares quota and completes reservation
+ok 116 - valid parse uses schema and zero temperature, shares quota and completes reservation
+  ---
+  duration_ms: 2.230167
+  type: 'test'
+  ...
+# Subtest: invalid schema unknown day refunds quota and returns only error code
+ok 117 - invalid schema unknown day refunds quota and returns only error code
+  ---
+  duration_ms: 2.099709
+  type: 'test'
+  ...
+# Subtest: invalid schema invalid time refunds quota and returns only error code
+ok 118 - invalid schema invalid time refunds quota and returns only error code
+  ---
+  duration_ms: 0.849166
+  type: 'test'
+  ...
+# Subtest: invalid schema duration under minimum refunds quota and returns only error code
+ok 119 - invalid schema duration under minimum refunds quota and returns only error code
+  ---
+  duration_ms: 0.548167
+  type: 'test'
+  ...
+# Subtest: invalid schema duration over maximum refunds quota and returns only error code
+ok 120 - invalid schema duration over maximum refunds quota and returns only error code
+  ---
+  duration_ms: 0.461875
+  type: 'test'
+  ...
+# Subtest: invalid schema fractional duration refunds quota and returns only error code
+ok 121 - invalid schema fractional duration refunds quota and returns only error code
+  ---
+  duration_ms: 1.555667
+  type: 'test'
+  ...
+# Subtest: invalid schema empty name refunds quota and returns only error code
+ok 122 - invalid schema empty name refunds quota and returns only error code
+  ---
+  duration_ms: 1.197292
+  type: 'test'
+  ...
+# Subtest: invalid schema long name refunds quota and returns only error code
+ok 123 - invalid schema long name refunds quota and returns only error code
+  ---
+  duration_ms: 1.125
+  type: 'test'
+  ...
+# Subtest: invalid schema missing field refunds quota and returns only error code
+ok 124 - invalid schema missing field refunds quota and returns only error code
+  ---
+  duration_ms: 2.019084
+  type: 'test'
+  ...
+# Subtest: invalid schema too many tasks refunds quota and returns only error code
+ok 125 - invalid schema too many tasks refunds quota and returns only error code
+  ---
+  duration_ms: 4.152667
+  type: 'test'
+  ...
+# Subtest: invalid schema invalid confidence refunds quota and returns only error code
+ok 126 - invalid schema invalid confidence refunds quota and returns only error code
+  ---
+  duration_ms: 1.502041
+  type: 'test'
+  ...
+# Subtest: invalid schema bad anchor day refunds quota and returns only error code
+ok 127 - invalid schema bad anchor day refunds quota and returns only error code
+  ---
+  duration_ms: 0.6425
+  type: 'test'
+  ...
+# Subtest: invalid schema extra metadata refunds quota and returns only error code
+ok 128 - invalid schema extra metadata refunds quota and returns only error code
+  ---
+  duration_ms: 0.465
+  type: 'test'
+  ...
+# Subtest: broken JSON refunds once; same request may retry after refund
+ok 129 - broken JSON refunds once; same request may retry after refund
+  ---
+  duration_ms: 0.712791
+  type: 'test'
+  ...
+# Subtest: unknown taskType falls back to CUSTOM and days normalize
+ok 130 - unknown taskType falls back to CUSTOM and days normalize
+  ---
+  duration_ms: 0.20525
+  type: 'test'
+  ...
+# Subtest: guest blocked before quota or provider; disabled schedule and invalid input fail early
+ok 131 - guest blocked before quota or provider; disabled schedule and invalid input fail early
+  ---
+  duration_ms: 0.819
+  type: 'test'
+  ...
+# Subtest: tiers prefer premium, honor expiry boundary and return usage expiry
+ok 132 - tiers prefer premium, honor expiry boundary and return usage expiry
+  ---
+  duration_ms: 0.173416
+  type: 'test'
+  ...
+# Subtest: early/free/premium/guest enforce credit budgets through real quota functions
+ok 133 - early/free/premium/guest enforce credit budgets through real quota functions
+  ---
+  duration_ms: 98.655416
+  type: 'test'
+  ...
+# Subtest: parse cost, global cap and duplicate request each prevent overcharging
+ok 134 - parse cost, global cap and duplicate request each prevent overcharging
+  ---
+  duration_ms: 1.335917
+  type: 'test'
+  ...
+# Subtest: claim is transactional/idempotent under concurrent requests, preserves premium and old expiry
+ok 135 - claim is transactional/idempotent under concurrent requests, preserves premium and old expiry
+  ---
+  duration_ms: 1.797666
+  type: 'test'
+  ...
+# Subtest: closed enrollment refuses existing/new users; unauthenticated cannot claim
+ok 136 - closed enrollment refuses existing/new users; unauthenticated cannot claim
+  ---
+  duration_ms: 0.561333
+  type: 'test'
+  ...
+# Subtest: completion/refund use the frozen reservation date across midnight
+ok 137 - completion/refund use the frozen reservation date across midnight
+  ---
+  duration_ms: 0.673334
+  type: 'test'
+  ...
+# Subtest: provider HTTP failure refunds quota and never logs provider/user text
+ok 138 - provider HTTP failure refunds quota and never logs provider/user text
+  ---
+  duration_ms: 0.818
+  type: 'test'
+  ...
+# Subtest: network failure refunds quota and never logs provider/user text
+ok 139 - network failure refunds quota and never logs provider/user text
+  ---
+  duration_ms: 0.622584
+  type: 'test'
+  ...
+# Subtest: image validation rejects oversize, malformed base64, non-JPEG and invalid currentSchool before quota
+ok 140 - image validation rejects oversize, malformed base64, non-JPEG and invalid currentSchool before quota
+  ---
+  duration_ms: 9.00325
+  type: 'test'
+  ...
+# Subtest: free tier cannot send photos before quota or provider; enabled tier is configurable
+ok 141 - free tier cannot send photos before quota or provider; enabled tier is configurable
+  ---
+  duration_ms: 2.516875
+  type: 'test'
+  ...
+# Subtest: early and premium photos use vision model, multimodal prompt and image credits
+ok 142 - early and premium photos use vision model, multimodal prompt and image credits
+  ---
+  duration_ms: 3.223875
+  type: 'test'
+  ...
+# Subtest: image failures refund cost and PARSE count idempotently, logging codes only
+ok 143 - image failures refund cost and PARSE count idempotently, logging codes only
+  ---
+  duration_ms: 6.20775
+  type: 'test'
+  ...
+# Subtest: free PARSE cap reserves transactionally under concurrency and leaves chat available
+ok 144 - free PARSE cap reserves transactionally under concurrency and leaves chat available
+  ---
+  duration_ms: 3.613375
+  type: 'test'
+  ...
+# Subtest: free PARSE cap defaults unlimited, exempts early/premium, resets on a new day, and refunds
+ok 145 - free PARSE cap defaults unlimited, exempts early/premium, resets on a new day, and refunds
+  ---
+  duration_ms: 8.384084
+  type: 'test'
+  ...
+# Subtest: getAiConfig advertises image policy and code fallback preserves W2 free behavior
+ok 146 - getAiConfig advertises image policy and code fallback preserves W2 free behavior
+  ---
+  duration_ms: 0.915125
+  type: 'test'
+  ...
+# Subtest: Synthetic photo fixture: school-morning is a bounded JPEG with a valid expected draft
+ok 147 - Synthetic photo fixture: school-morning is a bounded JPEG with a valid expected draft
+  ---
+  duration_ms: 0.992208
+  type: 'test'
+  ...
+# Subtest: Synthetic photo fixture: school-afternoon is a bounded JPEG with a valid expected draft
+ok 148 - Synthetic photo fixture: school-afternoon is a bounded JPEG with a valid expected draft
+  ---
+  duration_ms: 0.990375
+  type: 'test'
+  ...
+# Subtest: Synthetic photo fixture: school-two-shifts is a bounded JPEG with a valid expected draft
+ok 149 - Synthetic photo fixture: school-two-shifts is a bounded JPEG with a valid expected draft
+  ---
+  duration_ms: 1.273958
+  type: 'test'
+  ...
+# Subtest: Synthetic photo fixture: school-alternating is a bounded JPEG with a valid expected draft
+ok 150 - Synthetic photo fixture: school-alternating is a bounded JPEG with a valid expected draft
+  ---
+  duration_ms: 1.830167
+  type: 'test'
+  ...
+# Subtest: Synthetic photo fixture: school-saturday is a bounded JPEG with a valid expected draft
+ok 151 - Synthetic photo fixture: school-saturday is a bounded JPEG with a valid expected draft
+  ---
+  duration_ms: 0.94975
+  type: 'test'
+  ...
+# Subtest: Synthetic photo fixture: school-missing-hours is a bounded JPEG with a valid expected draft
+ok 152 - Synthetic photo fixture: school-missing-hours is a bounded JPEG with a valid expected draft
+  ---
+  duration_ms: 0.864542
+  type: 'test'
+  ...
+# Subtest: Synthetic photo fixture: school-text-hours is a bounded JPEG with a valid expected draft
+ok 153 - Synthetic photo fixture: school-text-hours is a bounded JPEG with a valid expected draft
+  ---
+  duration_ms: 0.863417
+  type: 'test'
+  ...
+# Subtest: Synthetic photo fixture: school-current-hours is a bounded JPEG with a valid expected draft
+ok 154 - Synthetic photo fixture: school-current-hours is a bounded JPEG with a valid expected draft
+  ---
+  duration_ms: 0.78275
+  type: 'test'
+  ...
+# Subtest: Synthetic photo fixture: school-one-unknown-shift is a bounded JPEG with a valid expected draft
+ok 155 - Synthetic photo fixture: school-one-unknown-shift is a bounded JPEG with a valid expected draft
+  ---
+  duration_ms: 0.746833
+  type: 'test'
+  ...
+# Subtest: Synthetic photo fixture: school-ambiguous-all-day is a bounded JPEG with a valid expected draft
+ok 156 - Synthetic photo fixture: school-ambiguous-all-day is a bounded JPEG with a valid expected draft
+  ---
+  duration_ms: 1.019
+  type: 'test'
+  ...
+# Subtest: Synthetic photo fixture: family-table is a bounded JPEG with a valid expected draft
+ok 157 - Synthetic photo fixture: family-table is a bounded JPEG with a valid expected draft
+  ---
+  duration_ms: 0.617458
+  type: 'test'
+  ...
+# Subtest: Synthetic photo fixture: family-handwritten is a bounded JPEG with a valid expected draft
+ok 158 - Synthetic photo fixture: family-handwritten is a bounded JPEG with a valid expected draft
+  ---
+  duration_ms: 0.631542
+  type: 'test'
+  ...
+1..158
+# tests 158
+# suites 0
+# pass 158
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 814.80825

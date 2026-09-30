@@ -1,0 +1,44 @@
+
+> eval:schedule
+> node scripts/eval-schedule.js --log
+
+log model: google/gemini-2.5-flash
+log log-vi-01: PASS
+log log-vi-02: PASS
+log log-vi-03: PASS
+log log-vi-04: PASS
+log log-vi-05: PASS
+log log-vi-06: PASS
+log log-vi-07: PASS
+log log-vi-08: PASS
+log log-vi-09: PASS
+log log-vi-10: PASS
+log log-vi-11: PASS
+log log-vi-12: PASS
+log log-vi-13: PASS
+log log-vi-14: PASS
+log log-vi-15: PASS
+log log-vi-16: PASS
+log log-vi-17: PASS
+log log-vi-18: PASS
+log log-vi-19: PASS
+log log-vi-20: PASS
+log log-vi-21: PASS
+log log-vi-22: PASS
+log log-vi-23: PASS
+log log-vi-24: FAIL CONSTRAINT
+log log-vi-25: PASS
+log log-vi-26: PASS
+log log-vi-27: PASS
+log log-vi-28: PASS
+log log-en-01: PASS
+log log-en-02: PASS
+log log-en-03: PASS
+log log-vi-29: PASS
+log log-vi-30: PASS
+log log-en-04: PASS
+log log-vi-31: FAIL CONSTRAINT
+LOG golden: 33/35 (94.3%)
+log tokens per response with usage: in 1539.9, out 102.7 (35 responses)
+log actual OpenRouter cost USD per response: $0.00067026 (35 responses)
+EVAL_EXIT 0

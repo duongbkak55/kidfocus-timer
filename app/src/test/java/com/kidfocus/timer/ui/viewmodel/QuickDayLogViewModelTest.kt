@@ -84,4 +84,16 @@ class QuickDayLogViewModelTest {
         coVerify(exactly=0) { logs.addAiBatch(any()) }
     }
 
+    @Test fun futureHighConfidenceEntryStartsUncheckedAndIsLabeledForReview()=runTest(dispatcher) {
+        val currentDate = LocalDate.now()
+        val future = DayLogCandidate(currentDate.plusDays(1), null, "Tomorrow", DayLogCategory.OTHER, 0, null, .95)
+        coEvery { logger.log(any()) } returns ScheduleLogReply(DayLogPreview(listOf(future), emptyList()), AiUsage(9,9,false))
+        vm.context("child",currentDate);vm.editText("Ngày mai chơi lúc 0h")
+        vm.preview(data,currentDate);runCurrent()
+        assertEquals(setOf(0),vm.state.value.future)
+        assertTrue(vm.state.value.selected.isEmpty())
+        vm.select(0,true);assertEquals(setOf(0),vm.state.value.selected)
+        vm.editText("change");assertTrue(vm.state.value.future.isEmpty())
+    }
+
 }

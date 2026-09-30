@@ -32,14 +32,14 @@ const DEFAULT_CONFIG = {
   earlyDailyCredits: 15,
   scheduleEnabled: false,
   scheduleGuestEnabled: false,
-  scheduleModel: "google/gemini-2.5-flash-lite",
+  scheduleModel: "google/gemini-2.5-flash",
   scheduleParseCost: 1,
   scheduleAdviseCost: 2,
   scheduleLogCost: 1,
-  scheduleAdviseModel: "", // Fall back to the configured PARSE model.
+  scheduleAdviseModel: "google/gemini-2.5-flash",
   scheduleVisionModel: "google/gemini-2.5-flash-lite",
   scheduleImageCost: 3,
-  scheduleImageTiers: ["early", "premium"],
+  scheduleImageTiers: [], // Fail closed for beta if Remote Config is unavailable.
   scheduleFreeDailyParses: 0, // 0 preserves W2: no additional PARSE cap.
   maxHistoryMessages: 12,
   maxInputChars: 1500,
@@ -159,7 +159,7 @@ exports.aiChat = onCall(
 );
 
 exports.aiSchedule = onCall(
-    {region: REGION, timeoutSeconds: 60, memory: "256MiB", minInstances: 0,
+    {region: REGION, timeoutSeconds: 90, memory: "256MiB", minInstances: 0,
       maxInstances: 2, concurrency: 20, secrets: [openRouterKey], enforceAppCheck},
     schedule.createScheduleHandler({loadConfig, resolveIdentity, quotaDay, reserveQuota, completeReservation, refundReservation,
       fetch: (...args) => fetch(...args), key: () => openRouterKey.value(),
@@ -247,8 +247,7 @@ async function loadConfig() {
     next.scheduleVisionModel = safeString(value("ai_schedule_vision_model"), 120) || next.scheduleVisionModel;
     next.scheduleImageCost = parseIntSafe(value("ai_schedule_image_cost"), next.scheduleImageCost, 1, 100);
     const imageTiers = value("ai_schedule_image_tiers");
-    if (typeof imageTiers === "string") next.scheduleImageTiers = imageTiers.split(",").map((tier) => tier.trim())
-        .filter((tier) => ["free", "early", "premium", "guest"].includes(tier));
+    next.scheduleImageTiers = parseScheduleImageTiers(imageTiers, next.scheduleImageTiers);
     next.scheduleFreeDailyParses = parseIntSafe(value("ai_schedule_free_daily_parses"), next.scheduleFreeDailyParses, 0, 100);
     const remoteModels = JSON.parse(value("ai_models_json") || "null");
     if (Array.isArray(remoteModels) && remoteModels.length) {
@@ -454,9 +453,15 @@ function parseBoolean(value, fallback) {
   return fallback;
 }
 
+function parseScheduleImageTiers(value, fallback) {
+  if (typeof value !== "string") return fallback;
+  return [...new Set(value.split(",").map((tier) => tier.trim())
+      .filter((tier) => ["free", "early", "premium", "guest"].includes(tier)))];
+}
+
 function parseIntSafe(value, fallback, min, max) {
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) ? Math.min(max, Math.max(min, parsed)) : fallback;
 }
 
-module.exports._test = {DEFAULT_CONFIG, publicConfig, normalizeModel, parseBoolean, parseIntSafe, sanitizeMessages, usageFromData, identityFromEntitlement, dailyCredits, reserveQuota, completeReservation, refundReservation};
+module.exports._test = {DEFAULT_CONFIG, publicConfig, normalizeModel, parseBoolean, parseIntSafe, parseScheduleImageTiers, sanitizeMessages, usageFromData, identityFromEntitlement, dailyCredits, reserveQuota, completeReservation, refundReservation};

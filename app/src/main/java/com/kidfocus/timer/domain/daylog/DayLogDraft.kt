@@ -2,6 +2,7 @@ package com.kidfocus.timer.domain.daylog
 
 import com.kidfocus.timer.domain.schedule.ScheduleThresholds
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.Locale
 
@@ -10,6 +11,7 @@ data class DayLogRequest(val payload: Map<String, Any>, val plans: Map<String, D
 data class DayLogCandidate(val date: LocalDate, val planRef: String?, val name: String, val category: DayLogCategory,
     val startMinute: Int, val endMinute: Int?, val confidence: Double) {
     val selectedByDefault get() = confidence >= 0.6
+    fun isFutureAt(now: LocalDateTime): Boolean = date.atStartOfDay().plusMinutes(startMinute.toLong()).isAfter(now)
 }
 data class DayLogPreview(val entries: List<DayLogCandidate>, val questions: List<String>)
 object DayLogDraft {

@@ -1,0 +1,201 @@
+{
+  "suite": "text",
+  "fixtureCount": 26,
+  "attempted": 26,
+  "passed": 0,
+  "percent": 0,
+  "records": [
+    {
+      "pass": false,
+      "reasons": [
+        "PROVIDER_NETWORK_OR_TIMEOUT"
+      ],
+      "id": "text-01"
+    },
+    {
+      "pass": false,
+      "reasons": [
+        "PROVIDER_NETWORK_OR_TIMEOUT"
+      ],
+      "id": "text-02"
+    },
+    {
+      "pass": false,
+      "reasons": [
+        "PROVIDER_NETWORK_OR_TIMEOUT"
+      ],
+      "id": "text-03"
+    },
+    {
+      "pass": false,
+      "reasons": [
+        "PROVIDER_NETWORK_OR_TIMEOUT"
+      ],
+      "id": "text-04"
+    },
+    {
+      "pass": false,
+      "reasons": [
+        "PROVIDER_NETWORK_OR_TIMEOUT"
+      ],
+      "id": "text-05"
+    },
+    {
+      "pass": false,
+      "reasons": [
+        "PROVIDER_NETWORK_OR_TIMEOUT"
+      ],
+      "id": "text-06"
+    },
+    {
+      "pass": false,
+      "reasons": [
+        "PROVIDER_NETWORK_OR_TIMEOUT"
+      ],
+      "id": "text-07"
+    },
+    {
+      "pass": false,
+      "reasons": [
+        "PROVIDER_NETWORK_OR_TIMEOUT"
+      ],
+      "id": "text-08"
+    },
+    {
+      "pass": false,
+      "reasons": [
+        "PROVIDER_NETWORK_OR_TIMEOUT"
+      ],
+      "id": "text-09"
+    },
+    {
+      "pass": false,
+      "reasons": [
+        "PROVIDER_NETWORK_OR_TIMEOUT"
+      ],
+      "id": "text-10"
+    },
+    {
+      "pass": false,
+      "reasons": [
+        "PROVIDER_NETWORK_OR_TIMEOUT"
+      ],
+      "id": "text-11"
+    },
+    {
+      "pass": false,
+      "reasons": [
+        "PROVIDER_NETWORK_OR_TIMEOUT"
+      ],
+      "id": "text-12"
+    },
+    {
+      "pass": false,
+      "reasons": [
+        "PROVIDER_NETWORK_OR_TIMEOUT"
+      ],
+      "id": "text-13"
+    },
+    {
+      "pass": false,
+      "reasons": [
+        "PROVIDER_NETWORK_OR_TIMEOUT"
+      ],
+      "id": "text-14"
+    },
+    {
+      "pass": false,
+      "reasons": [
+        "PROVIDER_NETWORK_OR_TIMEOUT"
+      ],
+      "id": "text-15"
+    },
+    {
+      "pass": false,
+      "reasons": [
+        "PROVIDER_NETWORK_OR_TIMEOUT"
+      ],
+      "id": "text-16"
+    },
+    {
+      "pass": false,
+      "reasons": [
+        "PROVIDER_NETWORK_OR_TIMEOUT"
+      ],
+      "id": "text-17"
+    },
+    {
+      "pass": false,
+      "reasons": [
+        "PROVIDER_NETWORK_OR_TIMEOUT"
+      ],
+      "id": "text-18"
+    },
+    {
+      "pass": false,
+      "reasons": [
+        "PROVIDER_NETWORK_OR_TIMEOUT"
+      ],
+      "id": "text-19"
+    },
+    {
+      "pass": false,
+      "reasons": [
+        "PROVIDER_NETWORK_OR_TIMEOUT"
+      ],
+      "id": "text-20"
+    },
+    {
+      "pass": false,
+      "reasons": [
+        "PROVIDER_NETWORK_OR_TIMEOUT"
+      ],
+      "id": "text-21"
+    },
+    {
+      "pass": false,
+      "reasons": [
+        "PROVIDER_NETWORK_OR_TIMEOUT"
+      ],
+      "id": "text-22"
+    },
+    {
+      "pass": false,
+      "reasons": [
+        "PROVIDER_NETWORK_OR_TIMEOUT"
+      ],
+      "id": "text-23"
+    },
+    {
+      "pass": false,
+      "reasons": [
+        "PROVIDER_NETWORK_OR_TIMEOUT"
+      ],
+      "id": "text-24"
+    },
+    {
+      "pass": false,
+      "reasons": [
+        "PROVIDER_NETWORK_OR_TIMEOUT"
+      ],
+      "id": "text-25"
+    },
+    {
+      "pass": false,
+      "reasons": [
+        "PROVIDER_NETWORK_OR_TIMEOUT"
+      ],
+      "id": "text-26"
+    }
+  ],
+  "command_exit": 1,
+  "model": "google/gemini-2.5-flash-lite",
+  "runtime": "Node 22.23.3",
+  "model_accuracy_measured": false,
+  "status": "BLOCKED_PROVIDER_CONNECTION",
+  "other_suites_not_run": [
+    "image",
+    "advise",
+    "log"
+  ]
+}

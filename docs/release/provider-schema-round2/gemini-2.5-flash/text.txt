@@ -1,0 +1,39 @@
+
+> eval:schedule
+> node scripts/eval-schedule.js --text
+
+text model: google/gemini-2.5-flash
+text text-01: PASS
+text text-02: PASS
+text text-03: PASS
+text text-04: PASS
+text text-05: PASS
+text text-06: PASS
+text text-07: PASS
+text text-08: PASS
+text text-09: PASS
+text text-10: PASS
+text text-11: PASS
+text text-12: PASS
+text text-13: PASS
+text text-14: PASS
+text text-15: PASS
+text text-16: PASS
+text text-17: PASS
+text text-18: PASS
+text text-19: PASS
+text text-20: PASS
+text text-21: PASS
+text text-22: PASS
+text text-23: PASS
+text text-24: PASS
+text text-25: PASS
+text text-26: PASS
+text: 26 cases; failed responses: 0
+Exact cases: 26/26 (100.0%)
+days: 100.0% (32/32)
+start: 100.0% (32/32)
+duration: 100.0% (20/20)
+Missing-information questions: 4/4
+text tokens per response with usage: in 722.5, out 139.0 (26 responses)
+EVAL_EXIT 0

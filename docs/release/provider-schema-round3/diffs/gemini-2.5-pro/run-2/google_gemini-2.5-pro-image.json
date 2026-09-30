@@ -1,0 +1,511 @@
+{
+  "suite": "image",
+  "model": "google/gemini-2.5-pro",
+  "cases": [
+    {
+      "id": "school-morning",
+      "pass": false,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "school",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "start": "07:15",
+            "duration": 240
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": null,
+      "differences": [
+        {
+          "path": "$",
+          "expected": {
+            "fields": [
+              {
+                "kind": "school",
+                "days": [
+                  "MON",
+                  "TUE",
+                  "WED",
+                  "THU",
+                  "FRI"
+                ],
+                "start": "07:15",
+                "duration": 240
+              }
+            ],
+            "hasQuestions": false
+          },
+          "actual": null
+        }
+      ],
+      "failure": "INVALID_JSON"
+    },
+    {
+      "id": "school-afternoon",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "school",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "start": "13:00",
+            "duration": 210
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": {
+        "fields": [
+          {
+            "kind": "school",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "start": "13:00",
+            "duration": 210
+          }
+        ],
+        "hasQuestions": false
+      },
+      "differences": []
+    },
+    {
+      "id": "school-two-shifts",
+      "pass": true,
+      "extraQuestion": true,
+      "expected": {
+        "fields": [
+          {
+            "kind": "school",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "start": "07:30",
+            "duration": 240
+          },
+          {
+            "kind": "school",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "start": "13:30",
+            "duration": 150
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": {
+        "fields": [
+          {
+            "kind": "school",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "start": "07:30",
+            "duration": 240
+          },
+          {
+            "kind": "school",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "start": "13:30",
+            "duration": 150
+          }
+        ],
+        "hasQuestions": true
+      },
+      "differences": [
+        {
+          "path": "$.hasQuestions",
+          "expected": false,
+          "actual": true
+        }
+      ]
+    },
+    {
+      "id": "school-alternating",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "school",
+            "days": [
+              "MON",
+              "WED",
+              "FRI"
+            ],
+            "start": "07:00",
+            "duration": 240
+          },
+          {
+            "kind": "school",
+            "days": [
+              "TUE",
+              "THU"
+            ],
+            "start": "13:15",
+            "duration": 180
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": {
+        "fields": [
+          {
+            "kind": "school",
+            "days": [
+              "MON",
+              "WED",
+              "FRI"
+            ],
+            "start": "07:00",
+            "duration": 240
+          },
+          {
+            "kind": "school",
+            "days": [
+              "TUE",
+              "THU"
+            ],
+            "start": "13:15",
+            "duration": 180
+          }
+        ],
+        "hasQuestions": false
+      },
+      "differences": []
+    },
+    {
+      "id": "school-saturday",
+      "pass": false,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "school",
+            "days": [
+              "SAT"
+            ],
+            "start": "08:00",
+            "duration": 150
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": null,
+      "differences": [
+        {
+          "path": "$",
+          "expected": {
+            "fields": [
+              {
+                "kind": "school",
+                "days": [
+                  "SAT"
+                ],
+                "start": "08:00",
+                "duration": 150
+              }
+            ],
+            "hasQuestions": false
+          },
+          "actual": null
+        }
+      ],
+      "failure": "INVALID_JSON"
+    },
+    {
+      "id": "school-missing-hours",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [],
+        "hasQuestions": true
+      },
+      "actual": {
+        "fields": [],
+        "hasQuestions": true
+      },
+      "differences": []
+    },
+    {
+      "id": "school-text-hours",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "school",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "start": "07:15",
+            "duration": 245
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": {
+        "fields": [
+          {
+            "kind": "school",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "start": "07:15",
+            "duration": 245
+          }
+        ],
+        "hasQuestions": false
+      },
+      "differences": []
+    },
+    {
+      "id": "school-current-hours",
+      "pass": false,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "school",
+            "days": [
+              "TUE",
+              "THU"
+            ],
+            "start": "07:20",
+            "duration": 230
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": null,
+      "differences": [
+        {
+          "path": "$",
+          "expected": {
+            "fields": [
+              {
+                "kind": "school",
+                "days": [
+                  "TUE",
+                  "THU"
+                ],
+                "start": "07:20",
+                "duration": 230
+              }
+            ],
+            "hasQuestions": false
+          },
+          "actual": null
+        }
+      ],
+      "failure": "INVALID_JSON"
+    },
+    {
+      "id": "school-one-unknown-shift",
+      "pass": false,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "school",
+            "days": [
+              "MON",
+              "WED"
+            ],
+            "start": "07:00",
+            "duration": 240
+          }
+        ],
+        "hasQuestions": true
+      },
+      "actual": null,
+      "differences": [
+        {
+          "path": "$",
+          "expected": {
+            "fields": [
+              {
+                "kind": "school",
+                "days": [
+                  "MON",
+                  "WED"
+                ],
+                "start": "07:00",
+                "duration": 240
+              }
+            ],
+            "hasQuestions": true
+          },
+          "actual": null
+        }
+      ],
+      "failure": "INVALID_JSON"
+    },
+    {
+      "id": "school-ambiguous-all-day",
+      "pass": false,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [],
+        "hasQuestions": true
+      },
+      "actual": null,
+      "differences": [
+        {
+          "path": "$",
+          "expected": {
+            "fields": [],
+            "hasQuestions": true
+          },
+          "actual": null
+        }
+      ],
+      "failure": "INVALID_JSON"
+    },
+    {
+      "id": "family-table",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "SAT"
+            ],
+            "start": "09:00",
+            "duration": 45
+          },
+          {
+            "kind": "task",
+            "days": [
+              "TUE",
+              "THU"
+            ],
+            "start": "18:00",
+            "duration": 60
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "SAT"
+            ],
+            "start": "09:00",
+            "duration": 45
+          },
+          {
+            "kind": "task",
+            "days": [
+              "TUE",
+              "THU"
+            ],
+            "start": "18:00",
+            "duration": 60
+          }
+        ],
+        "hasQuestions": false
+      },
+      "differences": []
+    },
+    {
+      "id": "family-handwritten",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "MON"
+            ],
+            "start": "18:15",
+            "duration": 20
+          },
+          {
+            "kind": "task",
+            "days": [
+              "SUN"
+            ],
+            "start": "16:30",
+            "duration": 30
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "MON"
+            ],
+            "start": "18:15",
+            "duration": 20
+          },
+          {
+            "kind": "task",
+            "days": [
+              "SUN"
+            ],
+            "start": "16:30",
+            "duration": 30
+          }
+        ],
+        "hasQuestions": false
+      },
+      "differences": []
+    }
+  ]
+}

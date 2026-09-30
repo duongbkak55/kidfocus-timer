@@ -44,7 +44,7 @@ function deepMerge(before, after) {
   for (const [key, value] of Object.entries(after)) result[key] = value && typeof value === "object" && !Array.isArray(value) ? deepMerge(result[key] || {}, value) : value;
   return result;
 }
-function harness(payload = JSON.stringify(fixtures.cases[0].expected), customConfig = {}, entitlement = {}) {
+function harness(payload = JSON.stringify(fixtures.cases[0].expected), customConfig = {}, entitlement = {}, timing = {}) {
   const db = new FakeFirestore();
   const currentConfig = {...config, ...customConfig};
   const logs = [];
@@ -56,11 +56,14 @@ function harness(payload = JSON.stringify(fixtures.cases[0].expected), customCon
     reserveQuota: (identity, conf, model, id) => gateway.reserveQuota(identity, conf, model, id, db),
     completeReservation: (identity, conf, id) => gateway.completeReservation(identity, conf, id, db),
     refundReservation: (identity, model, id) => gateway.refundReservation(identity, model, id, db),
+    now: timing.now, timeoutSignal: timing.timeoutSignal,
     fetch: async (_url, options) => { calls++; bodies.push(JSON.parse(options.body));
       assert.ok(options.signal instanceof AbortSignal);
-      if (payload instanceof Error) throw payload;
-      if (payload === null) return {ok: false};
-      return {ok: true, json: async () => ({choices: [{message: {content: payload}}]})}; },
+      timing.onFetch?.(calls);
+      const answer = Array.isArray(payload) ? payload[Math.min(calls - 1, payload.length - 1)] : payload;
+      if (answer instanceof Error) throw answer;
+      if (answer === null) return {ok: false};
+      return {ok: true, json: async () => ({choices: [{message: {content: answer}}]})}; },
     key: () => "test-key", error, log: (code) => logs.push(code),
   });
   return {db, handler, logs, bodies, calls: () => calls};
@@ -95,6 +98,48 @@ test("ADVISE defaults to 2 credits and PARSE model for every tier", async () => 
     assert.ok(reply.advice);
   }
 });
+test("ADVISE retries one rejected validator response under one reservation and logs only the check name", async () => {
+  const bad = clone(fixtures.cases[0].expected); bad.proposals[0].reason = "private child text ".repeat(20);
+  const h = harness([JSON.stringify(bad), JSON.stringify(fixtures.cases[0].expected)]);
+  const result = await h.handler(request());
+  assert.ok(result.advice); assert.equal(h.calls(), 2); assert.equal(h.db.usage("uid_parent").credits, 2);
+  assert.equal(h.db.usage("_global").credits, 2);
+  assert.equal(h.db.usage("uid_parent").requests["golden-sleep-grade1"].state, "complete");
+  assert.deepEqual(h.logs, ["AI_ADVISE_VALIDATION_REASON"]);
+  assert.ok(!h.logs.join(" ").includes("private child text"));
+});
+test("ADVISE refunds its single reservation after two invalid outputs and never logs their content", async () => {
+  const bad = clone(fixtures.cases[0].expected); bad.proposals[0].reason = "private child text ".repeat(20);
+  const h = harness([JSON.stringify(bad), JSON.stringify(bad)]);
+  await assert.rejects(h.handler(request()), /AI_ADVISE_FAILED/);
+  assert.equal(h.calls(), 2); assert.equal(h.db.usage("uid_parent").credits, 0);
+  assert.equal(h.db.usage("_global").credits, 0);
+  assert.deepEqual(h.logs, ["AI_ADVISE_VALIDATION_REASON", "AI_ADVISE_VALIDATION_REASON", "AI_ADVISE_FAILED"]);
+});
+test("ADVISE retry uses remaining provider budget and one credit reservation", async () => {
+  let clock = 1_000; const timeouts = [];
+  const bad = clone(fixtures.cases[0].expected); bad.proposals[0].reason = "x".repeat(201);
+  const h = harness([JSON.stringify(bad), JSON.stringify(fixtures.cases[0].expected)], {}, {}, {
+    now: () => clock,
+    timeoutSignal: (ms) => { timeouts.push(ms); return AbortSignal.timeout(ms); },
+    onFetch: (call) => { if (call === 1) clock += 57_000; },
+  });
+  await h.handler(request());
+  assert.deepEqual(timeouts, [25_000, 3_000]);
+  assert.equal(h.calls(), 2); assert.equal(h.db.usage("uid_parent").credits, 2);
+});
+test("ADVISE refunds without a second provider call when its 60s budget is exhausted", async () => {
+  let clock = 1_000; const timeouts = [];
+  const bad = clone(fixtures.cases[0].expected); bad.proposals[0].reason = "x".repeat(201);
+  const h = harness(JSON.stringify(bad), {}, {}, {
+    now: () => clock,
+    timeoutSignal: (ms) => { timeouts.push(ms); return AbortSignal.timeout(ms); },
+    onFetch: () => { clock += 60_000; },
+  });
+  await assert.rejects(h.handler(request()), {message: "AI_ADVISE_FAILED"});
+  assert.deepEqual(timeouts, [25_000]); assert.equal(h.calls(), 1);
+  assert.equal(h.db.usage("uid_parent").credits, 0);
+});
 for (const [label, mutate] of [
   ["unknown metadata", (r) => r.profileId = "db"], ["db task id", (r) => r.tasks = [{...fixtures.cases[1].input.tasks[0], ref: "1234567890"}]],
   ["too many tasks", (r) => r.tasks = Array(61).fill(fixtures.cases[1].input.tasks[0])],
@@ -118,9 +163,11 @@ for (const [label, mutate] of [
 ]) test(`invalid ADVISE output ${label} refunds ledger`, async () => {
   const v = clone(fixtures.cases[0].expected); mutate(v);
   const h = harness(JSON.stringify(v)); await assert.rejects(h.handler(request()), (e) => e.message === "AI_ADVISE_FAILED");
+  assert.equal(h.calls(), 2);
   assert.equal(h.db.usage("uid_parent").credits, 0); assert.equal(h.db.usage("uid_parent").questions, 0);
   assert.deepEqual(h.db.usage("uid_parent").requests, {}); assert.equal(h.db.usage("_global").credits, 0);
-  assert.deepEqual(h.logs, ["AI_ADVISE_FAILED"]);
+  assert.equal(h.logs.length, 3); assert.match(h.logs[0], /^AI_ADVISE_VALIDATION_[A-Z_]+$/);
+  assert.equal(h.logs[0], h.logs[1]); assert.equal(h.logs[2], "AI_ADVISE_FAILED");
 });
 test("school overlap across Sunday midnight and REMOVE study are forbidden", () => {
   const input = clone(fixtures.cases[7].input);
@@ -136,6 +183,8 @@ test("school overlap across Sunday midnight and REMOVE study are forbidden", () 
 for (const payload of [null, new Error("network"), "not-json"]) test("ADVISE provider/JSON failure refunds", async () => {
   const h = harness(payload); await assert.rejects(h.handler(request()));
   assert.equal(h.db.usage("uid_parent").credits, 0); assert.equal(h.db.usage("_global").credits, 0);
+  assert.equal(h.calls(), payload === "not-json" ? 2 : 1);
+  if (payload === "not-json") assert.deepEqual(h.logs, ["AI_ADVISE_VALIDATION_JSON", "AI_ADVISE_VALIDATION_JSON", "AI_ADVISE_FAILED"]);
 });
 test("injected note remains user data and cannot widen schema; mocked injected output refunds", async () => {
   const fixture = fixtures.cases.find((f) => f.id === "note-injection");

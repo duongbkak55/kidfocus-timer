@@ -1,0 +1,27 @@
+
+> eval:schedule
+> node scripts/eval-schedule.js --images
+
+image model: google/gemini-2.5-pro
+image school-morning: PASS
+image school-afternoon: PASS
+image school-two-shifts: FAIL INVALID_JSON
+image school-alternating: PASS
+image school-saturday: PASS
+image school-missing-hours: PASS
+image school-text-hours: PASS
+image school-current-hours: FAIL INVALID_JSON
+image school-one-unknown-shift: PASS
+image school-ambiguous-all-day: FAIL INVALID_JSON
+image family-table: PASS
+image family-handwritten: PASS
+image: 12 cases; failed responses: 3
+Exact cases: 9/12 (75.0%)
+days: 75.0% (12/16)
+start: 75.0% (12/16)
+duration: 78.6% (11/14)
+Missing-information questions: 2/3
+Unnecessary questions: 0/7 valid no-question cases (0.0%; target <=20%)
+image tokens per response with usage: in 2852.8, out 1440.1 (12 responses)
+image actual OpenRouter cost USD per response: $0.01796688 (12 responses)
+EVAL_EXIT 1

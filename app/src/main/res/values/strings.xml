@@ -645,6 +645,7 @@
     <string name="log_incidental">Phát sinh · không thay kế hoạch</string>
     <string name="log_matched">Khớp kế hoạch: %1$s</string>
     <string name="log_low_confidence">Chưa chắc chắn — chỉ chọn khi đã kiểm tra</string>
+    <string name="log_not_yet">Chưa tới giờ — chỉ chọn khi đã kiểm tra</string>
     <string name="log_save">Lưu thực tế AI</string>
     <string name="log_saved">Đã lưu thực tế. Có thể Hoàn tác lô vừa lưu.</string>
     <string name="log_restored">Đã hoàn tác lô vừa lưu.</string>

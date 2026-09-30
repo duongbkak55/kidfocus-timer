@@ -5,6 +5,7 @@ import com.kidfocus.timer.domain.schedule.*
 import org.junit.Test
 import org.junit.Assert.*
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class DayLogDraftTest {
     private val date=LocalDate.parse("2026-09-29")
@@ -21,5 +22,13 @@ class DayLogDraftTest {
         for (change in listOf(mapOf("planRef" to "p999"),mapOf("date" to "2026-09-29"),mapOf("start" to "24:00"),mapOf("confidence" to Double.NaN),mapOf("category" to "OTHER"))) {
             assertTrue(runCatching { DayLogDraft.fromMap(mapOf("entries" to listOf(row()+change),"questions" to emptyList<String>()),request()) }.isFailure)
         }
+    }
+    @Test fun futureStartUsesBothEntryDateAndClockTime() {
+        val now = LocalDateTime.of(2026, 9, 29, 19, 0)
+        val entry = DayLogCandidate(date, null, "Reading", DayLogCategory.STUDY, 19 * 60, null, .9)
+        assertFalse(entry.isFutureAt(now))
+        assertTrue(entry.copy(startMinute = 19 * 60 + 1).isFutureAt(now))
+        assertTrue(entry.copy(date = date.plusDays(1), startMinute = 0).isFutureAt(now))
+        assertFalse(entry.copy(date = date.minusDays(1), startMinute = 23 * 60 + 59).isFutureAt(now))
     }
 }
