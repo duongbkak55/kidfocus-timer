@@ -1,0 +1,1 @@
+No KidFocus package or stack lines in crash buffer at capture time.

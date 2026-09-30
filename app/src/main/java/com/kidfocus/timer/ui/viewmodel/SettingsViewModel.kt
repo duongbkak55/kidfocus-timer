@@ -116,6 +116,11 @@ class SettingsViewModel @Inject constructor(
         save(current.copy(calmModeEnabled = enabled))
     }
 
+    fun setKeepScreenOnEnabled(enabled: Boolean) {
+        val current = settings.value ?: return
+        save(current.copy(keepScreenOnEnabled = enabled))
+    }
+
     // ---- PIN management ------------------------------------------------------------------------
 
     /**

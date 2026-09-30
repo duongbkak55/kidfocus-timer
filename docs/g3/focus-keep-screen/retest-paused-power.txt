@@ -1,0 +1,3 @@
+paused_elapsed_seconds=78
+mWakefulness=Awake
+mHoldScreenWindow=null

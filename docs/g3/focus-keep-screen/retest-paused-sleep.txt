@@ -1,0 +1,9 @@
+elapsed_after_stay_awake_disabled=82
+mWakefulness=Awake
+mStayOn=false
+mHoldScreenWindow=null
+Later read after disabling screensaver temporarily:
+mWakefulness=Dozing
+mScreenState=DOZE
+deviceLocked=1
+Pixel Always-on Display was enabled (doze_always_on=1); physical display OFF was not observed.

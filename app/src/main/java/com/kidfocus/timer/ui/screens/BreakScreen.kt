@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import com.kidfocus.timer.R
 import com.kidfocus.timer.domain.model.TimerPhase
 import com.kidfocus.timer.ui.components.CircularTimer
+import com.kidfocus.timer.ui.components.KeepScreenOnWhileRunning
 import com.kidfocus.timer.ui.components.MascotWidget
 import com.kidfocus.timer.ui.theme.BreakGreen
 import com.kidfocus.timer.ui.theme.KidFocusTheme
@@ -54,6 +55,7 @@ fun BreakScreen(
     val colors = KidFocusTheme.colors
     val timerState by timerViewModel.timerState.collectAsState()
     val settings by settingsViewModel.settings.collectAsState()
+    KeepScreenOnWhileRunning(timerState.isRunning && (settings?.keepScreenOnEnabled ?: true))
 
     // Bind service when screen enters composition and unbind when it leaves
     DisposableEffect(Unit) {

@@ -42,6 +42,7 @@ class SettingsDataStore @Inject constructor(
         val GEMINI_API_KEY = stringPreferencesKey("gemini_api_key")
         val LEARNING_AGE_BAND = stringPreferencesKey("learning_age_band")
         val CALM_MODE_ENABLED = booleanPreferencesKey("calm_mode_enabled")
+        val KEEP_SCREEN_ON_ENABLED = booleanPreferencesKey("keep_screen_on_enabled")
         val ACTIVE_CHILD_PROFILE_ID = stringPreferencesKey("active_child_profile_id")
         val SCHEDULE_ALARM_REMINDER_DISMISSED = booleanPreferencesKey("schedule_alarm_reminder_dismissed")
     }
@@ -111,6 +112,7 @@ class SettingsDataStore @Inject constructor(
             learningAgeBand = prefs[Keys.LEARNING_AGE_BAND]
                 ?: TimerSettings.DEFAULT_LEARNING_AGE_BAND,
             calmModeEnabled = prefs[Keys.CALM_MODE_ENABLED] ?: false,
+            keepScreenOnEnabled = prefs[Keys.KEEP_SCREEN_ON_ENABLED] ?: true,
             activeChildProfileId = prefs[Keys.ACTIVE_CHILD_PROFILE_ID]
                 ?: TimerSettings.DEFAULT_CHILD_PROFILE_ID,
         )
@@ -128,6 +130,7 @@ class SettingsDataStore @Inject constructor(
             prefs[Keys.DAILY_GOAL_MINUTES] = settings.dailyGoalMinutes
             prefs[Keys.LEARNING_AGE_BAND] = settings.learningAgeBand
             prefs[Keys.CALM_MODE_ENABLED] = settings.calmModeEnabled
+            prefs[Keys.KEEP_SCREEN_ON_ENABLED] = settings.keepScreenOnEnabled
             prefs[Keys.ACTIVE_CHILD_PROFILE_ID] = settings.activeChildProfileId
 
             if (settings.pinHash != null) {
