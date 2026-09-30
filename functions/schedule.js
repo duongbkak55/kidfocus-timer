@@ -1,6 +1,7 @@
 const {Buffer} = require("node:buffer");
 const advise = require("./schedule-advise");
 const log = require("./schedule-log");
+const {providerSchema} = require("./provider-schema");
 const DAYS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 const TASK_TYPES = new Set([
   "MORNING_STUDY", "AFTERNOON_STUDY", "HOMEWORK", "READING", "WEEKEND_STUDY", "MUSIC_PRACTICE", "LEARNING_GAMES",
@@ -122,7 +123,7 @@ function providerBody(input, model) {
   const content = input.image ? [{type: "text", text: context},
     {type: "image_url", image_url: {url: `data:image/jpeg;base64,${input.image}`}}] : context;
   return {model, temperature: 0, max_tokens: 2000, provider: {data_collection: "deny"},
-    response_format: {type: "json_schema", json_schema: {name: "schedule_draft", strict: false, schema: DRAFT_SCHEMA}},
+    response_format: {type: "json_schema", json_schema: {name: "schedule_draft", strict: false, schema: providerSchema(DRAFT_SCHEMA)}},
     messages: [{role: "system", content: SYSTEM_PROMPT + (input.image ? "\n" + IMAGE_PROMPT : "")}, {role: "user", content}]};
 }
 // Dependencies make the production path testable without network or Firebase writes.

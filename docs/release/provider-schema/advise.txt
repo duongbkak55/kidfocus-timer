@@ -1,0 +1,20 @@
+
+> eval:schedule
+> node scripts/eval-schedule.js --advise
+
+advise model: google/gemini-2.5-flash-lite
+advise sleep-grade1: FAIL CONSTRAINT
+advise late-homework: PASS
+advise screen-bed: FAIL CONSTRAINT
+advise overlap: PASS
+advise weekend-drift: FAIL CONSTRAINT
+advise preschool-no-nap: FAIL CONSTRAINT
+advise long-focus: FAIL CONSTRAINT
+advise school-fixed: PASS
+advise midnight-bed: FAIL CONSTRAINT
+advise wake-later: FAIL CONSTRAINT
+advise remove-screen: PASS
+advise note-injection: FAIL INVALID_RESPONSE
+ADVISE constraints: 4/12 (33.3%). Medical-language checks also require human review.
+advise tokens per response with usage: in 664.8, out 209.9 (12 responses)
+EVAL_EXIT 1

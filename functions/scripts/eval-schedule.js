@@ -4,6 +4,7 @@ const fs = require("node:fs/promises");
 const path = require("node:path");
 const textFixtures = require("../test/fixtures/schedule-parse.vi.json");
 const imageFixtures = require("../test/fixtures/schedule-images.vi.json");
+const {callProvider, usageMeter, failureCode} = require("./eval-schedule-live-common");
 function fields(draft) {
   const hourGroups = (kind, times) => {
     const groups = new Map();
@@ -22,25 +23,23 @@ function fields(draft) {
 }
 function minutes(time) { const [h, m] = time.split(":").map(Number); return h * 60 + m; }
 async function evaluate(fixtures, kind) {
+  const model = (kind === "image" ? process.env.AI_SCHEDULE_VISION_MODEL : process.env.AI_SCHEDULE_MODEL) || "google/gemini-2.5-flash-lite";
+  console.log(`${kind} model: ${model}`);
+  const usage = usageMeter();
   const scores = {days: 0, start: 0, duration: 0};
   const totals = {days: 0, start: 0, duration: 0};
-  let failed = 0; let questionsCorrect = 0; let questionCases = 0;
-  for (const fixture of fixtures.cases) {
+  let failed = 0; let questionsCorrect = 0; let questionCases = 0; let exactCases = 0;
+  for (const [index, fixture] of fixtures.cases.entries()) {
     const expected = fields(validateDraft(fixture.expected));
-    let actual = []; let draft = null;
+    let actual = []; let draft = null; let failure = null;
     try {
       const image = fixture.imageFile ? validateImage((await fs.readFile(path.join(__dirname, "../test/fixtures", fixture.imageFile))).toString("base64")) : undefined;
-      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST", headers: {"Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`, "Content-Type": "application/json"},
-        body: JSON.stringify(providerBody({ageBand: fixtures.ageBand, today: fixtures.today, locale: fixtures.locale,
+      const payload = await callProvider(providerBody({ageBand: fixtures.ageBand, today: fixtures.today, locale: fixtures.locale,
           text: fixture.text, current: [], currentSchool: fixture.currentSchool || [], ...(image ? {image} : {})},
-        (image ? process.env.AI_SCHEDULE_VISION_MODEL : process.env.AI_SCHEDULE_MODEL) || "google/gemini-2.5-flash-lite")),
-        signal: AbortSignal.timeout(30_000),
-      });
-      if (!response.ok) throw new Error("PROVIDER_FAILED");
-      const payload = await response.json();
+        model));
+      usage.add(payload);
       draft = validateDraft(payload.choices?.[0]?.message?.content); actual = fields(draft);
-    } catch { failed++; }
+    } catch (error) { failed++; failure = failureCode(error); }
     // Missing/extra fields and hallucinated items count as failures.
     const count = Math.max(expected.length, actual.length, 1);
     for (let i = 0; i < count; i++) {
@@ -54,20 +53,28 @@ async function evaluate(fixtures, kind) {
       questionCases++;
       if (draft && draft.questions.length > 0 && actual.length === expected.length) questionsCorrect++;
     }
+    const caseCorrect = draft && JSON.stringify(actual) === JSON.stringify(expected) &&
+      (draft.questions.length > 0) === (fixture.expected.questions.length > 0);
+    if (caseCorrect) exactCases++;
     // Synthetic case identifiers only; never output photos or model text.
-    console.log(`${kind} ${fixture.id || fixture.text.slice(0, 40)}: ${draft ? "validated" : "failed"}`);
+    console.log(`${kind} ${fixture.id || `${kind}-${String(index + 1).padStart(2, "0")}`}: ${caseCorrect ? "PASS" : draft ? "FAIL SEMANTIC" : `FAIL ${failure}`}`);
   }
   console.log(`${kind}: ${fixtures.cases.length} cases; failed responses: ${failed}`);
+  console.log(`Exact cases: ${exactCases}/${fixtures.cases.length} (${(100 * exactCases / fixtures.cases.length).toFixed(1)}%)`);
   for (const [field, correct] of Object.entries(scores)) console.log(`${field}: ${(100 * correct / Math.max(1, totals[field])).toFixed(1)}% (${correct}/${totals[field]})`);
   console.log(`Missing-information questions: ${questionsCorrect}/${questionCases}`);
+  usage.print(kind);
   // Gate each suite independently: good text scores cannot conceal bad vision scores.
-  if (failed || questionsCorrect < questionCases || scores.days / totals.days < 0.9 || scores.start / totals.start < 0.9) process.exitCode = 1;
+  if (failed || questionsCorrect < questionCases || exactCases / fixtures.cases.length < 0.9 ||
+    scores.days / totals.days < 0.9 || scores.start / totals.start < 0.9 ||
+    totals.duration && scores.duration / totals.duration < 0.9) process.exitCode = 1;
 }
 async function main() {
   if (!process.env.OPENROUTER_API_KEY) {
     console.error("Set OPENROUTER_API_KEY to run the manual, paid schedule evaluation."); process.exitCode = 1; return;
   }
   if (process.argv.includes("--advise")) { await require("./eval-schedule-advise").evaluate(); return; }
+  if (process.argv.includes("--log")) { await require("./eval-schedule-log-live").evaluate(); return; }
   if (!process.argv.includes("--images")) await evaluate(textFixtures, "text");
   if (!process.argv.includes("--text")) await evaluate(imageFixtures, "image");
 }

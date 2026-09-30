@@ -141,6 +141,12 @@
         "value": "google/gemini-2.5-flash-lite"
       },
       "valueType": "STRING"
+    },
+    "ai_schedule_log_cost": {
+      "defaultValue": {
+        "value": "1"
+      },
+      "valueType": "NUMBER"
     }
   },
   "version": {

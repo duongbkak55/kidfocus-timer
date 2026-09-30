@@ -1,0 +1,35 @@
+
+> eval:schedule
+> node scripts/eval-schedule.js --text
+
+text Thứ 3, thứ 5 học tiếng Anh 6 giờ tối 1 t: failed
+text Tối thứ 3 đọc sách lúc 7h15 trong 20 phú: failed
+text Chiều T5 tập đàn 4 giờ 30 phút, học 45 p: failed
+text Thứ hai tập thể dục 6 rưỡi sáng trong 15: failed
+text Mỗi ngày đánh răng lúc 19:30 trong 5 phú: failed
+text Ngày thường làm bài tập từ 18h trong 30 : failed
+text Cuối tuần vẽ tranh lúc 9h sáng trong 40 : failed
+text Mỗi ngày trừ chủ nhật ăn sáng lúc 7h15 t: failed
+text Thứ 4 học thêm toán 1 tiếng lúc 17h.: failed
+text Mỗi ngày ngủ lúc 9 rưỡi tối, dậy 6h15 sá: failed
+text Ngày thường ngủ 20h45, dậy 6h30 sáng.: failed
+text Cuối tuần dậy 7 giờ sáng, ngủ 21h tối.: failed
+text Ngày thường học ở trường từ 7h15 đến 11h: failed
+text Ngày thường ca sáng 7h15 đến 11h30, ca c: failed
+text Thứ 7 học ở trường từ 8h đến 10h.: failed
+text Chủ nhật chơi ngoài trời 4 giờ chiều tro: failed
+text T2 T4 T6 tắm lúc 18:15 trong 15 phút.: failed
+text Ngày thường trừ thứ 4 đọc sách 20h trong: failed
+text Thứ 7 dọn phòng lúc 9:00 trong 30 phút v: failed
+text Tối thứ hai làm bài tập lúc 8 rưỡi trong: failed
+text Chủ nhật ngủ lúc 00:30 đêm và thứ hai dậ: failed
+text Thứ 5 học toán một tiếng.: failed
+text Đọc sách lúc 7h tối trong 20 phút.: failed
+text Thứ 3 học tiếng Anh lúc 6 rưỡi, trong 1 : failed
+text Thứ 6 đọc sách lúc 19h.: failed
+text Mai tập thể dục lúc 6h30 sáng trong 20 p: failed
+text: 26 cases; failed responses: 26
+days: 0.0% (0/32)
+start: 0.0% (0/32)
+duration: 0.0% (0/20)
+Missing-information questions: 0/4

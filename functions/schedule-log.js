@@ -1,4 +1,5 @@
 const {grounding} = require("./schedule-log-grounding");
+const {providerSchema} = require("./provider-schema");
 // LOG describes actual activity, never changes the recurring plan.
 const CATEGORIES = ["STUDY", "HYGIENE", "CHORES", "ENTERTAINMENT", "SCHOOL", "SLEEP", "WAKE", "ROUTINE", "OTHER"];
 const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -79,7 +80,7 @@ function validateLog(raw, input) {
 function providerBody(input, model) {
   const {text, date, plans, ageBand, locale} = input;
   return {model, temperature: 0, max_tokens: 2500, provider: {data_collection: "deny"},
-    response_format: {type: "json_schema", json_schema: {name: "schedule_log", strict: false, schema: LOG_SCHEMA}},
+    response_format: {type: "json_schema", json_schema: {name: "schedule_log", strict: false, schema: providerSchema(LOG_SCHEMA)}},
     messages: [{role: "system", content: SYSTEM_PROMPT}, {role: "user", content: JSON.stringify({text, date, plans, ageBand, locale})}]};
 }
 module.exports = {CATEGORIES, SYSTEM_PROMPT, LOG_SCHEMA, validateInput, validateLog, providerBody};

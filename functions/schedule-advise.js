@@ -1,4 +1,5 @@
 // ADVISE accepts compact references only; no database/profile identifiers.
+const {providerSchema} = require("./provider-schema");
 const DAYS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 const RULES = ["SLEEP_SHORT", "SOCIAL_JETLAG", "SCREEN_BEFORE_BED", "OVERLAP", "LATE_HOMEWORK", "FOCUS_TOO_LONG", "NO_FREE_TIME", "MORNING_LATE_PATTERN", "BED_DRIFT", "TASK_OVERRUN", "OFTEN_SKIPPED"];
 const TAGS = ["DAYTIME_SLEEPY", "HARD_TO_WAKE", "TANTRUM_EVENING", "LONG_HOMEWORK", "LITTLE_PLAY"];
@@ -129,7 +130,7 @@ function validateAdvice(raw, input) {
 function providerBody(input, model) {
   const context = {...input}; delete context.requestId;
   return {model, max_tokens: 1500, temperature: 0.2, provider: {data_collection: "deny"},
-    response_format: {type: "json_schema", json_schema: {name: "schedule_advice", strict: false, schema: ADVICE_SCHEMA}},
+    response_format: {type: "json_schema", json_schema: {name: "schedule_advice", strict: false, schema: providerSchema(ADVICE_SCHEMA)}},
     messages: [{role: "system", content: SYSTEM_PROMPT}, {role: "user", content: JSON.stringify(context)}]};
 }
 module.exports = {TAGS, RULES, ADVICE_SCHEMA, SYSTEM_PROMPT, validateInput, validateAdvice, providerBody, touchesSchool};

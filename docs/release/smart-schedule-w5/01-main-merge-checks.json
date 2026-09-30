@@ -1,0 +1,17 @@
+{
+  "main_commit": "d775692",
+  "merged_feature_commit": "99775f6",
+  "android_tests": {
+    "suites": 46,
+    "tests": 300,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "android_lint": {
+    "errors": 0,
+    "warnings": 166
+  },
+  "functions_tests": 158,
+  "build": "PASS"
+}
