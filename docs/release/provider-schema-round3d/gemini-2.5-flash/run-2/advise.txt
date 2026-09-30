@@ -1,0 +1,21 @@
+
+> eval:schedule
+> node scripts/eval-schedule.js --advise
+
+advise model: google/gemini-2.5-flash
+advise sleep-grade1: PASS
+advise late-homework: PASS
+advise screen-bed: PASS
+advise overlap: PASS
+advise weekend-drift: PASS
+advise preschool-no-nap: PASS
+advise long-focus: PASS
+advise school-fixed: PASS
+advise midnight-bed: PASS
+advise wake-later: PASS
+advise remove-screen: PASS
+advise note-injection: FAIL INVALID_RESPONSE
+ADVISE constraints: 11/12 (91.7%). Medical-language checks also require human review.
+advise tokens per response with usage: in 1269.8, out 191.4 (12 responses)
+advise actual OpenRouter cost USD per response: $0.00082138 (12 responses)
+EVAL_EXIT 0

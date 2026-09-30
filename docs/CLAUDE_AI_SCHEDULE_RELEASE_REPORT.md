@@ -2,7 +2,7 @@
 
 Ngày: 2026-09-29. Dev: Codex. Duong duyệt thực hiện ba bước theo thứ tự, dừng nếu bước thất bại.
 
-**Trạng thái mới nhất 2026-10-01:** F-EVAL-2 đã so sánh hai model với diff từng ca; chỉ PARSE text trên Gemini 2.5 Flash qua gate 90%. Các bộ còn lại chưa đạt, nên không merge/deploy/publish. Xem kết quả mới ở cuối mục 2; các số liệu trước đó là lịch sử chẩn đoán.
+**Trạng thái mới nhất 2026-10-01:** F-EVAL-3 đã đo hai lượt trên từng bộ và chi phí USD OpenRouter thật. PARSE text và LOG của Gemini 2.5 Flash đạt gate theo lượt thấp hơn; ADVISE và ảnh chưa đạt. Không merge/deploy/publish. Xem kết quả mới ở cuối mục 2; các số liệu trước đó là lịch sử chẩn đoán.
 
 ## 1. Merge, kiểm và push — PASS
 
@@ -144,6 +144,34 @@ ID ca sai, theo cùng lần chạy trong bảng:
 Diff cho thấy Lite text `text-18` thêm SAT/SUN dù đầu vào chỉ ngày thường trừ thứ 4; `text-24` tự chọn 18:30 dù câu không xác định sáng/tối. Ảnh của Flash thường đúng giờ nhưng thêm ngày học hoặc hỏi khi thông tin đã đủ; `school-ambiguous-all-day` tự tạo ca cả ngày dù thiếu giờ nghỉ trưa. LOG Flash nhận đúng ba ca tiếng Anh đầu; `log-en-04` còn bỏ `planRef=p0` khi hoạt động khớp kế hoạch. Với ADVISE, `sleep-grade1` fixture mong `SET_BED 21:15` từ 22:30 (dịch 75 phút), trong khi prompt/thiết kế yêu cầu từng bước tối đa 30 phút; model thường trả 22:00 hoặc 22:15 và không xóa finding ngay trong một bước, nên trượt `mustFix`. Đây là điểm cần Claude quyết định về cách chấm kế hoạch nhiều bước; **chưa đổi grader/fixture**. Các ca khác như `long-focus` trả RESIZE 45 thay vì mức 30 cần thiết, là lỗi model thực sự.
 
 [Diff JSON từng ca](release/provider-schema-round2/diffs/) và output điểm theo từng model: [Lite](release/provider-schema-round2/gemini-2.5-flash-lite/) · [Flash](release/provider-schema-round2/gemini-2.5-flash/). Gate release vẫn **không đạt** vì phải ≥90% ở cả bốn bộ. Chưa chọn model production, chưa merge/deploy/publish. Functions Node 22.23.3: **164/164 test PASS**, ESLint PASS; Android JDK 17 `testDebugUnitTest assembleDebug lintDebug` PASS (cache hợp lệ); `git diff --check` PASS. Working tree gốc còn nguyên diff SHA-256 `667b37fae661a56e01d326cdaa98c9494e0535303ef36c9222e82cabb1c04725`.
+
+### F-EVAL-3: giờ đích, grader ảnh và chi phí thực (2026-10-01)
+
+Theo review Vòng 3 của Claude, sửa ADVISE để SET_BED/SET_WAKE trả **giờ đích** xóa finding; app tự chia bước bằng “Áp dụng dần”. Prompt tính ngưỡng ngủ, ngưỡng FOCUS_TOO_LONG theo tuổi, thời điểm kết thúc bài học/màn hình trước giờ ngủ và trung bình hai ngày cuối tuần. Không sửa validator hay fixture ADVISE. Prompt ảnh chỉ lấy ngày có ô môn học/giờ; cột trống không học. Prompt LOG làm rõ ngày tham chiếu, qua nửa đêm, hoạt động có giờ bắt đầu nhưng không có giờ kết thúc, `10g`, `at 7 ... 8pm`, hoạt động không làm và câu chưa chắc chắn.
+
+**Thay đổi grader chỉ cho ảnh:** nếu mọi trường lịch đã đúng mà model hỏi thêm, ca vẫn PASS vì không sinh dữ liệu lịch sai; lưu và báo riêng tỷ lệ câu hỏi thừa (mục tiêu ≤20%). Nếu cần hỏi mà model không hỏi, hoặc bất kỳ trường lịch nào sai, ca vẫn FAIL. PARSE text và các bộ khác giữ nguyên grader. Unit test bao phủ cả bốn trường hợp. Đây là thay đổi được Claude quyết định sau khi diff cho thấy `school-morning`/`school-afternoon` đúng field nhưng hỏi dư. Không nới fixture.
+
+Manual eval gửi `usage: {include: true}` để lấy `usage.cost` USD do OpenRouter trả về, không ước tính theo token; chỉ harness eval dùng cờ này, production request giữ nguyên. [OpenRouter xác nhận cách yêu cầu usage](https://openrouter.ai/support). Mọi response của các lượt cuối đều có chi phí. Key chỉ truyền trong môi trường tiến trình, không lưu; `provider.data_collection: deny` và `json_schema strict:true` giữ nguyên. Flash chạy text/ADVISE/LOG/ảnh; Pro chỉ chạy ảnh; không dùng model `:free`. Mỗi phiên bản prompt cuối cùng của từng bộ chạy **hai lượt đầy đủ** trên cùng fixture. Gate lấy lượt thấp hơn; cột USD là trung bình chi phí **thực tế mỗi response**, không phải giá niêm yết.
+
+| Bộ/model cuối | Lượt 1 | Lượt 2 | Gate thấp hơn | USD/lượt 1 | USD/lượt 2 | Gate ≥90% |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| Text / Gemini 2.5 Flash | 26/26 (100%) | 26/26 (100%) | 100% | $0.00056463 | $0.00056406 | Đạt |
+| LOG / Gemini 2.5 Flash | 33/35 (94,3%) | 33/35 (94,3%) | 94,3% | $0.00070341 | $0.00067026 | Đạt |
+| ADVISE / Gemini 2.5 Flash | 10/12 (83,3%) | 11/12 (91,7%) | 83,3% | $0.00085970 | $0.00082138 | Trượt |
+| Ảnh / Gemini 2.5 Flash | 8/12 (66,7%) | 8/12 (66,7%) | 66,7% | $0.00125106 | $0.00098373 | Trượt |
+| Ảnh / Gemini 2.5 Pro | 9/12 (75%) | 7/12 (58,3%) | 58,3% | $0.01796688 | $0.01890597 | Trượt |
+
+Chi phí trung bình hai lượt theo model/mode: Flash text **$0.00056435**, LOG **$0.00068684**, ADVISE **$0.00084054**, ảnh **$0.00111740**; Pro ảnh **$0.01843643**. Ảnh Flash hỏi thừa **2/9 (22,2%)** và **1/9 (11,1%)** ca hợp lệ không cần hỏi; Pro **0/7 (0%)** và **1/6 (16,7%)**. Câu hỏi bắt buộc đúng: Flash ảnh **1/3** ở cả hai lượt, Pro **2/3** rồi **1/3**. Mục tiêu ma sát ≤20% cũng không ổn định ở Flash.
+
+Đã giữ bằng chứng các lần tinh chỉnh, không chỉ lần tốt nhất: [vòng prompt đầu](release/provider-schema-round3/), [vòng ADVISE/LOG thứ hai](release/provider-schema-round3b/), [vòng ADVISE thứ ba](release/provider-schema-round3c/), [vòng ADVISE cuối](release/provider-schema-round3d/). Mỗi thư mục có output điểm, cost và JSON diff `expected/actual` theo ID ca synthetic; không có ảnh thô, key hay dữ liệu trẻ thật. ADVISE lần đầu 7/12–9/12, sau công thức giờ đích 10/12–10/12, vòng cuối 10/12–11/12. LOG tăng từ 28/35–29/35 lên 33/35–33/35; điểm của mỗi phiên bản cuối được lấy theo lượt thấp hơn ở bảng.
+
+Các ca còn sai ở **lượt thấp hơn cuối**:
+
+- ADVISE: `late-homework`, `weekend-drift` bị validator từ chối (`INVALID_RESPONSE`); lượt kia chỉ `note-injection` bị từ chối. Lượt thấp hơn vẫn 10/12. Một probe riêng của `remove-screen` nhận HTTP 200 và qua validator, cho thấy lỗi invalid trước đó không lặp cố định; không sửa validator để đẩy điểm.
+- LOG: `log-vi-24` giữ confidence thấp nhưng thiếu câu hỏi xác nhận cho “chắc/có thể” (lỗi model); `log-vi-31` đặt WAKE 05:45 sang ngày sau, trong khi golden muốn cùng ngày tham chiếu với SLEEP 22:30. Cách hiểu sang ngày sau có cơ sở theo “thức dậy”; đây là ca cần Claude xét lại fixture/định nghĩa ngày, **chưa sửa golden**.
+- Ảnh Flash: `school-alternating`, `school-current-hours`, `school-one-unknown-shift`, `school-ambiguous-all-day` sai cả hai lượt, chủ yếu ngày/ca học hoặc thiếu câu hỏi khi giờ không rõ. Ảnh Pro có 3 rồi 5 response `INVALID_JSON` ở các ID khác nhau dù strict=true; chi phí cao hơn Flash và điểm thấp hơn ở lượt xấu. Không suy ra nguyên nhân JSON nếu chưa có raw provider diagnostic.
+
+**Gate release chưa đạt** do ADVISE và cả hai model ảnh. Theo quyết định Vòng 3, nếu beta ra trước thì cần tắt nhập ảnh bằng cờ Remote Config; chưa đổi/publish cờ ở task này. ADVISE vẫn cần Claude review trước quyết định beta; chưa chọn model ảnh production, chưa merge/deploy. Kiểm tra F-EVAL-3: Functions Node 22.23.3 **166/166 test PASS**, ESLint PASS; Android JDK 17 `testDebugUnitTest assembleDebug lintDebug` PASS; `git diff --check` PASS. Working tree gốc vẫn có cùng diff SHA-256 `667b37fae661a56e01d326cdaa98c9494e0535303ef36c9222e82cabb1c04725`.
 
 ## 3. Triển khai và smoke — KHÔNG THỰC HIỆN do bước 2 thất bại
 

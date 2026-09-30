@@ -1,0 +1,974 @@
+{
+  "suite": "text",
+  "model": "google/gemini-2.5-flash",
+  "cases": [
+    {
+      "id": "text-01",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "TUE",
+              "THU"
+            ],
+            "start": "18:00",
+            "duration": 60
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "TUE",
+              "THU"
+            ],
+            "start": "18:00",
+            "duration": 60
+          }
+        ],
+        "hasQuestions": false
+      },
+      "differences": []
+    },
+    {
+      "id": "text-02",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "TUE"
+            ],
+            "start": "19:15",
+            "duration": 20
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "TUE"
+            ],
+            "start": "19:15",
+            "duration": 20
+          }
+        ],
+        "hasQuestions": false
+      },
+      "differences": []
+    },
+    {
+      "id": "text-03",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "THU"
+            ],
+            "start": "16:30",
+            "duration": 45
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "THU"
+            ],
+            "start": "16:30",
+            "duration": 45
+          }
+        ],
+        "hasQuestions": false
+      },
+      "differences": []
+    },
+    {
+      "id": "text-04",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "MON"
+            ],
+            "start": "06:30",
+            "duration": 15
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "MON"
+            ],
+            "start": "06:30",
+            "duration": 15
+          }
+        ],
+        "hasQuestions": false
+      },
+      "differences": []
+    },
+    {
+      "id": "text-05",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT",
+              "SUN"
+            ],
+            "start": "19:30",
+            "duration": 5
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT",
+              "SUN"
+            ],
+            "start": "19:30",
+            "duration": 5
+          }
+        ],
+        "hasQuestions": false
+      },
+      "differences": []
+    },
+    {
+      "id": "text-06",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "start": "18:00",
+            "duration": 30
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "start": "18:00",
+            "duration": 30
+          }
+        ],
+        "hasQuestions": false
+      },
+      "differences": []
+    },
+    {
+      "id": "text-07",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "SAT",
+              "SUN"
+            ],
+            "start": "09:00",
+            "duration": 40
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "SAT",
+              "SUN"
+            ],
+            "start": "09:00",
+            "duration": 40
+          }
+        ],
+        "hasQuestions": false
+      },
+      "differences": []
+    },
+    {
+      "id": "text-08",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT"
+            ],
+            "start": "07:15",
+            "duration": 20
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT"
+            ],
+            "start": "07:15",
+            "duration": 20
+          }
+        ],
+        "hasQuestions": false
+      },
+      "differences": []
+    },
+    {
+      "id": "text-09",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "WED"
+            ],
+            "start": "17:00",
+            "duration": 60
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "WED"
+            ],
+            "start": "17:00",
+            "duration": 60
+          }
+        ],
+        "hasQuestions": false
+      },
+      "differences": []
+    },
+    {
+      "id": "text-10",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "bed",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT",
+              "SUN"
+            ],
+            "start": "21:30",
+            "duration": null
+          },
+          {
+            "kind": "wake",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT",
+              "SUN"
+            ],
+            "start": "06:15",
+            "duration": null
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": {
+        "fields": [
+          {
+            "kind": "bed",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT",
+              "SUN"
+            ],
+            "start": "21:30",
+            "duration": null
+          },
+          {
+            "kind": "wake",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT",
+              "SUN"
+            ],
+            "start": "06:15",
+            "duration": null
+          }
+        ],
+        "hasQuestions": false
+      },
+      "differences": []
+    },
+    {
+      "id": "text-11",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "bed",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "start": "20:45",
+            "duration": null
+          },
+          {
+            "kind": "wake",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "start": "06:30",
+            "duration": null
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": {
+        "fields": [
+          {
+            "kind": "bed",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "start": "20:45",
+            "duration": null
+          },
+          {
+            "kind": "wake",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "start": "06:30",
+            "duration": null
+          }
+        ],
+        "hasQuestions": false
+      },
+      "differences": []
+    },
+    {
+      "id": "text-12",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "bed",
+            "days": [
+              "SAT",
+              "SUN"
+            ],
+            "start": "21:00",
+            "duration": null
+          },
+          {
+            "kind": "wake",
+            "days": [
+              "SAT",
+              "SUN"
+            ],
+            "start": "07:00",
+            "duration": null
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": {
+        "fields": [
+          {
+            "kind": "bed",
+            "days": [
+              "SAT",
+              "SUN"
+            ],
+            "start": "21:00",
+            "duration": null
+          },
+          {
+            "kind": "wake",
+            "days": [
+              "SAT",
+              "SUN"
+            ],
+            "start": "07:00",
+            "duration": null
+          }
+        ],
+        "hasQuestions": false
+      },
+      "differences": []
+    },
+    {
+      "id": "text-13",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "school",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "start": "07:15",
+            "duration": 255
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": {
+        "fields": [
+          {
+            "kind": "school",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "start": "07:15",
+            "duration": 255
+          }
+        ],
+        "hasQuestions": false
+      },
+      "differences": []
+    },
+    {
+      "id": "text-14",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "school",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "start": "07:15",
+            "duration": 255
+          },
+          {
+            "kind": "school",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "start": "13:30",
+            "duration": 180
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": {
+        "fields": [
+          {
+            "kind": "school",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "start": "07:15",
+            "duration": 255
+          },
+          {
+            "kind": "school",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "start": "13:30",
+            "duration": 180
+          }
+        ],
+        "hasQuestions": false
+      },
+      "differences": []
+    },
+    {
+      "id": "text-15",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "school",
+            "days": [
+              "SAT"
+            ],
+            "start": "08:00",
+            "duration": 120
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": {
+        "fields": [
+          {
+            "kind": "school",
+            "days": [
+              "SAT"
+            ],
+            "start": "08:00",
+            "duration": 120
+          }
+        ],
+        "hasQuestions": false
+      },
+      "differences": []
+    },
+    {
+      "id": "text-16",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "SUN"
+            ],
+            "start": "16:00",
+            "duration": 60
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "SUN"
+            ],
+            "start": "16:00",
+            "duration": 60
+          }
+        ],
+        "hasQuestions": false
+      },
+      "differences": []
+    },
+    {
+      "id": "text-17",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "MON",
+              "WED",
+              "FRI"
+            ],
+            "start": "18:15",
+            "duration": 15
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "MON",
+              "WED",
+              "FRI"
+            ],
+            "start": "18:15",
+            "duration": 15
+          }
+        ],
+        "hasQuestions": false
+      },
+      "differences": []
+    },
+    {
+      "id": "text-18",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "MON",
+              "TUE",
+              "THU",
+              "FRI"
+            ],
+            "start": "20:00",
+            "duration": 25
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "MON",
+              "TUE",
+              "THU",
+              "FRI"
+            ],
+            "start": "20:00",
+            "duration": 25
+          }
+        ],
+        "hasQuestions": false
+      },
+      "differences": []
+    },
+    {
+      "id": "text-19",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "SAT"
+            ],
+            "start": "09:00",
+            "duration": 30
+          },
+          {
+            "kind": "task",
+            "days": [
+              "SAT"
+            ],
+            "start": "19:30",
+            "duration": 20
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "SAT"
+            ],
+            "start": "09:00",
+            "duration": 30
+          },
+          {
+            "kind": "task",
+            "days": [
+              "SAT"
+            ],
+            "start": "19:30",
+            "duration": 20
+          }
+        ],
+        "hasQuestions": false
+      },
+      "differences": []
+    },
+    {
+      "id": "text-20",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "MON"
+            ],
+            "start": "20:30",
+            "duration": 30
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "MON"
+            ],
+            "start": "20:30",
+            "duration": 30
+          }
+        ],
+        "hasQuestions": false
+      },
+      "differences": []
+    },
+    {
+      "id": "text-21",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "bed",
+            "days": [
+              "SUN"
+            ],
+            "start": "00:30",
+            "duration": null
+          },
+          {
+            "kind": "wake",
+            "days": [
+              "MON"
+            ],
+            "start": "07:00",
+            "duration": null
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": {
+        "fields": [
+          {
+            "kind": "bed",
+            "days": [
+              "SUN"
+            ],
+            "start": "00:30",
+            "duration": null
+          },
+          {
+            "kind": "wake",
+            "days": [
+              "MON"
+            ],
+            "start": "07:00",
+            "duration": null
+          }
+        ],
+        "hasQuestions": false
+      },
+      "differences": []
+    },
+    {
+      "id": "text-22",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [],
+        "hasQuestions": true
+      },
+      "actual": {
+        "fields": [],
+        "hasQuestions": true
+      },
+      "differences": []
+    },
+    {
+      "id": "text-23",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [],
+        "hasQuestions": true
+      },
+      "actual": {
+        "fields": [],
+        "hasQuestions": true
+      },
+      "differences": []
+    },
+    {
+      "id": "text-24",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [],
+        "hasQuestions": true
+      },
+      "actual": {
+        "fields": [],
+        "hasQuestions": true
+      },
+      "differences": []
+    },
+    {
+      "id": "text-25",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [],
+        "hasQuestions": true
+      },
+      "actual": {
+        "fields": [],
+        "hasQuestions": true
+      },
+      "differences": []
+    },
+    {
+      "id": "text-26",
+      "pass": true,
+      "extraQuestion": false,
+      "expected": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "TUE"
+            ],
+            "start": "06:30",
+            "duration": 20
+          }
+        ],
+        "hasQuestions": false
+      },
+      "actual": {
+        "fields": [
+          {
+            "kind": "task",
+            "days": [
+              "TUE"
+            ],
+            "start": "06:30",
+            "duration": 20
+          }
+        ],
+        "hasQuestions": false
+      },
+      "differences": []
+    }
+  ]
+}

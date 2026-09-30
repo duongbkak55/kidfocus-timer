@@ -4,23 +4,35 @@ const path = require("node:path");
 async function callProvider(body) {
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST", headers: {"Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`, "Content-Type": "application/json"},
-    body: JSON.stringify(body), signal: AbortSignal.timeout(30_000),
+    body: JSON.stringify({...body, usage: {include: true}}), signal: AbortSignal.timeout(30_000),
   });
   if (!response.ok) throw new Error(`HTTP_${response.status}`);
   return response.json();
 }
 function usageMeter() {
-  let calls = 0; let input = 0; let output = 0;
+  let calls = 0; let input = 0; let output = 0; let costCalls = 0; let costUsd = 0;
   return {
     add(payload) {
       const inTokens = payload.usage?.prompt_tokens;
       const outTokens = payload.usage?.completion_tokens;
       if (Number.isFinite(inTokens) && Number.isFinite(outTokens)) { calls++; input += inTokens; output += outTokens; }
+      if (typeof payload.usage?.cost === "number" && Number.isFinite(payload.usage.cost) && payload.usage.cost >= 0) {
+        costCalls++; costUsd += payload.usage.cost;
+      }
     },
     print(label) {
       console.log(`${label} tokens per response with usage: in ${(input / Math.max(1, calls)).toFixed(1)}, out ${(output / Math.max(1, calls)).toFixed(1)} (${calls} responses)`);
+      console.log(`${label} actual OpenRouter cost USD per response: ${costCalls ? `$${(costUsd / costCalls).toFixed(8)}` : "unavailable"} (${costCalls} responses)`);
     },
   };
+}
+function gradeParseCase(kind, expectedFields, actualFields, expectedHasQuestions, actualHasQuestions, valid) {
+  const fieldsMatch = Boolean(valid) && JSON.stringify(expectedFields) === JSON.stringify(actualFields);
+  const missingQuestion = expectedHasQuestions && !actualHasQuestions;
+  const extraQuestion = Boolean(valid) && !expectedHasQuestions && actualHasQuestions;
+  // An unnecessary question in a fully correct image extraction causes friction, not false schedule data.
+  const pass = fieldsMatch && !missingQuestion && (kind === "image" || !extraQuestion);
+  return {pass, fieldsMatch, missingQuestion, extraQuestion};
 }
 function failureCode(error) {
   if (/^HTTP_\d+$/.test(error?.message)) return error.message;
@@ -45,4 +57,4 @@ async function writeCaseDiffs(suite, model, cases) {
   const filename = `${model.replace(/[^a-zA-Z0-9.-]/g, "_")}-${suite}.json`;
   await fs.writeFile(path.join(directory, filename), JSON.stringify({suite, model, cases}, null, 2) + "\n");
 }
-module.exports = {callProvider, usageMeter, failureCode, differences, writeCaseDiffs};
+module.exports = {callProvider, usageMeter, failureCode, differences, writeCaseDiffs, gradeParseCase};

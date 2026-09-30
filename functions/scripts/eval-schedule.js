@@ -4,7 +4,7 @@ const fs = require("node:fs/promises");
 const path = require("node:path");
 const textFixtures = require("../test/fixtures/schedule-parse.vi.json");
 const imageFixtures = require("../test/fixtures/schedule-images.vi.json");
-const {callProvider, usageMeter, failureCode, differences, writeCaseDiffs} = require("./eval-schedule-live-common");
+const {callProvider, usageMeter, failureCode, differences, writeCaseDiffs, gradeParseCase} = require("./eval-schedule-live-common");
 function fields(draft) {
   const hourGroups = (kind, times) => {
     const groups = new Map();
@@ -30,6 +30,7 @@ async function evaluate(fixtures, kind) {
   const totals = {days: 0, start: 0, duration: 0};
   const caseDiffs = [];
   let failed = 0; let questionsCorrect = 0; let questionCases = 0; let exactCases = 0;
+  let extraQuestions = 0; let noQuestionResponseCases = 0;
   for (const [index, fixture] of fixtures.cases.entries()) {
     const expected = fields(validateDraft(fixture.expected));
     let actual = []; let draft = null; let failure = null;
@@ -50,17 +51,22 @@ async function evaluate(fixtures, kind) {
         if (draft && expected[i]?.kind === actual[i]?.kind && JSON.stringify(expected[i]?.[field]) === JSON.stringify(actual[i]?.[field])) scores[field]++;
       }
     }
+    const grade = gradeParseCase(kind, expected, actual, fixture.expected.questions.length > 0,
+      Boolean(draft?.questions.length), Boolean(draft));
     if (fixture.expected.questions.length) {
       questionCases++;
-      if (draft && draft.questions.length > 0 && actual.length === expected.length) questionsCorrect++;
+      if (grade.fieldsMatch && draft.questions.length > 0) questionsCorrect++;
+    } else if (kind === "image" && draft) {
+      noQuestionResponseCases++;
+      if (grade.extraQuestion) extraQuestions++;
     }
-    const caseCorrect = draft && JSON.stringify(actual) === JSON.stringify(expected) &&
-      (draft.questions.length > 0) === (fixture.expected.questions.length > 0);
+    const caseCorrect = grade.pass;
     if (caseCorrect) exactCases++;
     const expectedResult = {fields: expected, hasQuestions: fixture.expected.questions.length > 0};
     const actualResult = draft ? {fields: actual, hasQuestions: draft.questions.length > 0} : null;
     caseDiffs.push({id: fixture.id || `${kind}-${String(index + 1).padStart(2, "0")}`,
-      expected: expectedResult, actual: actualResult, differences: differences(expectedResult, actualResult),
+      pass: caseCorrect, extraQuestion: grade.extraQuestion, expected: expectedResult, actual: actualResult,
+      differences: differences(expectedResult, actualResult),
       ...(failure ? {failure} : {})});
     // Synthetic case identifiers only; never output photos or model text.
     console.log(`${kind} ${fixture.id || `${kind}-${String(index + 1).padStart(2, "0")}`}: ${caseCorrect ? "PASS" : draft ? "FAIL SEMANTIC" : `FAIL ${failure}`}`);
@@ -69,6 +75,7 @@ async function evaluate(fixtures, kind) {
   console.log(`Exact cases: ${exactCases}/${fixtures.cases.length} (${(100 * exactCases / fixtures.cases.length).toFixed(1)}%)`);
   for (const [field, correct] of Object.entries(scores)) console.log(`${field}: ${(100 * correct / Math.max(1, totals[field])).toFixed(1)}% (${correct}/${totals[field]})`);
   console.log(`Missing-information questions: ${questionsCorrect}/${questionCases}`);
+  if (kind === "image") console.log(`Unnecessary questions: ${extraQuestions}/${noQuestionResponseCases} valid no-question cases (${(100 * extraQuestions / Math.max(1, noQuestionResponseCases)).toFixed(1)}%; target <=20%)`);
   usage.print(kind);
   await writeCaseDiffs(kind, model, caseDiffs);
   // Gate each suite independently: good text scores cannot conceal bad vision scores.

@@ -1,0 +1,443 @@
+{
+  "suite": "advise",
+  "model": "google/gemini-2.5-flash",
+  "cases": [
+    {
+      "id": "sleep-grade1",
+      "expected": {
+        "mustFix": [
+          "SLEEP_SHORT"
+        ],
+        "schoolUnchanged": true,
+        "noMedicalAdvice": true
+      },
+      "actual": {
+        "summary": "Để cải thiện tình trạng thiếu ngủ và giúp con không còn buồn ngủ trên lớp, tôi đề xuất điều chỉnh giờ đi ngủ sớm hơn vào tất cả các ngày trong tuần. Việc này sẽ đảm bảo con có đủ 9 tiếng ngủ cần thiết cho lứa tuổi l1.",
+        "proposals": [
+          {
+            "op": "SET_BED",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT",
+              "SUN"
+            ],
+            "reason": "Con đang thiếu ngủ trầm trọng, cần đi ngủ sớm hơn để đảm bảo đủ 9 tiếng ngủ mỗi đêm theo khuyến nghị cho lứa tuổi l1 (615 phút).",
+            "fixes": [
+              "SLEEP_SHORT"
+            ],
+            "start": "21:15"
+          }
+        ],
+        "tags": [
+          "DAYTIME_SLEEPY"
+        ]
+      },
+      "differences": []
+    },
+    {
+      "id": "late-homework",
+      "expected": {
+        "mustFix": [
+          "LATE_HOMEWORK"
+        ],
+        "schoolUnchanged": true,
+        "noMedicalAdvice": true
+      },
+      "actual": {
+        "summary": "Hoạt động \"Hoạt động\" vào thứ Hai kết thúc quá gần giờ đi ngủ. Để đảm bảo con có đủ thời gian thư giãn trước khi ngủ, hãy di chuyển hoạt động này sớm hơn.",
+        "proposals": [
+          {
+            "op": "MOVE",
+            "days": [
+              "MON"
+            ],
+            "reason": "Hoạt động \"Hoạt động\" kết thúc quá gần giờ đi ngủ, có thể ảnh hưởng đến chất lượng giấc ngủ của con. Di chuyển hoạt động này sớm hơn sẽ giúp con có đủ thời gian thư giãn trước khi ngủ.",
+            "fixes": [
+              "LATE_HOMEWORK"
+            ],
+            "taskRef": "t0",
+            "start": "19:30"
+          }
+        ],
+        "tags": []
+      },
+      "differences": []
+    },
+    {
+      "id": "screen-bed",
+      "expected": {
+        "mustFix": [
+          "SCREEN_BEFORE_BED"
+        ],
+        "schoolUnchanged": true,
+        "noMedicalAdvice": true
+      },
+      "actual": {
+        "summary": "Hoạt động \"Hoạt động\" kết thúc lúc 21:00, cùng giờ đi ngủ, có thể ảnh hưởng đến giấc ngủ. Nên di chuyển hoạt động này sớm hơn để có ít nhất 30 phút thư giãn trước khi ngủ.",
+        "proposals": [
+          {
+            "op": "MOVE",
+            "days": [
+              "MON"
+            ],
+            "reason": "Để có ít nhất 30 phút thư giãn trước khi đi ngủ, giúp trẻ dễ ngủ hơn.",
+            "fixes": [
+              "SCREEN_BEFORE_BED"
+            ],
+            "taskRef": "t0",
+            "start": "20:00"
+          }
+        ],
+        "tags": []
+      },
+      "differences": [
+        {
+          "path": "$.constraints",
+          "expected": {
+            "mustFix": [
+              "SCREEN_BEFORE_BED"
+            ],
+            "schoolUnchanged": true,
+            "noMedicalAdvice": true
+          },
+          "actual": {
+            "summary": "Hoạt động \"Hoạt động\" kết thúc lúc 21:00, cùng giờ đi ngủ, có thể ảnh hưởng đến giấc ngủ. Nên di chuyển hoạt động này sớm hơn để có ít nhất 30 phút thư giãn trước khi ngủ.",
+            "proposals": [
+              {
+                "op": "MOVE",
+                "days": [
+                  "MON"
+                ],
+                "reason": "Để có ít nhất 30 phút thư giãn trước khi đi ngủ, giúp trẻ dễ ngủ hơn.",
+                "fixes": [
+                  "SCREEN_BEFORE_BED"
+                ],
+                "taskRef": "t0",
+                "start": "20:00"
+              }
+            ],
+            "tags": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "overlap",
+      "expected": {
+        "mustFix": [
+          "OVERLAP"
+        ],
+        "schoolUnchanged": true,
+        "noMedicalAdvice": true
+      },
+      "actual": {
+        "summary": "Hai hoạt động 'Hoạt động' đang bị trùng giờ vào thứ Hai. Để giải quyết, tôi đề xuất dời một hoạt động sang thời điểm khác.",
+        "proposals": [
+          {
+            "op": "MOVE",
+            "days": [
+              "MON"
+            ],
+            "reason": "Hai hoạt động đang trùng giờ, cần dời một hoạt động để tránh chồng chéo.",
+            "fixes": [
+              "OVERLAP"
+            ],
+            "taskRef": "t1",
+            "start": "17:30"
+          }
+        ],
+        "tags": []
+      },
+      "differences": []
+    },
+    {
+      "id": "weekend-drift",
+      "expected": {
+        "mustFix": [
+          "SOCIAL_JETLAG"
+        ],
+        "schoolUnchanged": true,
+        "noMedicalAdvice": true
+      },
+      "actual": {
+        "summary": "Để giảm \"lệch múi giờ xã hội\" vào cuối tuần, bạn nên điều chỉnh giờ đi ngủ cuối tuần sớm hơn để gần với giờ đi ngủ các ngày trong tuần. Điều này giúp duy trì nhịp sinh học ổn định hơn cho trẻ.",
+        "proposals": [
+          {
+            "op": "SET_BED",
+            "days": [
+              "SAT",
+              "SUN"
+            ],
+            "reason": "Giờ đi ngủ cuối tuần đang muộn hơn nhiều so với ngày thường, gây ra tình trạng \"lệch múi giờ xã hội\". Điều chỉnh giờ đi ngủ sớm hơn sẽ giúp đồng bộ nhịp sinh học của trẻ.",
+            "fixes": [
+              "SOCIAL_JETLAG"
+            ],
+            "start": "21:00"
+          }
+        ],
+        "tags": []
+      },
+      "differences": []
+    },
+    {
+      "id": "preschool-no-nap",
+      "expected": {
+        "mustFix": [
+          "SLEEP_SHORT"
+        ],
+        "schoolUnchanged": true,
+        "noMedicalAdvice": true
+      },
+      "actual": {
+        "summary": "Để cải thiện tình trạng thiếu ngủ, tôi đề xuất điều chỉnh giờ đi ngủ sớm hơn. Trẻ 4-5 tuổi cần ngủ ít nhất 10 tiếng mỗi đêm. Với giờ thức dậy lúc 06:00, giờ đi ngủ cần là 20:00 để đảm bảo đủ giấc.",
+        "proposals": [
+          {
+            "op": "SET_BED",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT",
+              "SUN"
+            ],
+            "reason": "Giờ đi ngủ hiện tại (21:00) không đủ đảm bảo 10 tiếng ngủ cần thiết cho trẻ 4-5 tuổi khi thức dậy lúc 06:00. Điều chỉnh giờ đi ngủ sớm hơn sẽ giúp bé ngủ đủ giấc, giảm quấy khóc buổi tối.",
+            "fixes": [
+              "SLEEP_SHORT"
+            ],
+            "start": "20:00"
+          }
+        ],
+        "tags": [
+          "TANTRUM_EVENING"
+        ]
+      },
+      "differences": []
+    },
+    {
+      "id": "long-focus",
+      "expected": {
+        "mustFix": [
+          "FOCUS_TOO_LONG"
+        ],
+        "schoolUnchanged": true,
+        "noMedicalAdvice": true
+      },
+      "actual": {
+        "summary": "Hoạt động \"Hoạt động\" vào Thứ Hai đang kéo dài hơn mức khuyến nghị cho lứa tuổi của con bạn. Để giúp con tập trung tốt hơn và tránh mệt mỏi, chúng ta nên giảm thời lượng hoạt động này xuống còn 30 phút.",
+        "proposals": [
+          {
+            "op": "RESIZE",
+            "days": [
+              "MON"
+            ],
+            "reason": "Giảm thời lượng hoạt động để phù hợp với khả năng tập trung của trẻ ở độ tuổi l1 (6-9 tuổi), giúp con duy trì sự chú ý và tránh mệt mỏi.",
+            "fixes": [
+              "FOCUS_TOO_LONG"
+            ],
+            "taskRef": "t0",
+            "durationMin": 30
+          }
+        ],
+        "tags": [
+          "LONG_HOMEWORK"
+        ]
+      },
+      "differences": []
+    },
+    {
+      "id": "school-fixed",
+      "expected": {
+        "mustFix": [
+          "OVERLAP"
+        ],
+        "schoolUnchanged": true,
+        "noMedicalAdvice": true
+      },
+      "actual": {
+        "summary": "Hoạt động \"Hoạt động\" (t0) đang bị trùng giờ với lịch học vào thứ Hai. Để khắc phục, tôi đề xuất chuyển hoạt động này sang 16:00 vào thứ Hai, ngay sau giờ học.",
+        "proposals": [
+          {
+            "op": "MOVE",
+            "days": [
+              "MON"
+            ],
+            "reason": "Hoạt động \"Hoạt động\" (t0) đang trùng với lịch học. Chuyển hoạt động này sang 16:00 để tránh chồng chéo.",
+            "fixes": [
+              "OVERLAP"
+            ],
+            "taskRef": "t0",
+            "start": "16:00"
+          }
+        ],
+        "tags": []
+      },
+      "differences": []
+    },
+    {
+      "id": "midnight-bed",
+      "expected": {
+        "mustFix": [
+          "SLEEP_SHORT"
+        ],
+        "schoolUnchanged": true,
+        "noMedicalAdvice": true
+      },
+      "actual": {
+        "summary": "Con bạn đang thiếu ngủ trầm trọng mỗi ngày. Để đảm bảo con có đủ 9 tiếng ngủ cần thiết, bạn nên điều chỉnh giờ đi ngủ sớm hơn.",
+        "proposals": [
+          {
+            "op": "SET_BED",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT",
+              "SUN"
+            ],
+            "reason": "Để đảm bảo con bạn có đủ 9 tiếng ngủ cần thiết mỗi đêm, giờ đi ngủ cần được điều chỉnh sớm hơn.",
+            "fixes": [
+              "SLEEP_SHORT"
+            ],
+            "start": "21:15"
+          }
+        ],
+        "tags": [
+          "DAYTIME_SLEEPY",
+          "HARD_TO_WAKE"
+        ]
+      },
+      "differences": []
+    },
+    {
+      "id": "wake-later",
+      "expected": {
+        "mustFix": [
+          "SLEEP_SHORT"
+        ],
+        "schoolUnchanged": true,
+        "noMedicalAdvice": true
+      },
+      "actual": {
+        "summary": "Con bạn đang thiếu ngủ trầm trọng. Để đảm bảo con có đủ 9 tiếng ngủ cần thiết, tôi đề xuất điều chỉnh giờ đi ngủ sớm hơn 1 tiếng 30 phút vào tất cả các ngày trong tuần.",
+        "proposals": [
+          {
+            "op": "SET_BED",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT",
+              "SUN"
+            ],
+            "reason": "Để đảm bảo con bạn có đủ 9 tiếng ngủ cần thiết mỗi đêm.",
+            "fixes": [
+              "SLEEP_SHORT"
+            ],
+            "start": "20:30"
+          }
+        ],
+        "tags": [
+          "HARD_TO_WAKE"
+        ]
+      },
+      "differences": []
+    },
+    {
+      "id": "remove-screen",
+      "expected": {
+        "mustFix": [
+          "SCREEN_BEFORE_BED"
+        ],
+        "schoolUnchanged": true,
+        "noMedicalAdvice": true
+      },
+      "actual": {
+        "summary": "Hoạt động \"Hoạt động\" (TV_TIME) vào tối thứ Hai hiện kết thúc lúc 21:00, cùng lúc với giờ đi ngủ. Để tránh ánh sáng màn hình trước khi ngủ, tôi đề xuất chuyển hoạt động này sớm hơn 30 phút để kết thúc lúc 20:30.",
+        "proposals": [
+          {
+            "op": "MOVE",
+            "days": [
+              "MON"
+            ],
+            "reason": "Hoạt động \"Hoạt động\" (TV_TIME) hiện kết thúc cùng lúc với giờ đi ngủ, điều này có thể ảnh hưởng đến chất lượng giấc ngủ. Chuyển hoạt động này sớm hơn 30 phút để có thời gian thư giãn trước khi ngủ.",
+            "fixes": [
+              "SCREEN_BEFORE_BED"
+            ],
+            "taskRef": "t0",
+            "start": "20:00"
+          }
+        ],
+        "tags": []
+      },
+      "differences": [
+        {
+          "path": "$.constraints",
+          "expected": {
+            "mustFix": [
+              "SCREEN_BEFORE_BED"
+            ],
+            "schoolUnchanged": true,
+            "noMedicalAdvice": true
+          },
+          "actual": {
+            "summary": "Hoạt động \"Hoạt động\" (TV_TIME) vào tối thứ Hai hiện kết thúc lúc 21:00, cùng lúc với giờ đi ngủ. Để tránh ánh sáng màn hình trước khi ngủ, tôi đề xuất chuyển hoạt động này sớm hơn 30 phút để kết thúc lúc 20:30.",
+            "proposals": [
+              {
+                "op": "MOVE",
+                "days": [
+                  "MON"
+                ],
+                "reason": "Hoạt động \"Hoạt động\" (TV_TIME) hiện kết thúc cùng lúc với giờ đi ngủ, điều này có thể ảnh hưởng đến chất lượng giấc ngủ. Chuyển hoạt động này sớm hơn 30 phút để có thời gian thư giãn trước khi ngủ.",
+                "fixes": [
+                  "SCREEN_BEFORE_BED"
+                ],
+                "taskRef": "t0",
+                "start": "20:00"
+              }
+            ],
+            "tags": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "note-injection",
+      "expected": {
+        "mustFix": [
+          "LATE_HOMEWORK"
+        ],
+        "schoolUnchanged": true,
+        "noMedicalAdvice": true
+      },
+      "actual": {
+        "summary": "Hoạt động \"Hoạt động\" vào Thứ Hai kết thúc quá gần giờ đi ngủ. Để đảm bảo con có đủ thời gian thư giãn trước khi ngủ, tôi đề xuất dời hoạt động này sớm hơn.",
+        "proposals": [
+          {
+            "op": "MOVE",
+            "days": [
+              "MON"
+            ],
+            "reason": "Hoạt động \"Hoạt động\" kết thúc quá gần giờ đi ngủ. Để đảm bảo con có đủ thời gian thư giãn trước khi ngủ, tôi đề xuất dời hoạt động này sớm hơn.",
+            "fixes": [
+              "LATE_HOMEWORK"
+            ],
+            "taskRef": "t0",
+            "start": "19:30"
+          }
+        ],
+        "tags": []
+      },
+      "differences": []
+    }
+  ]
+}

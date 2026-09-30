@@ -1,0 +1,1106 @@
+{
+  "suite": "log",
+  "model": "google/gemini-2.5-flash",
+  "cases": [
+    {
+      "id": "log-vi-01",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p0",
+            "category": "STUDY",
+            "start": "19:00",
+            "end": "19:30"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p0",
+            "category": "STUDY",
+            "start": "19:00",
+            "end": "19:30"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-vi-02",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-28",
+            "planRef": "p10",
+            "category": "STUDY",
+            "start": "19:00",
+            "end": "20:00"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-28",
+            "planRef": "p10",
+            "category": "STUDY",
+            "start": "19:00",
+            "end": "20:00"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-vi-03",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-28",
+            "planRef": "p11",
+            "category": "SLEEP",
+            "start": "22:30",
+            "end": null
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-28",
+            "planRef": "p11",
+            "category": "SLEEP",
+            "start": "22:30",
+            "end": null
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-vi-04",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p11",
+            "category": "SLEEP",
+            "start": "01:00",
+            "end": null
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p11",
+            "category": "SLEEP",
+            "start": "01:00",
+            "end": null
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-vi-05",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": null,
+            "category": "STUDY",
+            "start": "08:00",
+            "end": "09:15"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": null,
+            "category": "STUDY",
+            "start": "08:00",
+            "end": "09:15"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-vi-06",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p0",
+            "category": "STUDY",
+            "start": "19:00",
+            "end": "20:30"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p0",
+            "category": "STUDY",
+            "start": "19:00",
+            "end": "20:30"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-vi-07",
+      "expected": {
+        "entries": [],
+        "mustAsk": true,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [],
+        "mustAsk": true,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-vi-08",
+      "expected": {
+        "entries": [],
+        "mustAsk": true,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [],
+        "mustAsk": true,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-vi-09",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p1",
+            "category": "SLEEP",
+            "start": "22:00",
+            "end": null
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p1",
+            "category": "SLEEP",
+            "start": "22:00",
+            "end": null
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-vi-10",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p2",
+            "category": "STUDY",
+            "start": "20:00",
+            "end": null
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p2",
+            "category": "STUDY",
+            "start": "20:00",
+            "end": null
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-vi-11",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": null,
+            "category": "HYGIENE",
+            "start": "18:15",
+            "end": "18:30"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": null,
+            "category": "HYGIENE",
+            "start": "18:15",
+            "end": "18:30"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-vi-12",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": null,
+            "category": "CHORES",
+            "start": "16:00",
+            "end": "16:20"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": null,
+            "category": "CHORES",
+            "start": "16:00",
+            "end": "16:20"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-vi-13",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": null,
+            "category": "ENTERTAINMENT",
+            "start": "20:00",
+            "end": "20:15"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": null,
+            "category": "ENTERTAINMENT",
+            "start": "20:00",
+            "end": "20:15"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-vi-14",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p1",
+            "category": "SLEEP",
+            "start": "23:55",
+            "end": null
+          },
+          {
+            "date": "2026-09-30",
+            "planRef": null,
+            "category": "WAKE",
+            "start": "06:15",
+            "end": null
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-28",
+            "planRef": "p11",
+            "category": "SLEEP",
+            "start": "23:55",
+            "end": null
+          },
+          {
+            "date": "2026-09-29",
+            "planRef": null,
+            "category": "WAKE",
+            "start": "06:15",
+            "end": null
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "differences": [
+        {
+          "path": "$.entries.0.date",
+          "expected": "2026-09-29",
+          "actual": "2026-09-28"
+        },
+        {
+          "path": "$.entries.0.planRef",
+          "expected": "p1",
+          "actual": "p11"
+        },
+        {
+          "path": "$.entries.1.date",
+          "expected": "2026-09-30",
+          "actual": "2026-09-29"
+        }
+      ],
+      "failure": "CONSTRAINT"
+    },
+    {
+      "id": "log-vi-15",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p2",
+            "category": "STUDY",
+            "start": "23:50",
+            "end": "00:10"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p2",
+            "category": "STUDY",
+            "start": "23:50",
+            "end": "00:10"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-vi-16",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p0",
+            "category": "STUDY",
+            "start": "19:00",
+            "end": null
+          },
+          {
+            "date": "2026-09-29",
+            "planRef": "p2",
+            "category": "STUDY",
+            "start": "20:00",
+            "end": "20:30"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p0",
+            "category": "STUDY",
+            "start": "19:00",
+            "end": null
+          },
+          {
+            "date": "2026-09-29",
+            "planRef": "p2",
+            "category": "STUDY",
+            "start": "20:00",
+            "end": "20:30"
+          }
+        ],
+        "mustAsk": true,
+        "lowConfidenceUnselected": false
+      },
+      "differences": [
+        {
+          "path": "$.mustAsk",
+          "expected": false,
+          "actual": true
+        }
+      ],
+      "failure": "CONSTRAINT"
+    },
+    {
+      "id": "log-vi-17",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-28",
+            "planRef": "p10",
+            "category": "STUDY",
+            "start": "19:00",
+            "end": "19:30"
+          },
+          {
+            "date": "2026-09-29",
+            "planRef": "p2",
+            "category": "STUDY",
+            "start": "20:00",
+            "end": "20:45"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-28",
+            "planRef": "p10",
+            "category": "STUDY",
+            "start": "19:00",
+            "end": "19:30"
+          },
+          {
+            "date": "2026-09-29",
+            "planRef": "p2",
+            "category": "STUDY",
+            "start": "20:00",
+            "end": "20:45"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-vi-18",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p0",
+            "category": "STUDY",
+            "start": "19:00",
+            "end": "19:45"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p0",
+            "category": "STUDY",
+            "start": "19:00",
+            "end": "19:45"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-vi-19",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p0",
+            "category": "STUDY",
+            "start": "18:30",
+            "end": "20:00"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p0",
+            "category": "STUDY",
+            "start": "18:30",
+            "end": "20:00"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-vi-20",
+      "expected": {
+        "entries": [],
+        "mustAsk": true,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [],
+        "mustAsk": true,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-vi-21",
+      "expected": {
+        "entries": [],
+        "mustAsk": true,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [],
+        "mustAsk": true,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-vi-22",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": null,
+            "category": "STUDY",
+            "start": "20:00",
+            "end": "21:15"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": null,
+            "category": "STUDY",
+            "start": "20:00",
+            "end": "21:15"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-vi-23",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p1",
+            "category": "SLEEP",
+            "start": "22:00",
+            "end": null
+          }
+        ],
+        "mustAsk": true,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p1",
+            "category": "SLEEP",
+            "start": "22:00",
+            "end": null
+          }
+        ],
+        "mustAsk": true,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-vi-24",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p2",
+            "category": "STUDY",
+            "start": "20:00",
+            "end": "20:30"
+          }
+        ],
+        "mustAsk": true,
+        "lowConfidenceUnselected": true
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p2",
+            "category": "STUDY",
+            "start": "20:00",
+            "end": "20:30"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": true
+      },
+      "differences": [
+        {
+          "path": "$.mustAsk",
+          "expected": true,
+          "actual": false
+        }
+      ],
+      "failure": "CONSTRAINT"
+    },
+    {
+      "id": "log-vi-25",
+      "expected": {
+        "entries": [],
+        "mustAsk": true,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [],
+        "mustAsk": true,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-vi-26",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p1",
+            "category": "SLEEP",
+            "start": "22:30",
+            "end": null
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p1",
+            "category": "SLEEP",
+            "start": "22:30",
+            "end": null
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-vi-27",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": null,
+            "category": "HYGIENE",
+            "start": "10:00",
+            "end": null
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [],
+        "mustAsk": true,
+        "lowConfidenceUnselected": false
+      },
+      "differences": [
+        {
+          "path": "$.entries.0",
+          "expected": {
+            "date": "2026-09-29",
+            "planRef": null,
+            "category": "HYGIENE",
+            "start": "10:00",
+            "end": null
+          },
+          "actual": "<missing>"
+        },
+        {
+          "path": "$.mustAsk",
+          "expected": false,
+          "actual": true
+        }
+      ],
+      "failure": "CONSTRAINT"
+    },
+    {
+      "id": "log-vi-28",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": null,
+            "category": "WAKE",
+            "start": "06:45",
+            "end": null
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": null,
+            "category": "WAKE",
+            "start": "06:45",
+            "end": null
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-en-01",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p1",
+            "category": "SLEEP",
+            "start": "22:00",
+            "end": null
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p1",
+            "category": "SLEEP",
+            "start": "22:00",
+            "end": null
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-en-02",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p0",
+            "category": "STUDY",
+            "start": "19:00",
+            "end": null
+          },
+          {
+            "date": "2026-09-29",
+            "planRef": "p2",
+            "category": "STUDY",
+            "start": "20:00",
+            "end": null
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p0",
+            "category": "STUDY",
+            "start": "19:00",
+            "end": null
+          },
+          {
+            "date": "2026-09-29",
+            "planRef": "p2",
+            "category": "STUDY",
+            "start": "20:00",
+            "end": null
+          }
+        ],
+        "mustAsk": true,
+        "lowConfidenceUnselected": false
+      },
+      "differences": [
+        {
+          "path": "$.mustAsk",
+          "expected": false,
+          "actual": true
+        }
+      ],
+      "failure": "CONSTRAINT"
+    },
+    {
+      "id": "log-en-03",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": null,
+            "category": "WAKE",
+            "start": "07:00",
+            "end": null
+          }
+        ],
+        "mustAsk": true,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": null,
+            "category": "WAKE",
+            "start": "07:00",
+            "end": null
+          }
+        ],
+        "mustAsk": true,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-vi-29",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p1",
+            "category": "SLEEP",
+            "start": "22:00",
+            "end": null
+          }
+        ],
+        "mustAsk": true,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p1",
+            "category": "SLEEP",
+            "start": "22:00",
+            "end": null
+          }
+        ],
+        "mustAsk": true,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-vi-30",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p1",
+            "category": "SLEEP",
+            "start": "22:00",
+            "end": null
+          }
+        ],
+        "mustAsk": true,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p1",
+            "category": "SLEEP",
+            "start": "22:00",
+            "end": null
+          }
+        ],
+        "mustAsk": true,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-en-04",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p0",
+            "category": "STUDY",
+            "start": "18:30",
+            "end": "20:00"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p0",
+            "category": "STUDY",
+            "start": "18:30",
+            "end": "20:00"
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "differences": []
+    },
+    {
+      "id": "log-vi-31",
+      "expected": {
+        "entries": [
+          {
+            "date": "2026-09-29",
+            "planRef": "p1",
+            "category": "SLEEP",
+            "start": "22:30",
+            "end": null
+          },
+          {
+            "date": "2026-09-29",
+            "planRef": null,
+            "category": "WAKE",
+            "start": "05:45",
+            "end": null
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "actual": {
+        "entries": [
+          {
+            "date": "2026-09-28",
+            "planRef": "p11",
+            "category": "SLEEP",
+            "start": "22:30",
+            "end": null
+          },
+          {
+            "date": "2026-09-29",
+            "planRef": null,
+            "category": "WAKE",
+            "start": "05:45",
+            "end": null
+          }
+        ],
+        "mustAsk": false,
+        "lowConfidenceUnselected": false
+      },
+      "differences": [
+        {
+          "path": "$.entries.0.date",
+          "expected": "2026-09-29",
+          "actual": "2026-09-28"
+        },
+        {
+          "path": "$.entries.0.planRef",
+          "expected": "p1",
+          "actual": "p11"
+        }
+      ],
+      "failure": "CONSTRAINT"
+    }
+  ]
+}
