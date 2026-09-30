@@ -1,0 +1,8 @@
+paused_elapsed_seconds=191
+mWakefulness=Awake
+mStayOn=false
+mScreenOffTimeoutSetting=30000
+mWakefulness=1
+mScreenOffTimeout=-1
+mHoldScreenWindow=Window{b216bcc u0 com.kidfocusstudio.timer.debug/com.kidfocus.timer.MainActivity}
+fl=KEEP_SCREEN_ON LAYOUT_IN_SCREEN LAYOUT_INSET_DECOR SPLIT_TOUCH HARDWARE_ACCELERATED DRAWS_SYSTEM_BAR_BACKGROUNDS
