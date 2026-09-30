@@ -1,0 +1,8 @@
+Supplemental wireless ADB power check after the earlier PAUSED-to-locked G3 transition.
+The Pixel was already locked; this confirms physical display OFF with AOD and charging stay-awake temporarily disabled, not a fresh UI pause action.
+temporary_timeout=30000, stay_on=0, aod=0, screensaver=0
+  mWakefulness=Dozing
+  mStayOn=false
+  mHoldingDisplaySuspendBlocker=false
+    mState=OFF
+Restored: screen_off_timeout=60000, stay_on_while_plugged_in=15, doze_always_on=1, screensaver_enabled=1.
