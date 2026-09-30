@@ -37,6 +37,7 @@ import androidx.compose.ui.res.stringResource
 import com.kidfocus.timer.R
 import com.kidfocus.timer.domain.model.TimerPhase
 import com.kidfocus.timer.ui.components.CircularTimer
+import com.kidfocus.timer.ui.components.KeepScreenOnWhileRunning
 import com.kidfocus.timer.ui.components.MascotWidget
 import com.kidfocus.timer.ui.theme.FocusBlue
 import com.kidfocus.timer.ui.theme.KidFocusTheme
@@ -61,6 +62,7 @@ fun FocusScreen(
     val completedMinutes by timerViewModel.completedSessionMinutes.collectAsState()
     val settings by settingsViewModel.settings.collectAsState()
     val calmMode = settings?.calmModeEnabled ?: false
+    KeepScreenOnWhileRunning(timerState.isRunning && (settings?.keepScreenOnEnabled ?: true))
 
     DisposableEffect(Unit) {
         timerViewModel.bindService()

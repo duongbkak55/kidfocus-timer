@@ -156,6 +156,14 @@ fun ParentSettingsScreen(
             )
 
             Spacer(modifier = Modifier.height(12.dp))
+            SettingToggleRow(
+                title = stringResource(R.string.parent_keep_screen_on_title),
+                subtitle = stringResource(R.string.parent_keep_screen_on_subtitle),
+                checked = current.keepScreenOnEnabled,
+                onCheckedChange = settingsViewModel::setKeepScreenOnEnabled,
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             SettingSliderRow(
                 title = stringResource(R.string.parent_break_duration),

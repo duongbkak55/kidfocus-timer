@@ -88,6 +88,8 @@
     <!-- Parent settings -->
     <string name="parent_settings_title">Cài đặt phụ huynh</string>
     <string name="parent_section_timer">Thời gian hẹn giờ</string>
+    <string name="parent_keep_screen_on_title">Giữ màn hình sáng khi tập trung</string>
+    <string name="parent_keep_screen_on_subtitle">Khi đồng hồ tập trung hoặc giải lao đang chạy</string>
     <string name="parent_focus_duration">Thời gian tập trung</string>
     <string name="parent_break_duration">Thời gian nghỉ ngơi</string>
     <string name="parent_section_notifications">Thông báo &amp; Âm thanh</string>

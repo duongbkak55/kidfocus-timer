@@ -24,6 +24,7 @@ data class TimerSettings(
     val geminiApiKey: String? = null,
     val learningAgeBand: String = DEFAULT_LEARNING_AGE_BAND,
     val calmModeEnabled: Boolean = false,
+    val keepScreenOnEnabled: Boolean = true,
     val activeChildProfileId: String = DEFAULT_CHILD_PROFILE_ID,
 ) {
     /** True if the parent has set a PIN to lock settings. */

@@ -74,6 +74,8 @@
 
     <string name="parent_settings_title">Parent settings</string>
     <string name="parent_section_timer">Timer durations</string>
+    <string name="parent_keep_screen_on_title">Keep screen on during focus</string>
+    <string name="parent_keep_screen_on_subtitle">While the focus or break timer is running</string>
     <string name="parent_focus_duration">Focus duration</string>
     <string name="parent_break_duration">Break duration</string>
     <string name="parent_section_notifications">Notifications &amp; sound</string>
