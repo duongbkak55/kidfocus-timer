@@ -1,0 +1,25 @@
+
+> eval:schedule
+> node scripts/eval-schedule.js --images
+
+image model: google/gemini-2.5-flash
+image school-morning: FAIL SEMANTIC
+image school-afternoon: FAIL SEMANTIC
+image school-two-shifts: FAIL SEMANTIC
+image school-alternating: FAIL SEMANTIC
+image school-saturday: PASS
+image school-missing-hours: PASS
+image school-text-hours: PASS
+image school-current-hours: FAIL SEMANTIC
+image school-one-unknown-shift: FAIL SEMANTIC
+image school-ambiguous-all-day: FAIL SEMANTIC
+image family-table: PASS
+image family-handwritten: PASS
+image: 12 cases; failed responses: 0
+Exact cases: 5/12 (41.7%)
+days: 56.3% (9/16)
+start: 93.8% (15/16)
+duration: 93.3% (14/15)
+Missing-information questions: 2/3
+image tokens per response with usage: in 2800.8, out 166.8 (12 responses)
+EVAL_EXIT 1

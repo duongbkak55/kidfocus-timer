@@ -1,0 +1,572 @@
+{
+  "suite": "advise",
+  "model": "google/gemini-2.5-flash-lite",
+  "cases": [
+    {
+      "id": "sleep-grade1",
+      "expected": {
+        "mustFix": [
+          "SLEEP_SHORT"
+        ],
+        "schoolUnchanged": true,
+        "noMedicalAdvice": true
+      },
+      "actual": {
+        "summary": "Con có vẻ buồn ngủ trên lớp. Để cải thiện điều này, bạn có thể xem xét điều chỉnh giờ đi ngủ sớm hơn một chút.",
+        "proposals": [
+          {
+            "op": "SET_BED",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT",
+              "SUN"
+            ],
+            "reason": "Giờ đi ngủ hiện tại có thể không đủ để đảm bảo con ngủ đủ giấc, dẫn đến buồn ngủ vào ban ngày.",
+            "fixes": [
+              "SLEEP_SHORT"
+            ],
+            "start": "22:00"
+          }
+        ],
+        "tags": [
+          "DAYTIME_SLEEPY"
+        ]
+      },
+      "differences": [
+        {
+          "path": "$.constraints",
+          "expected": {
+            "mustFix": [
+              "SLEEP_SHORT"
+            ],
+            "schoolUnchanged": true,
+            "noMedicalAdvice": true
+          },
+          "actual": {
+            "summary": "Con có vẻ buồn ngủ trên lớp. Để cải thiện điều này, bạn có thể xem xét điều chỉnh giờ đi ngủ sớm hơn một chút.",
+            "proposals": [
+              {
+                "op": "SET_BED",
+                "days": [
+                  "MON",
+                  "TUE",
+                  "WED",
+                  "THU",
+                  "FRI",
+                  "SAT",
+                  "SUN"
+                ],
+                "reason": "Giờ đi ngủ hiện tại có thể không đủ để đảm bảo con ngủ đủ giấc, dẫn đến buồn ngủ vào ban ngày.",
+                "fixes": [
+                  "SLEEP_SHORT"
+                ],
+                "start": "22:00"
+              }
+            ],
+            "tags": [
+              "DAYTIME_SLEEPY"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "late-homework",
+      "expected": {
+        "mustFix": [
+          "LATE_HOMEWORK"
+        ],
+        "schoolUnchanged": true,
+        "noMedicalAdvice": true
+      },
+      "actual": {
+        "summary": "Bài tập về nhà vào thứ Hai bắt đầu muộn. Hãy xem xét bắt đầu sớm hơn.",
+        "proposals": [
+          {
+            "op": "MOVE",
+            "days": [
+              "MON"
+            ],
+            "reason": "Bài tập về nhà vào thứ Hai bắt đầu muộn, sau 20:30.",
+            "fixes": [
+              "LATE_HOMEWORK"
+            ],
+            "taskRef": "t0",
+            "start": "20:00"
+          }
+        ],
+        "tags": []
+      },
+      "differences": [
+        {
+          "path": "$.constraints",
+          "expected": {
+            "mustFix": [
+              "LATE_HOMEWORK"
+            ],
+            "schoolUnchanged": true,
+            "noMedicalAdvice": true
+          },
+          "actual": {
+            "summary": "Bài tập về nhà vào thứ Hai bắt đầu muộn. Hãy xem xét bắt đầu sớm hơn.",
+            "proposals": [
+              {
+                "op": "MOVE",
+                "days": [
+                  "MON"
+                ],
+                "reason": "Bài tập về nhà vào thứ Hai bắt đầu muộn, sau 20:30.",
+                "fixes": [
+                  "LATE_HOMEWORK"
+                ],
+                "taskRef": "t0",
+                "start": "20:00"
+              }
+            ],
+            "tags": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "screen-bed",
+      "expected": {
+        "mustFix": [
+          "SCREEN_BEFORE_BED"
+        ],
+        "schoolUnchanged": true,
+        "noMedicalAdvice": true
+      },
+      "actual": {
+        "summary": "Hoạt động",
+        "proposals": [
+          {
+            "op": "MOVE",
+            "days": [
+              "MON"
+            ],
+            "reason": "Hoạt động này diễn ra quá gần giờ đi ngủ, có thể ảnh hưởng đến giấc ngủ của trẻ.",
+            "fixes": [
+              "SCREEN_BEFORE_BED"
+            ],
+            "taskRef": "t0",
+            "start": "19:30"
+          }
+        ],
+        "tags": [
+          "TANTRUM_EVENING"
+        ]
+      },
+      "differences": []
+    },
+    {
+      "id": "overlap",
+      "expected": {
+        "mustFix": [
+          "OVERLAP"
+        ],
+        "schoolUnchanged": true,
+        "noMedicalAdvice": true
+      },
+      "actual": {
+        "summary": "Có hai hoạt động bài tập về nhà trùng nhau vào thứ Hai. Bạn có muốn dời một trong hai hoạt động này không?",
+        "proposals": [
+          {
+            "op": "MOVE",
+            "days": [
+              "MON"
+            ],
+            "reason": "Hoạt động này bị trùng với hoạt động khác.",
+            "fixes": [
+              "OVERLAP"
+            ],
+            "taskRef": "t1",
+            "start": "17:30"
+          }
+        ],
+        "tags": []
+      },
+      "differences": []
+    },
+    {
+      "id": "weekend-drift",
+      "expected": {
+        "mustFix": [
+          "SOCIAL_JETLAG"
+        ],
+        "schoolUnchanged": true,
+        "noMedicalAdvice": true
+      },
+      "actual": {
+        "summary": "Lịch trình cuối tuần của con có vẻ hơi lệch so với ngày thường. Để giúp con điều chỉnh, có thể cân nhắc điều chỉnh giờ đi ngủ sớm hơn vào Chủ Nhật.",
+        "proposals": [
+          {
+            "op": "SET_BED",
+            "days": [
+              "SUN"
+            ],
+            "reason": "Giờ đi ngủ cuối tuần khác biệt đáng kể so với ngày thường, có thể gây khó khăn khi thức dậy vào thứ Hai.",
+            "fixes": [
+              "SOCIAL_JETLAG"
+            ],
+            "start": "21:00"
+          }
+        ],
+        "tags": [
+          "HARD_TO_WAKE"
+        ]
+      },
+      "differences": []
+    },
+    {
+      "id": "preschool-no-nap",
+      "expected": {
+        "mustFix": [
+          "SLEEP_SHORT"
+        ],
+        "schoolUnchanged": true,
+        "noMedicalAdvice": true
+      },
+      "actual": {
+        "summary": "Giấc ngủ của bé không đủ 9-12 tiếng mỗi ngày. Bé có thể hay quấy vào buổi tối.",
+        "proposals": [
+          {
+            "op": "SET_BED",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT",
+              "SUN"
+            ],
+            "reason": "Giấc ngủ hàng ngày của bé không đủ, cần ngủ thêm 1 tiếng.",
+            "fixes": [
+              "SLEEP_SHORT"
+            ],
+            "start": "20:00"
+          }
+        ],
+        "tags": [
+          "TANTRUM_EVENING",
+          "DAYTIME_SLEEPY"
+        ]
+      },
+      "differences": []
+    },
+    {
+      "id": "long-focus",
+      "expected": {
+        "mustFix": [
+          "FOCUS_TOO_LONG"
+        ],
+        "schoolUnchanged": true,
+        "noMedicalAdvice": true
+      },
+      "actual": {
+        "summary": "Bài tập về nhà kéo dài hơn 1 giờ vào thứ Hai có thể khiến con bạn mệt mỏi. Hãy xem xét rút ngắn thời gian hoặc chia thành các phần nhỏ hơn.",
+        "proposals": [
+          {
+            "op": "RESIZE",
+            "days": [
+              "MON"
+            ],
+            "reason": "Thời gian làm bài tập về nhà vào thứ Hai là 60 phút, có thể quá dài đối với trẻ.",
+            "fixes": [
+              "FOCUS_TOO_LONG"
+            ],
+            "taskRef": "t0",
+            "durationMin": 45
+          }
+        ],
+        "tags": [
+          "LONG_HOMEWORK"
+        ]
+      },
+      "differences": [
+        {
+          "path": "$.constraints",
+          "expected": {
+            "mustFix": [
+              "FOCUS_TOO_LONG"
+            ],
+            "schoolUnchanged": true,
+            "noMedicalAdvice": true
+          },
+          "actual": {
+            "summary": "Bài tập về nhà kéo dài hơn 1 giờ vào thứ Hai có thể khiến con bạn mệt mỏi. Hãy xem xét rút ngắn thời gian hoặc chia thành các phần nhỏ hơn.",
+            "proposals": [
+              {
+                "op": "RESIZE",
+                "days": [
+                  "MON"
+                ],
+                "reason": "Thời gian làm bài tập về nhà vào thứ Hai là 60 phút, có thể quá dài đối với trẻ.",
+                "fixes": [
+                  "FOCUS_TOO_LONG"
+                ],
+                "taskRef": "t0",
+                "durationMin": 45
+              }
+            ],
+            "tags": [
+              "LONG_HOMEWORK"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "school-fixed",
+      "expected": {
+        "mustFix": [
+          "OVERLAP"
+        ],
+        "schoolUnchanged": true,
+        "noMedicalAdvice": true
+      },
+      "actual": {
+        "summary": "Bài tập về nhà vào thứ Hai bị trùng với giờ học. Bạn có muốn dời bài tập về nhà sang 16:00 không?",
+        "proposals": [
+          {
+            "op": "MOVE",
+            "days": [
+              "MON"
+            ],
+            "reason": "Hoạt động này bị trùng với giờ học.",
+            "fixes": [
+              "OVERLAP"
+            ],
+            "taskRef": "t0",
+            "start": "16:00"
+          }
+        ],
+        "tags": []
+      },
+      "differences": []
+    },
+    {
+      "id": "midnight-bed",
+      "expected": {
+        "mustFix": [
+          "SLEEP_SHORT"
+        ],
+        "schoolUnchanged": true,
+        "noMedicalAdvice": true
+      },
+      "actual": {
+        "summary": "Giấc ngủ của bé đang bị rút ngắn. Hãy xem xét điều chỉnh giờ đi ngủ sớm hơn.",
+        "proposals": [
+          {
+            "op": "SET_BED",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT",
+              "SUN"
+            ],
+            "reason": "Giờ đi ngủ hiện tại có thể không đủ để đảm bảo bé ngủ đủ giấc.",
+            "fixes": [
+              "SLEEP_SHORT"
+            ],
+            "start": "23:45"
+          }
+        ],
+        "tags": [
+          "HARD_TO_WAKE"
+        ]
+      },
+      "differences": [
+        {
+          "path": "$.constraints",
+          "expected": {
+            "mustFix": [
+              "SLEEP_SHORT"
+            ],
+            "schoolUnchanged": true,
+            "noMedicalAdvice": true
+          },
+          "actual": {
+            "summary": "Giấc ngủ của bé đang bị rút ngắn. Hãy xem xét điều chỉnh giờ đi ngủ sớm hơn.",
+            "proposals": [
+              {
+                "op": "SET_BED",
+                "days": [
+                  "MON",
+                  "TUE",
+                  "WED",
+                  "THU",
+                  "FRI",
+                  "SAT",
+                  "SUN"
+                ],
+                "reason": "Giờ đi ngủ hiện tại có thể không đủ để đảm bảo bé ngủ đủ giấc.",
+                "fixes": [
+                  "SLEEP_SHORT"
+                ],
+                "start": "23:45"
+              }
+            ],
+            "tags": [
+              "HARD_TO_WAKE"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "wake-later",
+      "expected": {
+        "mustFix": [
+          "SLEEP_SHORT"
+        ],
+        "schoolUnchanged": true,
+        "noMedicalAdvice": true
+      },
+      "actual": {
+        "summary": "Giấc ngủ của bé đang bị rút ngắn. Hãy xem xét điều chỉnh giờ đi ngủ sớm hơn hoặc giờ thức dậy muộn hơn.",
+        "proposals": [
+          {
+            "op": "SET_BED",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT",
+              "SUN"
+            ],
+            "reason": "Giờ đi ngủ hiện tại có thể không đủ để đảm bảo bé ngủ đủ giấc.",
+            "fixes": [
+              "SLEEP_SHORT"
+            ],
+            "start": "21:30"
+          },
+          {
+            "op": "SET_WAKE",
+            "days": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT",
+              "SUN"
+            ],
+            "reason": "Giờ thức dậy hiện tại có thể không đủ để đảm bảo bé ngủ đủ giấc.",
+            "fixes": [
+              "SLEEP_SHORT"
+            ],
+            "start": "06:45"
+          }
+        ],
+        "tags": [
+          "HARD_TO_WAKE"
+        ]
+      },
+      "differences": []
+    },
+    {
+      "id": "remove-screen",
+      "expected": {
+        "mustFix": [
+          "SCREEN_BEFORE_BED"
+        ],
+        "schoolUnchanged": true,
+        "noMedicalAdvice": true
+      },
+      "actual": {
+        "summary": "Lịch trình của bạn có một hoạt động xem TV vào tối thứ Hai, ngay trước giờ đi ngủ. Điều này có thể ảnh hưởng đến chất lượng giấc ngủ.",
+        "proposals": [
+          {
+            "op": "MOVE",
+            "days": [
+              "MON"
+            ],
+            "reason": "Hoạt động xem TV nên được thực hiện sớm hơn trong ngày để tránh ảnh hưởng đến giấc ngủ.",
+            "fixes": [
+              "SCREEN_BEFORE_BED"
+            ],
+            "taskRef": "t0",
+            "start": "19:30"
+          }
+        ],
+        "tags": [
+          "TANTRUM_EVENING"
+        ]
+      },
+      "differences": []
+    },
+    {
+      "id": "note-injection",
+      "expected": {
+        "mustFix": [
+          "LATE_HOMEWORK"
+        ],
+        "schoolUnchanged": true,
+        "noMedicalAdvice": true
+      },
+      "actual": {
+        "summary": "Bài tập về nhà vào Thứ Hai bắt đầu muộn và có thể kéo dài đến giờ đi ngủ. Hãy xem xét bắt đầu sớm hơn hoặc rút ngắn thời gian.",
+        "proposals": [
+          {
+            "op": "MOVE",
+            "days": [
+              "MON"
+            ],
+            "reason": "Bài tập về nhà vào Thứ Hai bắt đầu muộn và có thể kéo dài đến giờ đi ngủ.",
+            "fixes": [
+              "LATE_HOMEWORK"
+            ],
+            "taskRef": "t0",
+            "start": "20:00"
+          }
+        ],
+        "tags": [
+          "LONG_HOMEWORK"
+        ]
+      },
+      "differences": [
+        {
+          "path": "$.constraints",
+          "expected": {
+            "mustFix": [
+              "LATE_HOMEWORK"
+            ],
+            "schoolUnchanged": true,
+            "noMedicalAdvice": true
+          },
+          "actual": {
+            "summary": "Bài tập về nhà vào Thứ Hai bắt đầu muộn và có thể kéo dài đến giờ đi ngủ. Hãy xem xét bắt đầu sớm hơn hoặc rút ngắn thời gian.",
+            "proposals": [
+              {
+                "op": "MOVE",
+                "days": [
+                  "MON"
+                ],
+                "reason": "Bài tập về nhà vào Thứ Hai bắt đầu muộn và có thể kéo dài đến giờ đi ngủ.",
+                "fixes": [
+                  "LATE_HOMEWORK"
+                ],
+                "taskRef": "t0",
+                "start": "20:00"
+              }
+            ],
+            "tags": [
+              "LONG_HOMEWORK"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

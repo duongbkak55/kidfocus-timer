@@ -1,0 +1,43 @@
+
+> eval:schedule
+> node scripts/eval-schedule.js --log
+
+log model: google/gemini-2.5-flash-lite
+log log-vi-01: PASS
+log log-vi-02: PASS
+log log-vi-03: PASS
+log log-vi-04: PASS
+log log-vi-05: PASS
+log log-vi-06: PASS
+log log-vi-07: FAIL INVALID_RESPONSE
+log log-vi-08: PASS
+log log-vi-09: FAIL CONSTRAINT
+log log-vi-10: FAIL CONSTRAINT
+log log-vi-11: PASS
+log log-vi-12: PASS
+log log-vi-13: PASS
+log log-vi-14: FAIL CONSTRAINT
+log log-vi-15: FAIL CONSTRAINT
+log log-vi-16: FAIL CONSTRAINT
+log log-vi-17: PASS
+log log-vi-18: PASS
+log log-vi-19: FAIL CONSTRAINT
+log log-vi-20: FAIL CONSTRAINT
+log log-vi-21: PASS
+log log-vi-22: FAIL CONSTRAINT
+log log-vi-23: FAIL CONSTRAINT
+log log-vi-24: FAIL CONSTRAINT
+log log-vi-25: PASS
+log log-vi-26: FAIL CONSTRAINT
+log log-vi-27: PASS
+log log-vi-28: FAIL CONSTRAINT
+log log-en-01: FAIL CONSTRAINT
+log log-en-02: FAIL CONSTRAINT
+log log-en-03: FAIL CONSTRAINT
+log log-vi-29: FAIL CONSTRAINT
+log log-vi-30: FAIL CONSTRAINT
+log log-en-04: FAIL CONSTRAINT
+log log-vi-31: FAIL CONSTRAINT
+LOG golden: 15/35 (42.9%)
+log tokens per response with usage: in 952.9, out 121.6 (35 responses)
+EVAL_EXIT 1

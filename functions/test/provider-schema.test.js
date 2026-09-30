@@ -27,6 +27,7 @@ for (const [name, body] of [
 ]) {
   test(`${name} sends a compact provider schema while retaining private-data policy`, () => {
     assert.equal(body.response_format.type, "json_schema");
+    assert.equal(body.response_format.json_schema.strict, true);
     assert.equal(body.provider.data_collection, "deny");
     walk(body.response_format.json_schema.schema);
   });

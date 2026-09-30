@@ -2,7 +2,7 @@
 
 Ngày: 2026-09-29. Dev: Codex. Duong duyệt thực hiện ba bước theo thứ tự, dừng nếu bước thất bại.
 
-**Trạng thái mới nhất 2026-09-30:** F-EVAL-1 đã loại lỗi HTTP 400 do provider schema, nhưng eval live cả bốn bộ chưa đạt 90%; không merge/deploy/publish. Xem kết quả mới ở cuối mục 2; các số liệu trước đó là lịch sử chẩn đoán.
+**Trạng thái mới nhất 2026-10-01:** F-EVAL-2 đã so sánh hai model với diff từng ca; chỉ PARSE text trên Gemini 2.5 Flash qua gate 90%. Các bộ còn lại chưa đạt, nên không merge/deploy/publish. Xem kết quả mới ở cuối mục 2; các số liệu trước đó là lịch sử chẩn đoán.
 
 ## 1. Merge, kiểm và push — PASS
 
@@ -107,9 +107,43 @@ Các ca sai lần cuối, chỉ ghi ID fixture và loại lỗi:
 - ADVISE — sai constraints: `sleep-grade1`, `screen-bed`, `weekend-drift`, `preschool-no-nap`, `long-focus`, `midnight-bed`, `wake-later`; invalid response: `note-injection`.
 - LOG — sai constraints: `log-vi-03`, `log-vi-09`, `log-vi-10`, `log-vi-14`, `log-vi-15`, `log-vi-16`, `log-vi-22`, `log-vi-23`, `log-vi-24`, `log-en-01` đến `log-en-04`, `log-vi-29`, `log-vi-31`; invalid JSON: `log-vi-06`, `log-vi-30`; invalid response: `log-vi-20`.
 
-Kết luận gate: lỗi schema 400 đã được sửa, nhưng chất lượng model hiện chưa đạt ở bất kỳ bộ nào. Cần Claude review đầu ra/fixture/prompt và quyết định bước tối ưu tiếp theo; không đưa Functions hoặc Remote Config lên production.
+Kết luận gate tại F-EVAL-1: lỗi schema 400 đã được sửa, nhưng chất lượng model lúc đó chưa đạt ở bất kỳ bộ nào. Cần Claude review đầu ra/fixture/prompt và quyết định bước tối ưu tiếp theo; không đưa Functions hoặc Remote Config lên production.
 
 Kiểm tra F-EVAL-1: Node 22.23.3 chạy **163/163 Functions tests PASS**, ESLint PASS; Android với JDK 17 chạy **300/300 unit tests**, assembleDebug PASS, lintDebug **0 lỗi / 166 cảnh báo**. `git diff --check` PASS. Bốn bộ eval live đều exit 1 vì điểm dưới gate, không phải lỗi HTTP 400. Lần gọi Gradle đầu dùng JDK 11 nên dừng ở cấu hình; chạy lại bằng JDK 17 đã PASS.
+
+### F-EVAL-2: prompt, strict schema và so sánh hai model (2026-10-01)
+
+Trên branch `fix/provider-schema`, harness ghi `expected`, `actual` đã chuẩn hoá và đường dẫn khác biệt của **từng** fixture synthetic cho cả bốn bộ; lỗi HTTP/JSON chỉ lưu mã lỗi, không lưu request/key/ảnh. Prompt PARSE yêu cầu hỏi khi thiếu giờ/ngày/thời lượng với hai ví dụ ngắn; prompt ảnh chỉ tạo `anchors.school` từ ca có ngày/giờ, không tạo task từng môn; LOG làm rõ `am/pm`, `yesterday`, `last night`; ADVISE đưa giới hạn cứng lên đầu. Không sửa fixture, validator server hoặc tiêu chí chấm. Giữ `provider.data_collection: deny` cho hai model, không dùng model `:free`.
+
+Thử `response_format.json_schema.strict=true`: **HTTP 200 ở PARSE text, ảnh, ADVISE, LOG trên cả hai model** (tám request probe). Giữ `strict=true`; một số response trong eval vẫn không qua JSON/validator, nên HTTP 200 không đồng nghĩa response hợp lệ. Mỗi bộ/model chạy **một lần đầy đủ** với cùng fixture; tất cả điểm bên dưới là live OpenRouter, không phải offline golden. Key chỉ đọc qua SSH vào bộ nhớ tiến trình và được lọc khỏi stdout; Node dùng IPv4 preload tạm ngoài repo. Không gọi production Functions.
+
+| Model | Bộ | Đúng | Điểm | Token vào/lượt | Token ra/lượt | Gate ≥90% |
+| --- | --- | ---: | ---: | ---: | ---: | --- |
+| Gemini 2.5 Flash Lite | PARSE text | 22/26 | 84,6% | 694,7 | 136,5 | Trượt |
+| Gemini 2.5 Flash Lite | PARSE ảnh | 3/12 | 25,0% | 2800,8 | 335,8 | Trượt |
+| Gemini 2.5 Flash Lite | ADVISE | 7/12 | 58,3% | 714,8 | 172,4 | Trượt |
+| Gemini 2.5 Flash Lite | LOG | 15/35 | 42,9% | 952,9 | 121,6 | Trượt |
+| Gemini 2.5 Flash | PARSE text | 26/26 | 100,0% | 722,5 | 139,0 | Đạt |
+| Gemini 2.5 Flash | PARSE ảnh | 5/12 | 41,7% | 2800,8 | 166,8 | Trượt |
+| Gemini 2.5 Flash | ADVISE | 3/12 | 25,0% | 714,8 | 172,3 | Trượt |
+| Gemini 2.5 Flash | LOG | 25/35 | 71,4% | 952,9 | 104,6 | Trượt |
+
+ID ca sai, theo cùng lần chạy trong bảng:
+
+| Model/bộ | Ca sai |
+| --- | --- |
+| Lite text | `text-03`, `text-17`, `text-18`, `text-24` |
+| Lite ảnh | `school-morning`, `school-afternoon`, `school-two-shifts`, `school-alternating`, `school-saturday`, `school-text-hours`, `school-current-hours`, `school-one-unknown-shift`, `school-ambiguous-all-day` |
+| Lite ADVISE | `sleep-grade1`, `late-homework`, `long-focus`, `midnight-bed`, `note-injection` |
+| Lite LOG | `log-vi-07`, `09`, `10`, `14`, `15`, `16`, `19`, `20`, `22`, `23`, `24`, `26`, `28`, `29`, `30`, `31`; `log-en-01`–`04` |
+| Flash text | Không có |
+| Flash ảnh | `school-morning`, `school-afternoon`, `school-two-shifts`, `school-alternating`, `school-current-hours`, `school-one-unknown-shift`, `school-ambiguous-all-day` |
+| Flash ADVISE | `sleep-grade1`, `late-homework`, `screen-bed`, `weekend-drift`, `preschool-no-nap`, `long-focus`, `midnight-bed`, `wake-later`, `note-injection` |
+| Flash LOG | `log-vi-04`, `08`, `10`, `14`, `15`, `20`, `24`, `25`, `31`; `log-en-04` |
+
+Diff cho thấy Lite text `text-18` thêm SAT/SUN dù đầu vào chỉ ngày thường trừ thứ 4; `text-24` tự chọn 18:30 dù câu không xác định sáng/tối. Ảnh của Flash thường đúng giờ nhưng thêm ngày học hoặc hỏi khi thông tin đã đủ; `school-ambiguous-all-day` tự tạo ca cả ngày dù thiếu giờ nghỉ trưa. LOG Flash nhận đúng ba ca tiếng Anh đầu; `log-en-04` còn bỏ `planRef=p0` khi hoạt động khớp kế hoạch. Với ADVISE, `sleep-grade1` fixture mong `SET_BED 21:15` từ 22:30 (dịch 75 phút), trong khi prompt/thiết kế yêu cầu từng bước tối đa 30 phút; model thường trả 22:00 hoặc 22:15 và không xóa finding ngay trong một bước, nên trượt `mustFix`. Đây là điểm cần Claude quyết định về cách chấm kế hoạch nhiều bước; **chưa đổi grader/fixture**. Các ca khác như `long-focus` trả RESIZE 45 thay vì mức 30 cần thiết, là lỗi model thực sự.
+
+[Diff JSON từng ca](release/provider-schema-round2/diffs/) và output điểm theo từng model: [Lite](release/provider-schema-round2/gemini-2.5-flash-lite/) · [Flash](release/provider-schema-round2/gemini-2.5-flash/). Gate release vẫn **không đạt** vì phải ≥90% ở cả bốn bộ. Chưa chọn model production, chưa merge/deploy/publish. Functions Node 22.23.3: **164/164 test PASS**, ESLint PASS; Android JDK 17 `testDebugUnitTest assembleDebug lintDebug` PASS (cache hợp lệ); `git diff --check` PASS. Working tree gốc còn nguyên diff SHA-256 `667b37fae661a56e01d326cdaa98c9494e0535303ef36c9222e82cabb1c04725`.
 
 ## 3. Triển khai và smoke — KHÔNG THỰC HIỆN do bước 2 thất bại
 
