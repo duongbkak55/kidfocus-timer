@@ -159,7 +159,7 @@ exports.aiChat = onCall(
 );
 
 exports.aiSchedule = onCall(
-    {region: REGION, timeoutSeconds: 60, memory: "256MiB", minInstances: 0,
+    {region: REGION, timeoutSeconds: 90, memory: "256MiB", minInstances: 0,
       maxInstances: 2, concurrency: 20, secrets: [openRouterKey], enforceAppCheck},
     schedule.createScheduleHandler({loadConfig, resolveIdentity, quotaDay, reserveQuota, completeReservation, refundReservation,
       fetch: (...args) => fetch(...args), key: () => openRouterKey.value(),

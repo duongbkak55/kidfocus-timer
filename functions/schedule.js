@@ -150,12 +150,18 @@ function createScheduleHandler(deps) {
       creditCost: isAdvice ? config.scheduleAdviseCost ?? 2 : isLog ? config.scheduleLogCost ?? 1 : input.image ? config.scheduleImageCost ?? 3 : config.scheduleParseCost, dailyLimit: 1000, scheduleParse: !isAdvice};
     await deps.reserveQuota(identity, config, model, input.requestId);
     try {
+      const now = deps.now || Date.now;
+      const timeoutSignal = deps.timeoutSignal || AbortSignal.timeout;
+      const providerDeadline = now() + 60_000;
       let result;
       for (let attempt = 0; attempt < (isAdvice ? 2 : 1); attempt++) {
+        const remainingMs = providerDeadline - now();
+        if (remainingMs <= 0) throw new Error("AI_PARSE_FAILED");
         const response = await deps.fetch("https://openrouter.ai/api/v1/chat/completions", {
           method: "POST", headers: {"Authorization": `Bearer ${deps.key()}`, "Content-Type": "application/json",
             "HTTP-Referer": "https://kidfocus.app", "X-Title": "KidFocus Timer"},
-          body: JSON.stringify((isAdvice ? advise.providerBody : isLog ? log.providerBody : providerBody)(input, model.id)), signal: AbortSignal.timeout(25_000),
+          body: JSON.stringify((isAdvice ? advise.providerBody : isLog ? log.providerBody : providerBody)(input, model.id)),
+          signal: timeoutSignal(Math.min(25_000, remainingMs)),
         });
         if (!response.ok) throw new Error("AI_PARSE_FAILED");
         const payload = await response.json();
