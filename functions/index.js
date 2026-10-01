@@ -99,8 +99,7 @@ exports.aiChat = onCall(
       maxInstances: 2,
       concurrency: 20,
       secrets: [openRouterKey],
-      // Change to true after registering Play Integrity and the local debug token.
-      enforceAppCheck: false,
+      enforceAppCheck,
     },
     async (request) => {
       const config = await loadConfig();

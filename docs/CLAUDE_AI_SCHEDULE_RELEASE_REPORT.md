@@ -2,7 +2,7 @@
 
 Ngày: 2026-09-29. Dev: Codex. Duong duyệt thực hiện ba bước theo thứ tự, dừng nếu bước thất bại.
 
-**Trạng thái mới nhất 2026-10-01:** Ba Functions ACTIVE tại asia-southeast1 với ENFORCE_APP_CHECK=true; Remote Config v3 đã publish. Duong duyệt cập nhật riêng `aiSchedule` sang OpenRouter secret version 2; deploy thành công. Smoke trên tài khoản test Pixel 3a: PARSE, LOG, ADVISE thành công; tổng trừ 4 credits đúng cấu hình. Ảnh bị chặn HTTP 403, không trừ lượt. Báo cáo sẽ được commit và push main sau kiểm tra cuối.
+**Trạng thái mới nhất 2026-10-01:** Ba Functions Smart Schedule ACTIVE tại asia-southeast1; Remote Config v3 đã publish. PARSE, LOG, ADVISE và chặn ảnh đã qua smoke bằng tài khoản test. Sau đó Duong cấp OpenRouter key riêng cho KidFocus: `aiSchedule` và `aiChat` đã bind secret version 3; cả hai có `ENFORCE_APP_CHECK=true`. PARSE trên Pixel 3a thành công, trừ đúng 1 credit. Secret versions 1 và 2 đã DISABLED, version 3 ENABLED; không destroy version nào.
 
 ## 1. Merge, kiểm và push — PASS
 
@@ -248,6 +248,14 @@ Remote Config v3 `ai_schedule_image_tiers=none`: nút ảnh không hiện ở Qu
 **Known issues beta:** `log-en-02` hiểu 7pm thành 07:00; `log-vi-15` thiếu giờ kết thúc qua nửa đêm; `log-vi-24` không hỏi lại khi câu có “chắc/có thể” (preview confidence thấp đã bỏ chọn sẵn). Client hiện chờ callable 30 giây, nên trường hợp ADVISE retry kéo dài có thể timeout ở client dù server còn ngân sách; cần theo dõi. PIN phụ huynh trên Pixel 3a không đồng bộ với Pixel 9 và ô nhập không tự xóa sau lần sai; đã ghi ở trên.
 
 Smoke release **PASS**. Các bước còn lại của lượt này: commit báo cáo trên main, push main không force và ghi trạng thái workflow build phát sinh.
+
+### Chuyển sang OpenRouter key riêng KidFocus (2026-10-01)
+
+Duong thêm `OPENROUTER_API_KEY` version 3 vào Secret Manager. Chỉ đọc metadata version/state và binding của Functions, **không đọc/in giá trị key**. Trước deploy, cả ba version đều ENABLED: `aiSchedule` bind version 2, `aiChat` bind version 1. Đây là hai Functions duy nhất trong project bind secret này (kiểm toàn bộ Functions v1/v2 và các vùng). `aiChat` còn đặt `enforceAppCheck: false` trong source, nên đổi thành cờ `enforceAppCheck` đã khai báo với default true và file `functions/.env.kid-focus-app` cung cấp `ENFORCE_APP_CHECK=true`; không thêm permission hoặc sửa app Android.
+
+Functions `npm test` **171/171 PASS**, `npm run lint` PASS và `git diff --check` PASS trước deploy. Chạy đúng `firebase deploy --only functions:aiSchedule,functions:aiChat --project kid-focus-app --non-interactive`: **exit 0**, chỉ hai Functions này cập nhật. REST xác nhận cả hai ACTIVE ở `asia-southeast1`: `aiChat` revision `aichat-00003-tej`, `aiSchedule` revision `aischedule-00003-vok`; binding `OPENROUTER_API_KEY` đều **version 3**, `serviceConfig.environmentVariables.ENFORCE_APP_CHECK` đều **true**. `aiChat` chưa được smoke riêng trong lượt này; thay đổi App Check yêu cầu client có token hợp lệ.
+
+Pixel 3a kết nối qua wireless debugging; app debug vẫn đăng nhập tài khoản test và mở được route phụ huynh bằng PIN cục bộ (không in/lưu PIN). PARSE câu ví dụ synthetic `English on Tuesday and Thursday at 6 pm for one hour.` từ Quick entry thành công, hiện **Review draft**; trial giảm từ **11 còn 10 credits**. Không áp dụng bản nháp vào lịch hoặc dùng dữ liệu trẻ thật. Sau smoke, kiểm lại toàn bộ Functions: chỉ `aiChat` và `aiSchedule` bind version 3, không function nào còn bind version 1/2. Gọi Secret Manager `:disable` cho version **1** và **2** (HTTP 200 từng lần), xác nhận trạng thái cuối `1=DISABLED`, `2=DISABLED`, `3=ENABLED`; không destroy. Không thay Remote Config hoặc deploy Firebase sản phẩm khác.
 
 ## Bảo toàn working tree
 
