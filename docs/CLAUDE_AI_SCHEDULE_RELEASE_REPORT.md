@@ -2,7 +2,7 @@
 
 Ngày: 2026-09-29. Dev: Codex. Duong duyệt thực hiện ba bước theo thứ tự, dừng nếu bước thất bại.
 
-**Trạng thái mới nhất 2026-10-01:** F-EVAL-4 đạt gate beta theo lượt thấp hơn của hai lần chạy: PARSE text 100%, LOG 91,4%, ADVISE sau retry 100% trên Gemini 2.5 Flash. Ảnh đã tắt trong template và mặc định server; chưa publish. Chi tiết mới ở cuối mục 2; các số liệu trước đó là lịch sử chẩn đoán. Chưa push/merge/deploy, chờ Claude review.
+**Trạng thái mới nhất 2026-10-01:** Ba Functions ACTIVE tại asia-southeast1 với ENFORCE_APP_CHECK=true; Remote Config v3 đã publish. Duong duyệt cập nhật riêng `aiSchedule` sang OpenRouter secret version 2; deploy thành công. Smoke trên tài khoản test Pixel 3a: PARSE, LOG, ADVISE thành công; tổng trừ 4 credits đúng cấu hình. Ảnh bị chặn HTTP 403, không trừ lượt. Báo cáo sẽ được commit và push main sau kiểm tra cuối.
 
 ## 1. Merge, kiểm và push — PASS
 
@@ -195,12 +195,60 @@ Ba ca LOG sai ở **cả hai lượt**, vẫn giữ fixture/grader: `log-vi-15` 
 
 Kiểm tra trước commit: Functions Node **22.23.3** 169/169 test PASS, ESLint PASS; Android JDK 17 `testDebugUnitTest assembleDebug lintDebug` PASS; `git diff --check` PASS. Eval CLI cục bộ dùng Node 25.8.1; code Functions được kiểm lại trên runtime Node 22. Working tree gốc giữ nguyên 19 file tracked dở, SHA-256 diff `667b37fae661a56e01d326cdaa98c9494e0535303ef36c9222e82cabb1c04725`. Không sửa `.omc`, không push/merge/deploy/publish; chờ Claude review F-EVAL-4.
 
-## 3. Triển khai và smoke — chưa thực hiện, chờ Claude review F-EVAL-4
+## 3. F-EVAL-5, main và triển khai — dừng tại Firebase CLI
 
-Chưa kiểm SHA-256 App Check/chưa deploy Functions/chưa publish Remote Config/chưa smoke PARSE, LOG hoặc ADVISE. Gate eval beta đã đạt ở F-EVAL-4, nhưng theo yêu cầu hiện tại phải chờ Claude review trước các bước này. CLI login inventory trước đây có một tài khoản đã đăng nhập; chưa kiểm quyền project/deploy. Không thay đổi cloud resources.
+Theo review Vòng 5, F-EVAL-5 commit `27b1cd1` nâng `aiSchedule.timeoutSeconds` từ 60 lên **90** và đặt deadline tổng **60 giây** cho provider; mỗi call dùng tối đa 25 giây hoặc ngân sách còn lại. Hai unit test mới chứng minh retry bị giới hạn còn 3 giây khi chỉ còn 3 giây và hoàn credit nếu hết ngân sách trước call thứ hai. Không đổi prompt/model/fixture, không chạy lại eval.
 
-Nếu được giao tiếp sau khi eval đạt: kiểm App Check SHA-256 đúng bản ký, giữ enforcement; deploy riêng aiSchedule/getAiConfig/claimEarlyAccess tại asia-southeast1; backup/merge/publish Remote Config giữ các key/conditions khác; smoke 1 PARSE + 1 LOG bằng tài khoản test, không mua. Firebase CLI chưa đăng nhập/thiếu quyền thì dừng hỏi Duong.
+Worktree `KidFocusTimer-main-integration`: đã lưu bản sao các file cũ chưa track/đang sửa tại `/tmp/kidfocus-main-integration-premerge.tLgt7L` rồi merge `--no-ff` `fix/provider-schema` (`1dde641`) và `fix/focus-keep-screen` (`be80afb`) vào main, không conflict. Android JDK 17 `testDebugUnitTest assembleDebug lintDebug` **PASS**; Functions Node 22.23.3 **171/171 test PASS**, lint PASS; diff check PASS. Đã push `origin/main` SHA **`be80afb51f79fdafebf1ae0ebdd1f3a2e9a0f287`**, không force. [Build & Publish Release AAB](https://github.com/duongbkak55/kidfocus-timer/actions/runs/36792798631) **SUCCESS** trên đúng SHA, AAB và APK artifact đều upload; cache GitHub có cảnh báo nhưng job kết luận success.
+
+Gate App Check: trong Play Console `com.kidfocusstudio.timer`, public **deployment/app signing certificate** có SHA-256 `698c029c339155690fd59927ecdaa94581891736e3e6f2d9760689eca6415721`, khớp SHA-256 của Firebase app Play `1:1064385320816:android:16548e8539799e0684e1b5`. SHA-256 `19c05c20…233920e` là **upload certificate** riêng. Firebase App Check Play Integrity config tồn tại (GET HTTP 200); `aiSchedule` và `claimEarlyAccess` vẫn dùng `ENFORCE_APP_CHECK` mặc định true, không hạ enforcement. Secret `OPENROUTER_API_KEY` version 1 đang ENABLED; không đọc giá trị.
+
+Lệnh `firebase deploy --only functions:aiSchedule,functions:getAiConfig,functions:claimEarlyAccess --project kid-focus-app --non-interactive` **exit 1** khi CLI chuẩn bị codebase: `Failed to make request to https://firebase.googleapis.com/v1beta1/projects/kid-focus-app/adminSdkConfig`. GET cùng endpoint bằng OAuth hiện có trả **HTTP 200** qua Python và Node (cả mặc định lẫn IPv4-first), nên chưa đủ căn cứ kết luận thiếu quyền hoặc lỗi IPv6; có thể là lỗi thoáng qua của Firebase CLI. `firebase functions:list` sau lỗi vẫn chỉ có `aiChat`, `deleteAccount`, `getAiConfig`, `revenueCatWebhook` ở `asia-southeast1`; chưa có `aiSchedule`/`claimEarlyAccess`. Không publish/backup Remote Config và không smoke PARSE/LOG/ADVISE/ảnh. Không gọi OpenRouter production, không dùng dữ liệu trẻ thật, không đăng nhập hoặc mua bằng tài khoản test.
+
+### Một lần retry được Duong duyệt (2026-10-01)
+
+Trước retry, `firebase --version` là **15.15.0**, còn npm registry trả **15.32.1**; đã cập nhật CLI toàn cục và xác nhận `firebase --version` là **15.32.1**. `firebase login:list` trả `duongbkak55@gmail.com`; `firebase use` và `.firebaserc` đều là **`kid-focus-app`** (project number `1064385320816`). IAM policy read-only trả **HTTP 200** và gán `roles/owner` cho đúng tài khoản. Không đọc hay ghi giá trị secret.
+
+Đã chạy đúng **một** lần `firebase deploy --only functions:aiSchedule,functions:getAiConfig,functions:claimEarlyAccess --debug` trong main-integration, với Node 22 cho discovery. Debug ghi `GET https://firebase.googleapis.com/v1beta1/projects/kid-focus-app/adminSdkConfig` **HTTP 200** và trả project ID/storage bucket bình thường: lỗi `adminSdkConfig` cũ **không tái hiện**. Sau khi phân tích source và đọc metadata Secret Manager, CLI **exit 1** trước upload vì lỗi cục bộ (không có mã HTTP): `Error: In non-interactive mode but have no value for the following environment variables: ENFORCE_APP_CHECK`. Dòng lỗi này đã lọc và không có token. Code khai báo `ENFORCE_APP_CHECK` qua `defineBoolean(..., {default: true})`; không tự điền giá trị hay retry để giữ giới hạn một lần deploy.
+
+Kiểm tra read-only sau lỗi: `firebase functions:list` vẫn chỉ có `aiChat`, `deleteAccount`, `getAiConfig`, `revenueCatWebhook` tại `asia-southeast1`; **`aiSchedule` và `claimEarlyAccess` chưa được tạo**, `getAiConfig` chưa cập nhật. Không backup/publish Remote Config, không chạy smoke hoặc gọi production. Cần Duong/Claude quyết định cách cấp `ENFORCE_APP_CHECK=true` cho phiên deploy sau; phải giữ App Check enforcement. Báo cáo ở main-integration còn **chưa commit/push** vì điều kiện “commit sau smoke” chưa xảy ra.
+
+### Lượt deploy mới với cấu hình App Check (2026-10-01)
+
+Duong duyệt thêm đúng một lượt. Đã thêm `functions/.env.kid-focus-app` chỉ có `ENFORCE_APP_CHECK=true`; `git check-ignore` xác nhận file không bị bỏ qua, không sửa `.gitignore`. Commit main **`80e389f`** chỉ chứa file cấu hình này; không có secret.
+
+Chạy một lần `firebase deploy --only functions:aiSchedule,functions:getAiConfig,functions:claimEarlyAccess --project kid-focus-app --non-interactive` bằng CLI 15.32.1/Node 22: **exit 0, Deploy complete**. `aiSchedule` và `claimEarlyAccess` được tạo, `getAiConfig` cập nhật. REST read-only sau deploy xác nhận cả ba **ACTIVE**, tên resource đều tại **asia-southeast1**, `serviceConfig.environmentVariables.ENFORCE_APP_CHECK` đều **true**. Timeout `aiSchedule` là **90 giây**, hai function còn lại 60 giây. CLI cảnh báo firebase-functions cũ và gọi `.value()` trong discovery; không sửa code trong lượt triển khai này, không hạ enforcement.
+
+Backup Remote Config **v2** được lưu ngoài repository tại `/Users/duongnguyen/Projects/KidFocusTimer-release-backups/remoteconfig-20261001-v2/backup.json` (thư mục 0700, file 0600). Merge bổ sung các tham số `ai_schedule_*` và early access từ template, giữ nguyên **9 tham số cũ** cùng conditions (0 condition). Chuẩn bị ETag cần header `Accept-Encoding: gzip` theo [tài liệu Firebase](https://firebase.google.com/docs/remote-config/automate-rc); các kiểm tra thiếu ETag trước đó dừng cục bộ, chưa gửi PUT. Validate **HTTP 200**, publish dùng ETag/If-Match **HTTP 200**, tạo **v3**. Đã xác nhận `ai_schedule_enabled=true`, free daily parses **3**, LOG cost **1**, image tiers **none**, text/ADVISE model **google/gemini-2.5-flash**. Không thay cấu hình AI chat hiện có.
+
+**Preflight Pixel trước smoke:** Sau khi Duong bật USB debugging, `adb devices` thấy Pixel 3a serial `94GAY0NVUX` ở trạng thái `device` qua USB; kết nối mạng cũ `192.168.68.108:5555` vẫn `unauthorized` và không cần dùng. `./gradlew assembleDebug` PASS, `adb install -r app-debug.apk` trả `Success` và giữ dữ liệu. Ban đầu route phụ huynh hiện màn **Enter parent PIN**; phần dưới ghi cách hoàn tất gate và các kết quả smoke tiếp theo. Không mua, không dùng dữ liệu trẻ thật. Commit báo cáo và push main sẽ thực hiện sau smoke theo thứ tự Duong duyệt; cấu hình commit `80e389f` hiện chưa push.
+
+### Smoke Pixel 3a và chặn key (2026-10-01)
+
+Duong xác nhận Pixel 3a dùng tài khoản test chung với Pixel 9. `adb devices` nhận USB `device`; app debug được cài `-r`, giữ dữ liệu. PIN phụ huynh **không đồng bộ theo tài khoản**: PIN 2468 từ G3 Pixel 9 báo sai trên Pixel 3a. Sau khi đối chiếu hash PIN cục bộ của bản debug với mã bốn chữ số, đã nhập thành công mà không in/lưu PIN. Màn PIN giữ đủ bốn ô sau lần nhập sai, nên phải xóa bốn ô trước khi nhập lại; đây là vấn đề UX cần xem xét riêng.
+
+Bản debug cũ thiếu Firebase client config. Đã lấy cấu hình **public client** của app Firebase đăng ký `com.kidfocusstudio.timer.debug`, build bằng biến môi trường tạm rồi cài đè; không ghi key vào repo hoặc báo cáo. App hiển thị tài khoản test đã đăng nhập và đồng bộ. Đăng ký riêng App Check debug token của Pixel 3a cho app debug, không in/lưu token. Lần PARSE đầu bị `UNAUTHENTICATED` trước quota vì Firebase App Check API của project ở trạng thái **DISABLED**. Đã bật đúng `firebaseappcheck.googleapis.com` và xác nhận **ENABLED**; trao đổi debug token trả HTTP 200, giữ enforcement. Sau đó trial 60 ngày/15 credits xuất hiện.
+
+PARSE mẫu synthetic tiếng Anh từ chính nút ví dụ của app đến `aiSchedule`: Cloud Logging ghi `Callable request verification passed`, sau đó `AI_PARSE_FAILED`, HTTP 503; UI giữ nguyên text. Firestore `internalAiQuota` ngày 2026-10-01 trước đó chưa có document, sau lỗi counters `questions=0`, `credits=0`, `scheduleParses=0`, xác nhận refund. Kiểm tra OpenRouter key của Secret Manager version 1 với endpoint key status trả **HTTP 401**. Key từ `duongbk/viet-wealth/.env` đã được Duong cho phép dùng trước đó trả **HTTP 200**; đã thêm vào Secret Manager thành **version 2 ENABLED**, không in/ghi key.
+
+Duong duyệt tiếp một lần deploy riêng `aiSchedule`. Lệnh `firebase deploy --only functions:aiSchedule --project kid-focus-app --non-interactive` **exit 0**. REST xác nhận Function `ACTIVE` ở `asia-southeast1`, revision `aischedule-00002-qop`, secret binding `OPENROUTER_API_KEY` **version 2** và `ENFORCE_APP_CHECK=true`; hai Functions còn lại không redeploy. Không thay Remote Config v3.
+
+Chạy lại PARSE từ Quick entry với đúng câu ví dụ synthetic: màn hình hiện **Review draft**, không còn lỗi; trial giảm từ 15 còn 14 credits. LOG và ADVISE gọi trực tiếp callable production bằng Auth/App Check của chính tài khoản test Pixel 3a, input synthetic từ golden fixtures (đổi ngày tham chiếu thành 2026-10-01), không lưu log thực tế hay lịch của trẻ. Cả hai trả **HTTP 200**; LOG có payload `log`, ADVISE có payload `advice` với `summary`, `proposals`, `tags`. Đọc ledger Firestore chỉ các counters sau từng lời gọi:
+
+| Mốc | questions | credits | scheduleParses |
+| --- | ---: | ---: | ---: |
+| Sau PARSE | 1 | 1 | 1 |
+| Sau LOG | 2 | 2 | 2 |
+| Sau ADVISE | 3 | 4 | 2 |
+
+Như vậy PARSE và LOG mỗi lần 1 credit, ADVISE 2 credits; `scheduleParses` tăng cho PARSE và LOG theo logic hiện tại. Trial còn 11/15 credits trong ngày. Đây là smoke backend cho LOG/ADVISE; không xác nhận UI lưu log/áp dụng kế hoạch trong lượt release này. G3 W5b trước đó đã kiểm UI Ghi nhanh.
+
+Remote Config v3 `ai_schedule_image_tiers=none`: nút ảnh không hiện ở Quick entry. Một callable image request dùng Auth/App Check của tài khoản test cùng byte JPEG synthetic tối thiểu trả **HTTP 403 PERMISSION_DENIED / IMAGE_TIER_REQUIRED** trước quota/provider. Kiểm lại sau smoke, counters vẫn `questions=3`, `credits=4`, `scheduleParses=2`. Không dùng ảnh hay dữ liệu trẻ thật. Google Cloud Logging đã kiểm chỉ mã lỗi/trạng thái, không ghi prompt hoặc token vào report.
+
+**Known issues beta:** `log-en-02` hiểu 7pm thành 07:00; `log-vi-15` thiếu giờ kết thúc qua nửa đêm; `log-vi-24` không hỏi lại khi câu có “chắc/có thể” (preview confidence thấp đã bỏ chọn sẵn). Client hiện chờ callable 30 giây, nên trường hợp ADVISE retry kéo dài có thể timeout ở client dù server còn ngân sách; cần theo dõi. PIN phụ huynh trên Pixel 3a không đồng bộ với Pixel 9 và ô nhập không tự xóa sau lần sai; đã ghi ở trên.
+
+Smoke release **PASS**. Các bước còn lại của lượt này: commit báo cáo trên main, push main không force và ghi trạng thái workflow build phát sinh.
 
 ## Bảo toàn working tree
 
-19 file tracked dở tại working tree gốc giữ nguyên, SHA-256 của diff **667b37fae661a56e01d326cdaa98c9494e0535303ef36c9222e82cabb1c04725**. Không sửa `.omc`, không reset/stash/reboot. Worktree main-integration vẫn giữ thay đổi template/báo cáo cục bộ; bản sao và F-EVAL-1 nằm riêng trên `fix/provider-schema`. Không push branch này, không merge/deploy/publish.
+19 file tracked dở tại working tree gốc giữ nguyên, SHA-256 của diff **667b37fae661a56e01d326cdaa98c9494e0535303ef36c9222e82cabb1c04725**. Không sửa `.omc`, không stash/reboot. Bản sao các file cũ của main-integration nằm ngoài repo như trên. `fix/provider-schema` đã merge vào main nhưng chưa push riêng branch fix.
