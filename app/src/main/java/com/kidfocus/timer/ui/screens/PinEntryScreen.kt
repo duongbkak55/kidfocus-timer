@@ -155,6 +155,7 @@ fun PinEntryScreen(
             PinKeyboard(
                 onDigit = { digit ->
                     setupMismatch = false
+                    if (pinError) settingsViewModel.resetPinVerification()
                     if (isConfirmStep) {
                         if (confirmDigits.length < PIN_LENGTH) {
                             val updated = confirmDigits + digit.toString()
@@ -179,7 +180,9 @@ fun PinEntryScreen(
                                     isConfirmStep = true
                                 } else {
                                     settingsViewModel.verifyPin(updated)
-                                    if (pinError) digits = ""
+                                    // The collected error state updates on recomposition; clear
+                                    // immediately so a wrong attempt never blocks the next four digits.
+                                    digits = ""
                                 }
                             }
                         }

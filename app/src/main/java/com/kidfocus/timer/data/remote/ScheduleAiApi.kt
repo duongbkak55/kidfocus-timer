@@ -1,6 +1,7 @@
 package com.kidfocus.timer.data.remote
 
 import com.google.firebase.functions.FirebaseFunctions
+import com.google.firebase.functions.HttpsCallableReference
 import com.kidfocus.timer.data.cloud.FirebaseAccountRepository
 import com.kidfocus.timer.domain.schedule.*
 import java.time.LocalDate
@@ -11,6 +12,15 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withTimeout
+
+internal const val AI_SCHEDULE_TIMEOUT_MILLIS = 95_000L
+private const val AI_SCHEDULE_TIMEOUT_SECONDS = 95L
+
+internal suspend fun <T> withAiScheduleTimeout(block: suspend () -> T): T =
+    withTimeout(AI_SCHEDULE_TIMEOUT_MILLIS) { block() }
+
+internal fun HttpsCallableReference.withAiScheduleTimeout(): HttpsCallableReference =
+    apply { setTimeout(AI_SCHEDULE_TIMEOUT_SECONDS, TimeUnit.SECONDS) }
 
 interface ScheduleParser {
     suspend fun parse(text: String, ageBand: String, current: ScheduleState): ScheduleParseReply
@@ -31,8 +41,8 @@ class ScheduleAiApi @Inject constructor(private val account: FirebaseAccountRepo
     private fun functions(): FirebaseFunctions = FirebaseFunctions.getInstance(
         account.firebaseApp() ?: error("FIREBASE_NOT_CONFIGURED"), "asia-southeast1")
 
-    override suspend fun log(request: com.kidfocus.timer.domain.daylog.DayLogRequest): ScheduleLogReply = withTimeout(30_000) {
-        val reply = functions().getHttpsCallable("aiSchedule").also { it.setTimeout(30, TimeUnit.SECONDS) }
+    override suspend fun log(request: com.kidfocus.timer.domain.daylog.DayLogRequest): ScheduleLogReply = withAiScheduleTimeout {
+        val reply = functions().getHttpsCallable("aiSchedule").withAiScheduleTimeout()
             .call(request.payload).await().data as? Map<*, *> ?: error("AI_LOG_FAILED")
         val usage = reply["usage"] as? Map<*, *> ?: error("AI_LOG_FAILED")
         ScheduleLogReply(com.kidfocus.timer.domain.daylog.DayLogDraft.fromMap(reply["log"] as? Map<*, *> ?: error("AI_LOG_FAILED"), request),
@@ -45,8 +55,8 @@ class ScheduleAiApi @Inject constructor(private val account: FirebaseAccountRepo
         withTimeout(30_000) { functions().getHttpsCallable("claimEarlyAccess").call().await() }
     }
 
-    override suspend fun advise(payload: Map<String, Any>): ScheduleAdviseReply = withTimeout(30_000) {
-        val reply = functions().getHttpsCallable("aiSchedule").also { it.setTimeout(30, TimeUnit.SECONDS) }.call(payload).await().data as? Map<*, *> ?: error("AI_ADVISE_FAILED")
+    override suspend fun advise(payload: Map<String, Any>): ScheduleAdviseReply = withAiScheduleTimeout {
+        val reply = functions().getHttpsCallable("aiSchedule").withAiScheduleTimeout().call(payload).await().data as? Map<*, *> ?: error("AI_ADVISE_FAILED")
         ScheduleAdviseReply(ScheduleAdvicePayload.advice(reply["advice"] as? Map<*, *> ?: error("AI_ADVISE_FAILED")),
             (reply["usage"] as? Map<*, *>)?.let { usage -> AiUsage((usage["remainingQuestions"] as? Number)?.toInt() ?: 0, (usage["remainingCredits"] as? Number)?.toInt() ?: 0, usage["premium"] == true, usage["tier"] as? String ?: "free", (usage["earlyAccessUntil"] as? Number)?.toLong(), (usage["remainingScheduleParses"] as? Number)?.toInt()) } ?: error("AI_ADVISE_FAILED"))
     }
@@ -54,10 +64,10 @@ class ScheduleAiApi @Inject constructor(private val account: FirebaseAccountRepo
     override suspend fun parse(text: String, ageBand: String, current: ScheduleState) = parseRequest(text, null, ageBand, current)
     override suspend fun parseImage(text: String, image: String, ageBand: String, current: ScheduleState) = parseRequest(text, image, ageBand, current)
 
-    private suspend fun parseRequest(text: String, image: String?, ageBand: String, current: ScheduleState): ScheduleParseReply = withTimeout(30_000) {
+    private suspend fun parseRequest(text: String, image: String?, ageBand: String, current: ScheduleState): ScheduleParseReply = withAiScheduleTimeout {
         require((text.isNotBlank() || image != null) && text.length <= 2000)
         require(image == null || image.length in 1..1_400_000)
-        val response = functions().getHttpsCallable("aiSchedule").also { it.setTimeout(30, TimeUnit.SECONDS) }
+        val response = functions().getHttpsCallable("aiSchedule").withAiScheduleTimeout()
             .call(mapOf("requestId" to UUID.randomUUID().toString(), "text" to text,
                 "ageBand" to (ageBand.takeIf { it in ScheduleThresholds.sleepMinutes } ?: "4-5"),
                 "today" to LocalDate.now().toString(), "locale" to Locale.getDefault().let { locale -> locale.language + (locale.country.takeIf { it.length == 2 }?.let { "-$it" } ?: "") },
