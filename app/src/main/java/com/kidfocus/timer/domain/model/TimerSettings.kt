@@ -25,6 +25,8 @@ data class TimerSettings(
     val learningAgeBand: String = DEFAULT_LEARNING_AGE_BAND,
     val calmModeEnabled: Boolean = false,
     val keepScreenOnEnabled: Boolean = true,
+    val allowChildExtendFocus: Boolean = true,
+    val maxExtraFocusMinutes: Int = DEFAULT_MAX_EXTRA_FOCUS_MINUTES,
     val activeChildProfileId: String = DEFAULT_CHILD_PROFILE_ID,
 ) {
     /** True if the parent has set a PIN to lock settings. */
@@ -41,6 +43,7 @@ data class TimerSettings(
         const val DEFAULT_BREAK_MINUTES = 5
         const val MIN_FOCUS_MINUTES = 5
         const val MAX_FOCUS_MINUTES = 120
+        const val DEFAULT_MAX_EXTRA_FOCUS_MINUTES = 30
         const val MIN_BREAK_MINUTES = 1
         const val MAX_BREAK_MINUTES = 30
         const val DEFAULT_DAILY_GOAL_MINUTES = 120

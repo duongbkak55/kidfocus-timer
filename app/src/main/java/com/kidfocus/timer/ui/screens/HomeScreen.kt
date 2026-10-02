@@ -22,6 +22,8 @@ import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +32,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,12 +43,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.testTag
 import com.kidfocus.timer.R
 import com.kidfocus.timer.BuildConfig
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kidfocus.timer.data.cloud.CloudAccount
 import com.kidfocus.timer.data.cloud.CloudSyncStatus
 import com.kidfocus.timer.domain.model.TimerPhase
+import com.kidfocus.timer.domain.model.FocusTimePolicy
+import com.kidfocus.timer.domain.model.TimerSettings
+import com.kidfocus.timer.ui.components.FocusDurationDial
 import com.kidfocus.timer.ui.components.AccountAvatar
 import com.kidfocus.timer.ui.components.MascotWidget
 import com.kidfocus.timer.ui.components.TodayRoutinesSection
@@ -84,6 +94,10 @@ fun HomeScreen(
     val colors = KidFocusTheme.colors
     val activeChildName = childProfileName(childProfile)
     val settings by settingsViewModel.settings.collectAsState()
+    var chooseFocusTime by remember { mutableStateOf(false) }
+    var chosenMinutes by remember(settings?.focusDurationMinutes) {
+        mutableIntStateOf(FocusTimePolicy.selection(settings?.focusDurationMinutes ?: TimerSettings.DEFAULT_FOCUS_MINUTES))
+    }
     val focusMinutes by homeViewModel.todayFocusMinutes.collectAsState()
     val focusCount by homeViewModel.todayFocusCount.collectAsState()
     val goalProgress by homeViewModel.dailyGoalProgress.collectAsState()
@@ -452,11 +466,7 @@ fun HomeScreen(
 
             // Start button
             Button(
-                onClick = {
-                    val seconds = (settings?.focusDurationMinutes ?: 25) * 60
-                    timerViewModel.startFocus(seconds)
-                    onStartFocus()
-                },
+                onClick = { chosenMinutes = FocusTimePolicy.selection(settings?.focusDurationMinutes ?: TimerSettings.DEFAULT_FOCUS_MINUTES); chooseFocusTime = true },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(64.dp),
@@ -510,6 +520,23 @@ fun HomeScreen(
                 }
             }
         }
+    }
+    if (chooseFocusTime) {
+        AlertDialog(
+            onDismissRequest = { chooseFocusTime = false },
+            title = { Text(stringResource(R.string.focus_choose_duration)) },
+            text = { FocusDurationDial(chosenMinutes, { chosenMinutes = it }, colors.primary) },
+            confirmButton = {
+                Button(onClick = {
+                    chooseFocusTime = false
+                    timerViewModel.startFocus(chosenMinutes * 60)
+                    onStartFocus()
+                }, modifier = Modifier.testTag("focus_start_selected")) {
+                    Text(stringResource(R.string.home_start_focus))
+                }
+            },
+            dismissButton = { TextButton(onClick = { chooseFocusTime = false }) { Text(stringResource(R.string.cancel)) } },
+        )
     }
 }
 

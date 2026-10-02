@@ -25,6 +25,7 @@ class SaveTimerSettingsUseCase @Inject constructor(
         require(settings.breakDurationMinutes in TimerSettings.MIN_BREAK_MINUTES..TimerSettings.MAX_BREAK_MINUTES) {
             "Break duration must be between ${TimerSettings.MIN_BREAK_MINUTES} and ${TimerSettings.MAX_BREAK_MINUTES} minutes"
         }
+        require(settings.maxExtraFocusMinutes in com.kidfocus.timer.domain.model.FocusTimePolicy.extraChoices)
         settingsRepository.saveSettings(settings)
     }
 }

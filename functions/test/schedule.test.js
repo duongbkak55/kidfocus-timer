@@ -123,6 +123,11 @@ test("unknown taskType falls back to CUSTOM and days normalize", () => {
   assert.equal(validateDraft(draft).tasks[0].taskType, "CUSTOM");
   assert.deepEqual(validateDraft(draft).tasks[0].days, ["TUE", "THU"]);
 });
+test("PARSE accepts TEST_PRACTICE instead of silently mapping it to CUSTOM", () => {
+  const draft = clone(fixtures.cases[0].expected);
+  draft.tasks[0].taskType = "TEST_PRACTICE";
+  assert.equal(validateDraft(draft).tasks[0].taskType, "TEST_PRACTICE");
+});
 test("guest blocked before quota or provider; disabled schedule and invalid input fail early", async () => {
   const h = harness();
   await assert.rejects(h.handler({...request(), auth: null}), {code: "unauthenticated"});

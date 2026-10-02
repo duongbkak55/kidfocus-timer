@@ -20,7 +20,8 @@ data class ActualScheduleResult(val findings: List<Finding>, val stats: ActualSc
 /** Seven calendar days; only recorded days and due occurrences can count as missed. */
 object ActualScheduleAdvisor {
     fun evaluate(tasks: List<ScheduledTask>, anchors: ScheduleAnchors, entries: List<DayLogEntry>,
-        today: LocalDate = LocalDate.now(), nowMinute: Int = 1439): ActualScheduleResult {
+        today: LocalDate = LocalDate.now(), nowMinute: Int = 1439,
+        extendedMinutesByLogId: Map<String, Int> = emptyMap()): ActualScheduleResult {
         val days = compareWeek(today.minusDays(6), tasks, anchors, entries, today, nowMinute).days.filter { it.hasData }
         val rows = days.flatMap { it.rows }
         val lateBeds = rows.filter { it.plan.category == DayLogCategory.SLEEP && (it.startDelta ?: 0) >= 30 }
@@ -31,7 +32,9 @@ object ActualScheduleAdvisor {
         val stats = rows.filter { it.plan.taskId != null }.groupBy { it.plan.taskId!! }.map { (id, occurrences) ->
             val completed = occurrences.filter { it.actualDuration != null }
             val overrun = completed.filter { it.plan.durationMinutes != null && it.plan.durationMinutes > 0 &&
-                it.actualDuration!! * 2 > it.plan.durationMinutes * 3 }
+                it.actualDuration!! * 2 > it.plan.durationMinutes * 3 &&
+                it.actualDuration - it.plan.durationMinutes > (it.actual?.takeIf { entry -> entry.source == DayLogSource.TIMER }
+                    ?.let { entry -> extendedMinutesByLogId[entry.id] } ?: 0) }
             val missed = occurrences.filter { it.status == DayComparisonStatus.MISSED }
             if (overrun.size >= 3) findings += Finding(RuleId.TASK_OVERRUN, Severity.MEDIUM,
                 overrun.map { it.plan.date.dayOfWeek }.toSet(), setOf(id), mapOf("count" to overrun.size))

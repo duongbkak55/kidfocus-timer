@@ -23,6 +23,7 @@ import com.kidfocus.timer.MainActivity
 import com.kidfocus.timer.R
 import com.kidfocus.timer.data.datastore.SettingsDataStore
 import com.kidfocus.timer.domain.model.TimerPhase
+import com.kidfocus.timer.domain.model.FocusTimePolicy
 import com.kidfocus.timer.domain.model.TimerState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -86,6 +87,7 @@ class TimerService : Service() {
 
         fun pause() = this@TimerService.pauseTimer()
         fun resume() = this@TimerService.resumeTimer()
+        fun extendFocus(minutes: Int) = this@TimerService.extendFocus(minutes)
         fun stop() = this@TimerService.stopTimer()
     }
 
@@ -135,6 +137,7 @@ class TimerService : Service() {
             }
             ACTION_PAUSE -> pauseTimer()
             ACTION_RESUME -> resumeTimer()
+            ACTION_EXTEND_FOCUS -> extendFocus(intent.getIntExtra(EXTRA_EXTEND_MINUTES, 0))
             ACTION_STOP -> stopTimer()
         }
         return START_STICKY
@@ -167,7 +170,7 @@ class TimerService : Service() {
         commands.trySend { beginCountdown(phase, totalSeconds, remainingSeconds, isResume, taskId) }
     }
 
-    private suspend fun beginCountdown(phase: TimerPhase, totalSeconds: Int, remainingSeconds: Int, isResume: Boolean, taskId: Long?) {
+    private suspend fun beginCountdown(phase: TimerPhase, totalSeconds: Int, remainingSeconds: Int, isResume: Boolean, taskId: Long?, extendedMinutes: Int = 0) {
         countdownJob?.cancel()
         val generation = ++countdownGeneration
         if (!isResume) logContext = safeStartLog(taskId, phase.isFocus)
@@ -182,6 +185,7 @@ class TimerService : Service() {
                 isRunning = true,
                 isPaused = false,
                 completedFocusSessions = completedSessions,
+                extendedMinutes = extendedMinutes,
             )
         }
 
@@ -219,7 +223,22 @@ class TimerService : Service() {
             remainingSeconds = state.remainingSeconds,
             isResume = true,
             taskId = logContext.taskId,
+            extendedMinutes = state.extendedMinutes,
         )
+    } }
+
+    private fun extendFocus(minutes: Int) { commands.trySend {
+        if (minutes != FocusTimePolicy.STEP_MINUTES) return@trySend
+        val settings = settingsDataStore.settingsFlow.first()
+        val next = FocusTimePolicy.extend(_timerState.value, settings) ?: return@trySend
+        // Persist against the actual log ID, never a guessed task occurrence or Room schema.
+        if (logContext.taskId != null) logContext.logId?.let { settingsDataStore.addFocusExtension(it, minutes) }
+        if (next.isRunning) beginCountdown(next.phase, next.totalSeconds, next.remainingSeconds,
+            isResume = true, taskId = logContext.taskId, extendedMinutes = next.extendedMinutes)
+        else {
+            _timerState.value = next
+            updateNotification(next.remainingSeconds, next.phase)
+        }
     } }
 
     private fun stopTimer() { commands.trySend {
@@ -417,9 +436,11 @@ class TimerService : Service() {
         const val ACTION_START_BREAK = "com.kidfocus.timer.ACTION_START_BREAK"
         const val ACTION_PAUSE = "com.kidfocus.timer.ACTION_PAUSE"
         const val ACTION_RESUME = "com.kidfocus.timer.ACTION_RESUME"
+        const val ACTION_EXTEND_FOCUS = "com.kidfocus.timer.ACTION_EXTEND_FOCUS"
         const val ACTION_STOP = "com.kidfocus.timer.ACTION_STOP"
         const val EXTRA_TASK_ID = "extra_scheduled_task_id"
         const val EXTRA_TOTAL_SECONDS = "extra_total_seconds"
+        const val EXTRA_EXTEND_MINUTES = "extra_extend_minutes"
 
         private const val DEFAULT_FOCUS_SECONDS = 25 * 60
         private const val DEFAULT_BREAK_SECONDS = 5 * 60

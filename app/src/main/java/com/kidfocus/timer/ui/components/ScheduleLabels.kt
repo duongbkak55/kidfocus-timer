@@ -59,6 +59,7 @@ private fun TaskType.labelResource(): Int = when (this) {
     TaskType.WEEKEND_STUDY -> R.string.task_weekend_study
     TaskType.MUSIC_PRACTICE -> R.string.task_music_practice
     TaskType.LEARNING_GAMES -> R.string.task_learning_games
+    TaskType.TEST_PRACTICE -> R.string.task_test_practice
     TaskType.BATH -> R.string.task_bath
     TaskType.BRUSH_TEETH -> R.string.task_brush_teeth
     TaskType.EXERCISE -> R.string.task_exercise

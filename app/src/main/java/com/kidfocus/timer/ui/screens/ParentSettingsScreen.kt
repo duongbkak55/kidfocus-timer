@@ -164,6 +164,23 @@ fun ParentSettingsScreen(
             )
 
             Spacer(modifier = Modifier.height(12.dp))
+            SettingToggleRow(
+                title = stringResource(R.string.parent_allow_extend_focus),
+                subtitle = stringResource(R.string.parent_allow_extend_focus_subtitle),
+                checked = current.allowChildExtendFocus,
+                onCheckedChange = settingsViewModel::setAllowChildExtendFocus,
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(stringResource(R.string.parent_extend_limit), color = colors.onBackground)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                com.kidfocus.timer.domain.model.FocusTimePolicy.extraChoices.forEach { minutes ->
+                    val label = stringResource(R.string.parent_minutes_format, minutes)
+                    if (minutes == current.maxExtraFocusMinutes) Button(onClick = { settingsViewModel.setMaxExtraFocusMinutes(minutes) }) { Text(label) }
+                    else OutlinedButton(onClick = { settingsViewModel.setMaxExtraFocusMinutes(minutes) }) { Text(label) }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             SettingSliderRow(
                 title = stringResource(R.string.parent_break_duration),

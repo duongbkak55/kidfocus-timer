@@ -176,7 +176,7 @@ test("school overlap across Sunday midnight and REMOVE study are forbidden", () 
   input.anchors.school = [{days: ["SUN"], start: "23:00", end: "08:00"}];
   move.proposals[0].start = "07:30"; assert.throws(() => validateAdvice(move, input));
   const remove = {...move, proposals: [{op: "REMOVE", taskRef: "t0", days: ["MON"], reason: "Xoá", fixes: ["OVERLAP"]}]};
-  for (const type of ["STUDY", "MORNING_STUDY", "HOMEWORK", "CUSTOM"]) { input.tasks[0].taskType = type; assert.throws(() => validateAdvice(remove, input)); }
+  for (const type of ["STUDY", "MORNING_STUDY", "HOMEWORK", "TEST_PRACTICE", "CUSTOM"]) { input.tasks[0].taskType = type; assert.throws(() => validateAdvice(remove, input)); }
   const resize = {...move, proposals: [{op: "RESIZE", taskRef: "t0", days: ["MON"], durationMin: 90, reason: "Đổi", fixes: ["OVERLAP"]}]};
   input.tasks[0].start = "07:30"; assert.throws(() => validateAdvice(resize, input));
 });

@@ -35,6 +35,15 @@
     <string name="home_sync_error">⚠️ Signed in • Waiting to sync again</string>
     <string name="home_signed_in">☁️ Signed in</string>
     <string name="home_start_focus">Start focusing!</string>
+    <string name="focus_choose_duration">Choose focus time</string>
+    <string name="focus_minutes_value">%d min</string>
+    <string name="focus_add_five">+5 minutes</string>
+    <string name="focus_dial_locked">Hold the dial for 1 second to add time</string>
+    <string name="focus_dial_unlocked">Turn clockwise to add time</string>
+    <string name="focus_extend_disabled">A parent has turned off extra time</string>
+    <string name="focus_extend_session_limit">Session extra-time limit reached</string>
+    <string name="focus_extend_total_limit">Session limit of 120 minutes reached</string>
+    <string name="focus_extended_total">Added %d minutes</string>
     <string name="home_today_focus_minutes">Focus minutes</string>
     <string name="home_today_sessions">Sessions today</string>
     <string name="home_daily_goal">Today’s goal</string>
@@ -76,6 +85,9 @@
     <string name="parent_section_timer">Timer durations</string>
     <string name="parent_keep_screen_on_title">Keep screen on during focus</string>
     <string name="parent_keep_screen_on_subtitle">While the focus or break timer is running</string>
+    <string name="parent_allow_extend_focus">Let children add focus time</string>
+    <string name="parent_allow_extend_focus_subtitle">They can add time, but cannot shorten a focus session</string>
+    <string name="parent_extend_limit">Maximum extra time per session</string>
     <string name="parent_focus_duration">Focus duration</string>
     <string name="parent_break_duration">Break duration</string>
     <string name="parent_section_notifications">Notifications &amp; sound</string>
@@ -170,6 +182,7 @@
     <string name="task_morning_study">Morning study</string>
     <string name="task_afternoon_study">Afternoon study</string>
     <string name="task_homework">Homework</string>
+    <string name="task_test_practice">Test practice</string>
     <string name="task_reading">Reading</string>
     <string name="task_weekend_study">Weekend study</string>
     <string name="task_music_practice">Music practice</string>

@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -36,13 +37,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.kidfocus.timer.R
 import com.kidfocus.timer.domain.model.TimerPhase
-import com.kidfocus.timer.ui.components.CircularTimer
+import com.kidfocus.timer.domain.model.TimerSettings
+import com.kidfocus.timer.domain.model.FocusTimePolicy
+import com.kidfocus.timer.ui.components.FocusExtensionDial
 import com.kidfocus.timer.ui.components.KeepScreenOnWhileRunning
 import com.kidfocus.timer.ui.components.MascotWidget
 import com.kidfocus.timer.ui.theme.FocusBlue
 import com.kidfocus.timer.ui.theme.KidFocusTheme
 import com.kidfocus.timer.ui.viewmodel.SettingsViewModel
 import com.kidfocus.timer.ui.viewmodel.TimerViewModel
+import androidx.compose.ui.platform.testTag
 
 /**
  * Full-screen focus session screen.
@@ -129,13 +133,10 @@ fun FocusScreen(
 
             // Timer + Mascot
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                CircularTimer(
-                    progress = timerState.progress,
-                    timeText = if (calmMode) stringResource(R.string.calm_mode_timer_text)
-                    else timerState.timeFormatted,
-                    arcColor = colors.focusArc,
-                    isWarning = timerState.isWarning,
-                    size = 280.dp,
+                FocusExtensionDial(
+                    state = timerState, settings = settings ?: TimerSettings(), color = colors.focusArc,
+                    timeText = if (calmMode) stringResource(R.string.calm_mode_timer_text) else timerState.timeFormatted,
+                    onAdd = timerViewModel::extendFocus,
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 MascotWidget(
@@ -150,6 +151,25 @@ fun FocusScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.padding(bottom = 48.dp),
             ) {
+                val blocked = FocusTimePolicy.blocked(timerState, settings ?: TimerSettings())
+                Button(
+                    onClick = timerViewModel::extendFocus,
+                    enabled = blocked == null,
+                    modifier = Modifier.fillMaxWidth().height(56.dp).testTag("focus_add_five"),
+                ) { Text(stringResource(R.string.focus_add_five)) }
+                if (blocked != null && blocked != FocusTimePolicy.Blocked.INACTIVE) {
+                    val reason = when (blocked) {
+                        FocusTimePolicy.Blocked.DISABLED -> R.string.focus_extend_disabled
+                        FocusTimePolicy.Blocked.SESSION_LIMIT -> R.string.focus_extend_session_limit
+                        FocusTimePolicy.Blocked.TOTAL_LIMIT -> R.string.focus_extend_total_limit
+                        FocusTimePolicy.Blocked.INACTIVE -> R.string.focus_extend_disabled
+                    }
+                    Text(stringResource(reason), style = MaterialTheme.typography.bodySmall, color = colors.onBackground)
+                } else if (timerState.extendedMinutes > 0) {
+                    Text(stringResource(R.string.focus_extended_total, timerState.extendedMinutes),
+                        style = MaterialTheme.typography.bodySmall, color = colors.onBackground)
+                }
+                Spacer(modifier = Modifier.height(12.dp))
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(24.dp),
                     verticalAlignment = Alignment.CenterVertically,

@@ -5,14 +5,14 @@ const RULES = ["SLEEP_SHORT", "SOCIAL_JETLAG", "SCREEN_BEFORE_BED", "OVERLAP", "
 const TAGS = ["DAYTIME_SLEEPY", "HARD_TO_WAKE", "TANTRUM_EVENING", "LONG_HOMEWORK", "LITTLE_PLAY"];
 const OPS = ["MOVE", "RESIZE", "REMOVE", "SET_BED", "SET_WAKE"];
 const TIME = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
-const STUDY_TYPES = new Set(["STUDY", "MORNING_STUDY", "AFTERNOON_STUDY", "HOMEWORK", "READING", "WEEKEND_STUDY", "MUSIC_PRACTICE", "LEARNING_GAMES", "CUSTOM"]);
+const STUDY_TYPES = new Set(["STUDY", "MORNING_STUDY", "AFTERNOON_STUDY", "HOMEWORK", "READING", "WEEKEND_STUDY", "MUSIC_PRACTICE", "LEARNING_GAMES", "TEST_PRACTICE", "CUSTOM"]);
 const TASK_TYPES = new Set([...STUDY_TYPES, "BATH", "BRUSH_TEETH", "EXERCISE", "SLEEP", "MAKE_BED", "CLEAN_ROOM", "WASH_DISHES", "BREAKFAST", "LUNCH", "DINNER", "GAME_TIME", "TV_TIME", "OUTDOOR_PLAY", "ART"]);
 const SYSTEM_PROMPT = `RÀNG BUỘC CỨNG — kiểm từng đề xuất trước khi trả JSON:
 1. Chỉ dùng taskRef có trong tasks; days phải thuộc ngày của task. Không sửa ca học anchors.school hoặc đặt hoạt động trong ca học, kể cả ca qua nửa đêm.
 2. Không REMOVE nhóm học tập (${[...STUDY_TYPES].join(", ")}; không có thông tin nguồn gốc trường). Không thêm hoạt động mới.
 3. MOVE cần start, RESIZE cần durationMin 1..120, REMOVE không có giờ/thời lượng; SET_BED/SET_WAKE cần start và không taskRef.
 4. SET_BED/SET_WAKE phải là GIỜ ĐÍCH đủ để giải quyết finding, kể cả khi cách giờ hiện tại hơn 30 phút. Không trả một bước trung gian chưa giải quyết finding: nút "Áp dụng dần" của app tự chia từ giờ hiện tại đến giờ đích thành bước 15 phút mỗi 3 ngày; phụ huynh duyệt từng bước. Không tự áp dụng.
-5. Với FOCUS_TOO_LONG, RESIZE về đúng ngưỡng tối đa theo ageBand: 2-3=15 phút, 4-5=20, l1=30, l2/l3=40; đừng chỉ giảm một phần mà vẫn để finding tồn tại.
+5. Với FOCUS_TOO_LONG, RESIZE về đúng ngưỡng tối đa theo ageBand: 2-3=15 phút, 4-5=20, l1=30, l2/l3=40; đừng chỉ giảm một phần mà vẫn để finding tồn tại. TEST_PRACTICE được miễn rule này.
 6. Chỉ dùng finding được cung cấp; fixes phải là ruleId của finding. Không chẩn đoán, kê thuốc hoặc hứa chữa bệnh.
 TÍNH GIỜ ĐÍCH từ dữ liệu trước khi xuất proposal, không dừng ở thay đổi nhỏ chưa xóa finding:
 - SLEEP_SHORT: chọn SET_BED sao cho từ giờ ngủ đến giờ thức kế tiếp >= nhu cầu tối thiểu theo ageBand: 2-3=660 phút, 4-5=600, l1/l2/l3=540. Ví dụ thức 06:15, l1 cần giờ ngủ không muộn hơn 21:15.

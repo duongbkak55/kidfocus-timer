@@ -68,7 +68,9 @@ class ScheduleAdviseViewModelTest {
         }
         every { store.reschedule(any(), any()) } just Runs
         coEvery { adviser.advise(any()) } returns reply()
-        vm = SmartScheduleViewModel(profiles, tasks, routines, anchors, ApplyScheduleUseCase(store), store, adviser, plans, dayLogsFixture())
+        val settings = mockk<com.kidfocus.timer.data.datastore.SettingsDataStore>()
+        every { settings.focusExtensions } returns flowOf(emptyMap())
+        vm = SmartScheduleViewModel(profiles, tasks, routines, anchors, ApplyScheduleUseCase(store), store, adviser, plans, dayLogsFixture(), settings)
     }
     @After fun teardown() { vm.viewModelScope.cancel(); Dispatchers.resetMain() }
     private fun TestScope.observe() { backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.state.collect() }; runCurrent() }

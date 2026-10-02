@@ -76,6 +76,14 @@ enum class TaskType(
         defaultFocusMinutes = 15, defaultBreakMinutes = 5,
         defaultDays = _ALL_DAYS,
     ),
+    TEST_PRACTICE(
+        displayName = "Làm bài kiểm tra / luyện đề",
+        emoji = "📋",
+        category = TaskCategory.STUDY,
+        defaultHour = 18, defaultMinute = 0,
+        defaultFocusMinutes = 60, defaultBreakMinutes = 10,
+        defaultDays = _WEEKDAYS,
+    ),
 
     // ---- Vệ sinh & Sức khỏe ------------------------------------------------------------------
 

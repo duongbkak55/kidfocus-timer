@@ -40,6 +40,15 @@
     <string name="home_sync_error">⚠️ Đã đăng nhập • Chờ đồng bộ lại</string>
     <string name="home_signed_in">☁️ Đã đăng nhập</string>
     <string name="home_start_focus">Bắt đầu tập trung!</string>
+    <string name="focus_choose_duration">Chọn thời gian tập trung</string>
+    <string name="focus_minutes_value">%d phút</string>
+    <string name="focus_add_five">+5 phút</string>
+    <string name="focus_dial_locked">Nhấn giữ mặt đồng hồ 1 giây để xoay thêm giờ</string>
+    <string name="focus_dial_unlocked">Xoay theo chiều kim đồng hồ để thêm giờ</string>
+    <string name="focus_extend_disabled">Phụ huynh đã tắt thêm giờ</string>
+    <string name="focus_extend_session_limit">Đã đạt giới hạn thêm giờ của phiên</string>
+    <string name="focus_extend_total_limit">Phiên đã đạt tối đa 120 phút</string>
+    <string name="focus_extended_total">Đã thêm %d phút</string>
     <string name="home_today_focus_minutes">Phút tập trung</string>
     <string name="home_today_sessions">Phiên hôm nay</string>
     <string name="home_daily_goal">Mục tiêu hôm nay</string>
@@ -90,6 +99,9 @@
     <string name="parent_section_timer">Thời gian hẹn giờ</string>
     <string name="parent_keep_screen_on_title">Giữ màn hình sáng khi tập trung</string>
     <string name="parent_keep_screen_on_subtitle">Khi đồng hồ tập trung hoặc giải lao đang chạy</string>
+    <string name="parent_allow_extend_focus">Cho bé tự thêm giờ</string>
+    <string name="parent_allow_extend_focus_subtitle">Chỉ cộng thêm, không rút ngắn phiên tập trung</string>
+    <string name="parent_extend_limit">Thêm tối đa mỗi phiên</string>
     <string name="parent_focus_duration">Thời gian tập trung</string>
     <string name="parent_break_duration">Thời gian nghỉ ngơi</string>
     <string name="parent_section_notifications">Thông báo &amp; Âm thanh</string>
@@ -193,6 +205,7 @@
     <string name="task_morning_study">Học buổi sáng</string>
     <string name="task_afternoon_study">Học buổi chiều</string>
     <string name="task_homework">Làm bài tập</string>
+    <string name="task_test_practice">Làm bài kiểm tra / luyện đề</string>
     <string name="task_reading">Đọc sách</string>
     <string name="task_weekend_study">Học cuối tuần</string>
     <string name="task_music_practice">Học nhạc / Tập đàn</string>

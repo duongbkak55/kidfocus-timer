@@ -95,6 +95,9 @@ class ScheduleAdvisorTest {
     @Test fun `focus exact threshold and disabled long session pass`() {
         assertTrue(findings(RuleId.FOCUS_TOO_LONG, tasks = listOf(task(duration = 30), task(id = 2, duration = 90, enabled = false))).isEmpty())
     }
+    @Test fun `test practice may run to 120 minutes without focus length finding`() {
+        assertTrue(findings(RuleId.FOCUS_TOO_LONG, tasks = listOf(task(type = TaskType.TEST_PRACTICE, duration = 120))).isEmpty())
+    }
     @Test fun `no free time outside school fails`() {
         val anchors = hours(wake = "07:00", bed = "20:00").copy(school = listOf(Block(setOf(monday), LocalTime.of(7, 30), LocalTime.of(19, 30), "School")))
         assertEquals(setOf(monday), findings(RuleId.NO_FREE_TIME, anchors).single().days)
