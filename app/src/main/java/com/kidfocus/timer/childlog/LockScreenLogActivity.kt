@@ -21,6 +21,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class LockScreenLogActivity : ComponentActivity() {
     private val childLog: ChildQuickLogViewModel by viewModels()
     private val access: ScheduleAccessViewModel by viewModels()
+    private var awaitingVoiceResult = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,10 +32,18 @@ class LockScreenLogActivity : ComponentActivity() {
             KidFocusTheme {
                 Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     ChildQuickLogScreen(childLog, access, lockScreen = true,
-                        onBack = { finish() }, onFinished = { finish() })
+                        onBack = { finish() }, onFinished = { finish() },
+                        onVoiceActivityChanged = { awaitingVoiceResult = it })
                 }
             }
         }
+    }
+
+    // The speech recognizer pauses/stops this activity until it returns a result.
+    // Other exits close the isolated task and discard the draft.
+    override fun onStop() {
+        super.onStop()
+        if (!awaitingVoiceResult) finish()
     }
 
     override fun onDestroy() { childLog.clearDraft(); super.onDestroy() }

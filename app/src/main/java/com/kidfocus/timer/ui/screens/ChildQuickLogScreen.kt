@@ -47,14 +47,14 @@ fun ChildQuickLogScreen(
     lockScreen: Boolean,
     onBack: () -> Unit,
     onFinished: () -> Unit = onBack,
+    onVoiceActivityChanged: (Boolean) -> Unit = {},
 ) {
     val state by viewModel.state.collectAsState()
     val child by viewModel.context.collectAsState()
     val config by access.config.collectAsState()
     val account by access.account.collectAsState()
     val snackbar = remember { SnackbarHostState() }
-    // noHistory lock activity cannot receive an activity result after launching speech input.
-    var micAvailable by remember { mutableStateOf(!lockScreen) }
+    var micAvailable by remember { mutableStateOf(true) }
     val savedLabel = stringResource(R.string.child_log_saved)
     val undoLabel = stringResource(R.string.smart_undo)
     val exit = { viewModel.clearDraft(); onBack() }
@@ -72,6 +72,7 @@ fun ChildQuickLogScreen(
         }
     }
     val voice = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        onVoiceActivityChanged(false)
         if (result.resultCode == Activity.RESULT_OK) {
             result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()?.let(viewModel::editText)
         } else if (lockScreen && result.resultCode != Activity.RESULT_CANCELED) micAvailable = false
@@ -101,12 +102,13 @@ fun ChildQuickLogScreen(
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (micAvailable) OutlinedButton(onClick = {
                     try {
+                        onVoiceActivityChanged(true)
                         voice.launch(Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
                             .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
                             .putExtra(RecognizerIntent.EXTRA_LANGUAGE, "vi-VN")
                             .putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1))
-                    } catch (_: ActivityNotFoundException) { micAvailable = false }
-                    catch (_: SecurityException) { micAvailable = false }
+                    } catch (_: ActivityNotFoundException) { onVoiceActivityChanged(false); micAvailable = false }
+                    catch (_: SecurityException) { onVoiceActivityChanged(false); micAvailable = false }
                 }, enabled = !state.busy) { Text(stringResource(R.string.child_log_speak)) }
                 Button(onClick = { viewModel.send(config, lockScreen) }, enabled = !state.busy && state.text.isNotBlank(),
                     modifier = Modifier.testTag("child_log_send")) { Text(stringResource(R.string.child_log_send)) }

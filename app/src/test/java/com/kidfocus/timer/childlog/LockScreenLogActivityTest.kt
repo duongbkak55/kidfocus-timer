@@ -24,7 +24,8 @@ class LockScreenLogActivityTest {
         val main = packageManager.getActivityInfo(ComponentName(app, com.kidfocus.timer.MainActivity::class.java),
             PackageManager.GET_META_DATA)
         assertFalse(lock.exported)
-        assertTrue(lock.flags and ActivityInfo.FLAG_NO_HISTORY != 0)
+        // Speech-to-text returns via ActivityResult, which noHistory would discard.
+        assertFalse(lock.flags and ActivityInfo.FLAG_NO_HISTORY != 0)
         assertTrue(lock.flags and ActivityInfo.FLAG_EXCLUDE_FROM_RECENTS != 0)
         assertEquals("${app.packageName}.childlog", lock.taskAffinity)
         assertFalse(lock.taskAffinity == main.taskAffinity)
