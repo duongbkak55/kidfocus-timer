@@ -51,7 +51,7 @@ fun TaskTemplatePicker(
     val todayDay = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
     val today = all.filter { todayDay in it.defaultDays }.take(6)
     val popularOrder = listOf(
-        TaskType.LEARNING_GAMES, TaskType.HOMEWORK, TaskType.READING, TaskType.DINNER,
+        TaskType.LEARNING_GAMES, TaskType.HOMEWORK, TaskType.TEST_PRACTICE, TaskType.READING, TaskType.DINNER,
         TaskType.BATH, TaskType.BRUSH_TEETH, TaskType.SLEEP,
     )
     val normalized = query.trim().lowercase()
@@ -160,6 +160,7 @@ private fun taskSearchAliases(type: TaskType): String = when (type) {
     TaskType.SLEEP -> "bed bedtime ngu"
     TaskType.BATH, TaskType.BRUSH_TEETH -> "clean hygiene tam danh rang"
     TaskType.HOMEWORK, TaskType.MORNING_STUDY, TaskType.AFTERNOON_STUDY -> "learn study hoc bai"
+    TaskType.TEST_PRACTICE -> "test exam practice kiem tra luyen de lam de"
     TaskType.LEARNING_GAMES -> "learn game math vietnamese english hoc toan tieng viet luyen tap"
     else -> ""
 }

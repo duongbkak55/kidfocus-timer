@@ -11,7 +11,7 @@ import java.time.ZoneId
 import javax.inject.Inject
 import javax.inject.Singleton
 
-data class TimerLogContext(val profileId: String?, val taskId: Long?)
+data class TimerLogContext(val profileId: String?, val taskId: Long?, val logId: String? = null)
 
 /** Owned by the existing timer service, so notification Stop and background completion also close logs. */
 @Singleton
@@ -30,7 +30,7 @@ class TimerDayLogRecorder @Inject constructor(private val logs: DayLogRepository
             startMinute = now.hour * 60 + now.minute, source = DayLogSource.TIMER, createdAt = atMillis)
         logs.add(entry)
         activeId = entry.id
-        TimerLogContext(profileId, task?.id)
+        TimerLogContext(profileId, task?.id, entry.id)
     }
     suspend fun finish(atMillis: Long = System.currentTimeMillis(), zone: ZoneId = ZoneId.systemDefault()) = mutex.withLock {
         finishLocked(atMillis, zone)

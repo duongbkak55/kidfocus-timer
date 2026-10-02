@@ -38,6 +38,18 @@ class ActualScheduleAdvisorTest {
         val repeated=rows.map { it.copy(date=today.minusDays(1)) }
         assertFalse(ActualScheduleAdvisor.evaluate(listOf(task),ScheduleAnchors(),repeated,today).findings.any { it.ruleId==RuleId.TASK_OVERRUN })
     }
+    @Test fun voluntaryExtraTimeDoesNotCountAsTaskOverrun() {
+        val rows=(1L..3L).map { log(today.minusDays(it),end=1186).copy(source=DayLogSource.TIMER) }
+        val extensions=rows.associate { it.id to 20 }
+        val result=ActualScheduleAdvisor.evaluate(listOf(task),ScheduleAnchors(),rows,today,
+            extendedMinutesByLogId=extensions)
+        assertEquals(0,result.stats.tasks.single().overrun)
+        assertFalse(result.findings.any { it.ruleId==RuleId.TASK_OVERRUN })
+        assertEquals(3,ActualScheduleAdvisor.evaluate(listOf(task),ScheduleAnchors(),rows,today,
+            extendedMinutesByLogId=rows.associate { it.id to 15 }).stats.tasks.single().overrun)
+        assertEquals(3,ActualScheduleAdvisor.evaluate(listOf(task),ScheduleAnchors(),rows.map { it.copy(source=DayLogSource.MANUAL) },today,
+            extendedMinutesByLogId=extensions).stats.tasks.single().overrun)
+    }
     @Test fun onlyDueTasksOnRecordedDaysCanBeSkippedAndPayloadContainsOnlyAggregateAliasStats() {
         assertTrue(ActualScheduleAdvisor.evaluate(listOf(task),ScheduleAnchors(),emptyList(),today).findings.isEmpty())
         val incidental=(1L..3L).map { log(today.minusDays(it),600,630,DayLogCategory.OTHER,null) }

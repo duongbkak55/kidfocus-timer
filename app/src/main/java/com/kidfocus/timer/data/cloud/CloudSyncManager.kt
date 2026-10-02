@@ -310,6 +310,9 @@ class CloudSyncManager @Inject constructor(
                             .takeIf { it in setOf("2-3", "4-5", "l1", "l2", "l3") }
                             ?: local.learningAgeBand,
                         calmModeEnabled = cloudSettings.bool("calmModeEnabled", local.calmModeEnabled),
+                        allowChildExtendFocus = cloudSettings.bool("allowChildExtendFocus", local.allowChildExtendFocus),
+                        maxExtraFocusMinutes = cloudSettings.int("maxExtraFocusMinutes", local.maxExtraFocusMinutes)
+                            .takeIf { it in com.kidfocus.timer.domain.model.FocusTimePolicy.extraChoices } ?: local.maxExtraFocusMinutes,
                     )
                 )
             }
@@ -350,7 +353,7 @@ class CloudSyncManager @Inject constructor(
 private fun com.kidfocus.timer.domain.model.TimerSettings.cloudHashCode() = listOf(
     focusDurationMinutes, breakDurationMinutes, appTheme, soundEnabled,
     vibrationEnabled, dailyGoalMinutes,
-    learningAgeBand, calmModeEnabled,
+    learningAgeBand, calmModeEnabled, allowChildExtendFocus, maxExtraFocusMinutes,
 ).hashCode()
 
 private fun com.kidfocus.timer.domain.model.TimerSettings.toCloudMap() = mapOf(
@@ -362,6 +365,8 @@ private fun com.kidfocus.timer.domain.model.TimerSettings.toCloudMap() = mapOf(
     "dailyGoalMinutes" to dailyGoalMinutes,
     "learningAgeBand" to learningAgeBand,
     "calmModeEnabled" to calmModeEnabled,
+    "allowChildExtendFocus" to allowChildExtendFocus,
+    "maxExtraFocusMinutes" to maxExtraFocusMinutes,
 )
 
 private fun SessionEntity.toCloudMap() = mapOf(

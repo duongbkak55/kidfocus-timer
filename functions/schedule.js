@@ -4,7 +4,7 @@ const log = require("./schedule-log");
 const {providerSchema} = require("./provider-schema");
 const DAYS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 const TASK_TYPES = new Set([
-  "MORNING_STUDY", "AFTERNOON_STUDY", "HOMEWORK", "READING", "WEEKEND_STUDY", "MUSIC_PRACTICE", "LEARNING_GAMES",
+  "MORNING_STUDY", "AFTERNOON_STUDY", "HOMEWORK", "READING", "WEEKEND_STUDY", "MUSIC_PRACTICE", "LEARNING_GAMES", "TEST_PRACTICE",
   "BATH", "BRUSH_TEETH", "EXERCISE", "SLEEP", "MAKE_BED", "CLEAN_ROOM", "WASH_DISHES", "BREAKFAST", "LUNCH", "DINNER",
   "GAME_TIME", "TV_TIME", "OUTDOOR_PLAY", "ART", "CUSTOM",
 ]);
@@ -15,6 +15,7 @@ Trả JSON theo schema. Ngày MON=T2, TUE=T3, WED=T4, THU=T5, FRI=T6, SAT=T7, SU
 Hiểu "tối thứ 3", "chiều T5", "6 rưỡi"=06:30 (18:30 nếu tối), "7h15", "19:30";
 "mỗi ngày"=7 ngày, "ngày thường"=MON..FRI, "cuối tuần"=SAT,SUN, "trừ chủ nhật" loại SUN.
 "học thêm toán 1 tiếng" có durationMin=60; dùng CUSTOM nếu không có loại phù hợp.
+"kiểm tra", "luyện đề", "làm đề" là TEST_PRACTICE khi nói về buổi làm bài kiểm tra/đề; vẫn cần ngày, giờ bắt đầu và thời lượng rõ ràng.
 "ngủ lúc 9 rưỡi tối" là anchors.bed=21:30, "dậy 6h15" là anchors.wake=06:15; không tạo task giả ngủ/thức.
 Ca học trường sáng/chiều là anchors.school với giờ bắt đầu/kết thúc chính xác. Giữ nhãn chung "Ở trường".
 Ngày tương đối dựa vào today và hiểu là ngày lặp tương ứng. Giờ bed sau nửa đêm thuộc đêm của ngày đã nói.

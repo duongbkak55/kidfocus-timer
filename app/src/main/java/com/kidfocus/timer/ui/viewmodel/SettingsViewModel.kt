@@ -121,6 +121,17 @@ class SettingsViewModel @Inject constructor(
         save(current.copy(keepScreenOnEnabled = enabled))
     }
 
+    fun setAllowChildExtendFocus(enabled: Boolean) {
+        val current = settings.value ?: return
+        save(current.copy(allowChildExtendFocus = enabled))
+    }
+
+    fun setMaxExtraFocusMinutes(minutes: Int) {
+        if (minutes !in com.kidfocus.timer.domain.model.FocusTimePolicy.extraChoices) return
+        val current = settings.value ?: return
+        save(current.copy(maxExtraFocusMinutes = minutes))
+    }
+
     // ---- PIN management ------------------------------------------------------------------------
 
     /**

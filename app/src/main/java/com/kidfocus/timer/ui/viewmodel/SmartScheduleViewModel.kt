@@ -46,6 +46,7 @@ class SmartScheduleViewModel @Inject constructor(
     private val adviser: ScheduleAdviser,
     private val plans: SchedulePlansRepository,
     dayLogs: com.kidfocus.timer.data.repository.DayLogRepository,
+    private val settingsDataStore: com.kidfocus.timer.data.datastore.SettingsDataStore,
 ) : ViewModel() {
     private val _advice = MutableStateFlow(AdviceUiState())
     val advice = _advice.asStateFlow()
@@ -74,6 +75,7 @@ class SmartScheduleViewModel @Inject constructor(
         val scheduleFlow = combine(combine(tasks.allTasks, dayLogs.observe(profile.id)) { rows, actual -> rows to actual }, anchors.observe(profile.id), routines.observeAll(),
             routines.observeCompletionsSince(profile.id, LocalDate.now().minusDays(ScheduleThresholds.HISTORY_DAYS - 1)), clock) { taskAndActual, hours, routineRows, completions, now ->
             val (rows, actual) = taskAndActual
+            val extensions = settingsDataStore.focusExtensions.first()
             val scoped = rows.filter { it.childProfileId == profile.id }.sortedBy { it.id }
             val patterns = routineRows.filter { it.childProfileId == profile.id && it.enabled }.mapNotNull {
                 runCatching {
@@ -86,7 +88,7 @@ class SmartScheduleViewModel @Inject constructor(
             val schedule = ScheduleState(scoped, hours)
             val snapshot = store.snapshot(profile.id)
             val findings = runCatching {
-                ScheduleAdvisor().advise(scoped, hours, profile.ageBand, patterns, observations, now.toLocalDate(), now.toLocalTime().minutes(), actual)
+                ScheduleAdvisor().advise(scoped, hours, profile.ageBand, patterns, observations, now.toLocalDate(), now.toLocalTime().minutes(), actual, extensions)
             }.getOrElse { error ->
                 Log.w("SmartScheduleViewModel", "Unable to evaluate weekly schedule", error)
                 emptyList()
@@ -102,7 +104,7 @@ class SmartScheduleViewModel @Inject constructor(
                 RoutineStat(routineRows.single { it.id == pattern.id }.title, count)
             }
             SmartScheduleUiState(profile, schedule, findings,
-                snapshot != null && snapshot.applied == schedule && System.currentTimeMillis() - snapshot.savedAtMillis in 0..604_800_000L, stats, actualStats = com.kidfocus.timer.domain.daylog.ActualScheduleAdvisor.evaluate(scoped, hours, actual, now.toLocalDate(), now.toLocalTime().minutes()).stats)
+                snapshot != null && snapshot.applied == schedule && System.currentTimeMillis() - snapshot.savedAtMillis in 0..604_800_000L, stats, actualStats = com.kidfocus.timer.domain.daylog.ActualScheduleAdvisor.evaluate(scoped, hours, actual, now.toLocalDate(), now.toLocalTime().minutes(), extensions).stats)
         }
         combine(scheduleFlow, plans.observe(profile.id)) { current, plan -> current.copy(plan = plan?.takeIf { it.matches(current.schedule.anchors) }) }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)

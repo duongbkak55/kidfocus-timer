@@ -2,7 +2,7 @@
 const {validateAdvice} = require("./schedule-advise");
 const DAYS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 const mins = (t) => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
-const study = new Set(["STUDY", "MORNING_STUDY", "AFTERNOON_STUDY", "HOMEWORK", "READING", "WEEKEND_STUDY", "MUSIC_PRACTICE", "LEARNING_GAMES", "CUSTOM"]);
+const study = new Set(["STUDY", "MORNING_STUDY", "AFTERNOON_STUDY", "HOMEWORK", "READING", "WEEKEND_STUDY", "MUSIC_PRACTICE", "LEARNING_GAMES", "TEST_PRACTICE", "CUSTOM"]);
 function apply(input, advice) {
   const state = structuredClone(input);
   state.tasks = input.tasks.flatMap((t) => t.days.map((d) => ({...t, days: [d]})));
@@ -34,7 +34,7 @@ function findings(state) {
       for (const t of state.tasks.filter((t) => t.days.includes(occurrence))) {
         const start = offset * 1440 + mins(t.start); const end = start + t.durationMin;
         intervals.push({start, end, task: t});
-        if (offset === 0 && t.durationMin > maxFocus) add("FOCUS_TOO_LONG", day);
+        if (offset === 0 && t.taskType !== "TEST_PRACTICE" && t.durationMin > maxFocus) add("FOCUS_TOO_LONG", day);
         if (bed !== null && study.has(t.taskType) && start >= (wake ?? 0) && start < (nextWake ? 1440 + mins(nextWake) : 1440) && end > bed - 60) add("LATE_HOMEWORK", day);
         if (bed !== null && ["LEARNING_GAMES", "GAME_TIME", "TV_TIME"].includes(t.taskType) && start < bed && end > bed - 60) add("SCREEN_BEFORE_BED", day);
       }

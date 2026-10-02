@@ -66,6 +66,7 @@ class ScheduleAdvisor {
         today: LocalDate = LocalDate.now(),
         nowMinute: Int = LocalTime.now().minutes(),
         actualEntries: List<com.kidfocus.timer.domain.daylog.DayLogEntry> = emptyList(),
+        extendedMinutesByLogId: Map<String, Int> = emptyMap(),
     ): List<Finding> {
         val findings = mutableListOf<Finding>()
         val minSleep = ScheduleThresholds.sleepMinutes.getOrElse(ageBand) { ScheduleThresholds.sleepMinutes.getValue("4-5") }
@@ -83,7 +84,7 @@ class ScheduleAdvisor {
             val intervals = intervalsForDay(enabled, anchors, day)
             val dayTasks = enabled.filter { DayCodec.toCalendar(day) in it.daysOfWeek }
             dayTasks.forEach { task ->
-                if (task.focusDurationMinutes > maxFocus) {
+                if (task.taskType != TaskType.TEST_PRACTICE && task.focusDurationMinutes > maxFocus) {
                     findings += Finding(RuleId.FOCUS_TOO_LONG, Severity.LOW, setOf(day), setOf(task.id), mapOf("maximum" to maxFocus),
                         ScheduleChange.ResizeTask(task.id, setOf(day), maxFocus))
                 }
@@ -158,7 +159,7 @@ class ScheduleAdvisor {
                     params = mapOf("count" to badDates.size))
             }
         }
-        findings += com.kidfocus.timer.domain.daylog.ActualScheduleAdvisor.evaluate(tasks, anchors, actualEntries, today, nowMinute).findings
+        findings += com.kidfocus.timer.domain.daylog.ActualScheduleAdvisor.evaluate(tasks, anchors, actualEntries, today, nowMinute, extendedMinutesByLogId).findings
         return findings.distinct().sortedBy { it.severity.ordinal }
     }
 

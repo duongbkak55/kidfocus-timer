@@ -8,6 +8,7 @@ import android.os.IBinder
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kidfocus.timer.domain.model.TimerPhase
+import com.kidfocus.timer.domain.model.FocusTimePolicy
 import com.kidfocus.timer.domain.model.TimerState
 import com.kidfocus.timer.data.repository.RoutineRepository
 import com.kidfocus.timer.service.RoutineAlarmScheduler
@@ -170,6 +171,17 @@ class TimerViewModel @Inject constructor(
     /** Resumes a paused timer. */
     fun resume() {
         timerBinder?.resume() ?: sendServiceAction(TimerService.ACTION_RESUME)
+    }
+
+    /** The service rechecks parent policy and both caps when this command is handled. */
+    fun extendFocus() {
+        timerBinder?.extendFocus(FocusTimePolicy.STEP_MINUTES) ?: run {
+            val intent = Intent(context, TimerService::class.java).apply {
+                action = TimerService.ACTION_EXTEND_FOCUS
+                putExtra(TimerService.EXTRA_EXTEND_MINUTES, FocusTimePolicy.STEP_MINUTES)
+            }
+            context.startService(intent)
+        }
     }
 
     /** Stops the timer and resets to idle. */

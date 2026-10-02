@@ -43,12 +43,30 @@ class SettingsDataStore @Inject constructor(
         val LEARNING_AGE_BAND = stringPreferencesKey("learning_age_band")
         val CALM_MODE_ENABLED = booleanPreferencesKey("calm_mode_enabled")
         val KEEP_SCREEN_ON_ENABLED = booleanPreferencesKey("keep_screen_on_enabled")
+        val ALLOW_CHILD_EXTEND_FOCUS = booleanPreferencesKey("allow_child_extend_focus")
+        val MAX_EXTRA_FOCUS_MINUTES = intPreferencesKey("max_extra_focus_minutes")
         val ACTIVE_CHILD_PROFILE_ID = stringPreferencesKey("active_child_profile_id")
         val SCHEDULE_ALARM_REMINDER_DISMISSED = booleanPreferencesKey("schedule_alarm_reminder_dismissed")
     }
 
     val scheduleAlarmReminderDismissed: Flow<Boolean> = context.dataStore.data.map {
         it[Keys.SCHEDULE_ALARM_REMINDER_DISMISSED] ?: false
+    }
+
+    /** Local-only metadata keyed by the timer log UUID; Room and cloud dayLogs stay unchanged. */
+    val focusExtensions: Flow<Map<String, Int>> = context.dataStore.data.map { prefs ->
+        prefs.asMap().entries.mapNotNull { (key, value) ->
+            if (key.name.startsWith("focus_extension_") && value is Int)
+                key.name.removePrefix("focus_extension_") to value else null
+        }.toMap()
+    }
+
+    suspend fun addFocusExtension(logId: String, minutes: Int) {
+        require(minutes > 0 && minutes % 5 == 0)
+        context.dataStore.edit { prefs ->
+            val key = intPreferencesKey("focus_extension_$logId")
+            prefs[key] = ((prefs[key] ?: 0) + minutes).coerceAtMost(60)
+        }
     }
 
     suspend fun dismissScheduleAlarmReminder() {
@@ -113,6 +131,8 @@ class SettingsDataStore @Inject constructor(
                 ?: TimerSettings.DEFAULT_LEARNING_AGE_BAND,
             calmModeEnabled = prefs[Keys.CALM_MODE_ENABLED] ?: false,
             keepScreenOnEnabled = prefs[Keys.KEEP_SCREEN_ON_ENABLED] ?: true,
+            allowChildExtendFocus = prefs[Keys.ALLOW_CHILD_EXTEND_FOCUS] ?: true,
+            maxExtraFocusMinutes = prefs[Keys.MAX_EXTRA_FOCUS_MINUTES] ?: TimerSettings.DEFAULT_MAX_EXTRA_FOCUS_MINUTES,
             activeChildProfileId = prefs[Keys.ACTIVE_CHILD_PROFILE_ID]
                 ?: TimerSettings.DEFAULT_CHILD_PROFILE_ID,
         )
@@ -131,6 +151,8 @@ class SettingsDataStore @Inject constructor(
             prefs[Keys.LEARNING_AGE_BAND] = settings.learningAgeBand
             prefs[Keys.CALM_MODE_ENABLED] = settings.calmModeEnabled
             prefs[Keys.KEEP_SCREEN_ON_ENABLED] = settings.keepScreenOnEnabled
+            prefs[Keys.ALLOW_CHILD_EXTEND_FOCUS] = settings.allowChildExtendFocus
+            prefs[Keys.MAX_EXTRA_FOCUS_MINUTES] = settings.maxExtraFocusMinutes
             prefs[Keys.ACTIVE_CHILD_PROFILE_ID] = settings.activeChildProfileId
 
             if (settings.pinHash != null) {
