@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.kidfocus.timer.domain.model.AppTheme
@@ -14,6 +15,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import java.security.MessageDigest
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -29,6 +31,8 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 class SettingsDataStore @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
+    @Volatile private var lastFocusPruneAtMillis: Long? = null
+
     private object Keys {
         val FOCUS_DURATION = intPreferencesKey("focus_duration_minutes")
         val BREAK_DURATION = intPreferencesKey("break_duration_minutes")
@@ -54,19 +58,55 @@ class SettingsDataStore @Inject constructor(
     }
 
     /** Local-only metadata keyed by the timer log UUID; Room and cloud dayLogs stay unchanged. */
-    val focusExtensions: Flow<Map<String, Int>> = context.dataStore.data.map { prefs ->
+    val focusExtensions: Flow<Map<String, Int>> = context.dataStore.data.onStart {
+        pruneFocusExtensions()
+    }.map { prefs ->
         prefs.asMap().entries.mapNotNull { (key, value) ->
             if (key.name.startsWith("focus_extension_") && value is Int)
                 key.name.removePrefix("focus_extension_") to value else null
         }.toMap()
     }
 
-    suspend fun addFocusExtension(logId: String, minutes: Int) {
+    suspend fun addFocusExtension(logId: String, minutes: Int, nowMillis: Long = System.currentTimeMillis()) {
         require(minutes > 0 && minutes % 5 == 0)
         context.dataStore.edit { prefs ->
             val key = intPreferencesKey("focus_extension_$logId")
             prefs[key] = ((prefs[key] ?: 0) + minutes).coerceAtMost(60)
+            prefs[longPreferencesKey("focus_extension_updated_$logId")] = nowMillis
         }
+    }
+
+    /** Old W6 rows had no timestamp. Start their 60-day retention at first inspection. */
+    suspend fun pruneFocusExtensions(nowMillis: Long = System.currentTimeMillis()) {
+        val last = lastFocusPruneAtMillis
+        if (last != null && nowMillis - last in 0 until FOCUS_PRUNE_INTERVAL_MILLIS) return
+        val cutoff = nowMillis - FOCUS_EXTENSION_RETENTION_MILLIS
+        context.dataStore.edit { prefs ->
+            prefs.asMap().entries.filter { (key, value) ->
+                key.name.startsWith("focus_extension_") && value is Int
+            }.forEach { (key, _) ->
+                val logId = key.name.removePrefix("focus_extension_")
+                val updatedKey = longPreferencesKey("focus_extension_updated_$logId")
+                val updatedAt = prefs[updatedKey]
+                when {
+                    updatedAt == null -> prefs[updatedKey] = nowMillis
+                    updatedAt < cutoff -> {
+                        prefs.remove(intPreferencesKey(key.name))
+                        prefs.remove(updatedKey)
+                    }
+                }
+            }
+            prefs.asMap().keys.filter { it.name.startsWith("focus_extension_updated_") }.forEach { key ->
+                val logId = key.name.removePrefix("focus_extension_updated_")
+                if (prefs[intPreferencesKey("focus_extension_$logId")] == null) prefs.remove(longPreferencesKey(key.name))
+            }
+        }
+        lastFocusPruneAtMillis = nowMillis
+    }
+
+    private companion object {
+        const val FOCUS_PRUNE_INTERVAL_MILLIS = 24L * 60 * 60 * 1000
+        const val FOCUS_EXTENSION_RETENTION_MILLIS = 60L * FOCUS_PRUNE_INTERVAL_MILLIS
     }
 
     suspend fun dismissScheduleAlarmReminder() {
