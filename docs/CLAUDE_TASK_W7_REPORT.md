@@ -2,7 +2,7 @@
 
 Ngày 2026-10-03. Branch `w7-child-entry`, worktree `KidFocusTimer-w7`, base `main` `032c9a5`. Sau commit Phần 0, Duong yêu cầu làm tiếp Phần 1–2 rồi mới test. Không push, merge hay deploy.
 
-Commit Phần 0: `224385102cf28e6fece009df04b47ae43bf897c5` — sửa phân biệt App Check/sign-in, refresh và retry cùng requestId, chuỗi VI/EN và unit test. Commit `78491d5541160135bbb8ee81e73dd9467f864026` — thêm task spec và báo cáo. Phần 1: `b9478ab` — child quick log. Phần 2: `912fe90` — tile, widget và activity riêng.
+Commit Phần 0: `224385102cf28e6fece009df04b47ae43bf897c5` — sửa phân biệt App Check/sign-in, refresh và retry cùng requestId, chuỗi VI/EN và unit test. Commit `78491d5541160135bbb8ee81e73dd9467f864026` — thêm task spec và báo cáo. Phần 1: `b9478ab` — child quick log. Phần 2: `912fe90` — tile, widget và activity riêng. Theo phản hồi của Duong, `56491d1` — bật lại mic ở màn khoá bằng Google RecognizerIntent.
 
 ## Phần 0 — F-SIGNIN-1
 
@@ -37,14 +37,14 @@ Nếu dùng bản debug cài qua ADB cho G3: mở app trên Pixel 9 khi có mạ
 
 ## Phần 2 — Lối vào khi khoá máy
 
-- Quick Settings tile và widget 2×1 (home/keyguard) cùng mở `LockScreenLogActivity`. Activity không export, riêng task affinity, noHistory, excludeFromRecents, showWhenLocked; không có NavHost/route vào phần còn lại. Widget và tile không hiện dữ liệu cá nhân.
+- Quick Settings tile và widget 2×1 (home/keyguard) cùng mở `LockScreenLogActivity`. Activity không export, riêng task affinity, excludeFromRecents, showWhenLocked; không có NavHost/route vào phần còn lại. Widget và tile không hiện dữ liệu cá nhân.
 - Màn khoá dùng duy nhất profile active, chỉ avatar, ô nhập và kết quả phiên hiện tại. Không có lịch, lịch sử, tên đầy đủ, email hoặc số credit. Cài đặt sau PIN mặc định bật; tắt thì tile unavailable, widget báo “Bố mẹ đã tắt”, màn khoá không cho nhập. Không thêm `<uses-permission>`, service nền hay schema Room.
-- **Giới hạn mic khi khoá:** `noHistory` làm Android huỷ Activity khi mở RecognizerIntent nên không thể nhận kết quả giọng nói. Để giữ ràng buộc `noHistory`, nút mic được ẩn trên màn khoá; trẻ vẫn gõ được. Route trong app vẫn có mic. Đây là lựa chọn ít thay đổi nhất giữa hai yêu cầu xung đột; cần Claude xem trong G2.
+- **Điều chỉnh sau phản hồi của Duong:** Trẻ cần nói được trên màn khóa. Bỏ `noHistory` vì [Android không trả ActivityResult](https://developer.android.com/guide/topics/manifest/activity-element) cho activity có cờ đó, còn [RecognizerIntent](https://developer.android.com/reference/android/speech/RecognizerIntent) trả chữ qua ActivityResult. Mic hiện trên cả route con và màn khóa; kết quả nhận dạng được điền vào ô nhập, trẻ bấm Gửi để ghi LOG. Activity vẫn không export, không vào recents, riêng task, `FLAG_SECURE`, đóng khi Back/lưu/rời màn (trừ lúc đang chờ ứng dụng nhận giọng nói trả kết quả), không lưu nháp ra disk. Không thêm `RECORD_AUDIO` hoặc permission khác. Cần G3 kiểm tra Google recognizer có hoạt động khi Pixel 9 còn khóa hay yêu cầu mở khóa.
 
 ## Kiểm tra và G3
 
-- `./gradlew testDebugUnitTest lint assembleDebug assembleDebugAndroidTest`: **PASS** (330 unit tests). Có unit test nguồn lạ Room/Cloud, CHILD round-trip, chọn/lọc mục, Hoàn tác, profile/account đổi, giới hạn ký tự, tile/activity isolation. `git diff --check`: **PASS**.
-- APK debug được build với Firebase Android config công khai trong `local.properties` bị git ignore, không đưa config/secret vào commit hoặc báo cáo. Cài `adb install -r` lên Pixel 9 qua wireless: **Success**, giữ dữ liệu. Chưa xác nhận debug App Check token đã được đăng ký; Duong cần làm theo hướng dẫn ở trên nếu AI bị từ chối.
+- `./gradlew testDebugUnitTest lint assembleDebug assembleDebugAndroidTest`: **PASS** (330 unit tests). Sau sửa mic: `./gradlew testDebugUnitTest lint assembleDebug`: **PASS**. Có unit test nguồn lạ Room/Cloud, CHILD round-trip, chọn/lọc mục, Hoàn tác, profile/account đổi, giới hạn ký tự, activity isolation và cờ cho phép nhận ActivityResult. `git diff --check`: **PASS**.
+- APK debug được build với Firebase Android config công khai trong `local.properties` bị git ignore, không đưa config/secret vào commit hoặc báo cáo. Cài/cập nhật `adb install -r` lên Pixel 9 qua wireless sau sửa mic: **Success**, giữ dữ liệu. Chưa xác nhận debug App Check token đã được đăng ký; Duong cần làm theo hướng dẫn ở trên nếu AI bị từ chối.
 - **G3 chưa chạy:** theo task, Duong tự thao tác UI, không chạy tự động. Checklist tại `docs/W7_G3_CHECKLIST.md`. Widget màn khoá phụ thuộc Pixel 9/OS có cho thêm hay không; cần ghi thực tế. Samsung không có máy để thử shortcut.
 - Tình huống câu “đi ngủ lúc 11 giờ 10 tối”: trước 23:10 hôm nay, mục bị coi là tương lai và không lưu; checklist hướng dẫn thử sau 23:10 hoặc nói “tối qua”.
 
