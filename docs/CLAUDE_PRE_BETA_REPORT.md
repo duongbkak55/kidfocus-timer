@@ -14,6 +14,7 @@ Ngày 2026-10-02. Nhánh `fix/pre-beta` tạo từ `main` tại `e500af0` trong 
 - Unit test mới: timeout mạng/coroutine 95 giây; nhập lại PIN sau một PIN sai; dọn gia hạn tập trung cũ, giữ mục mới và làm mới thời điểm khi cộng tiếp. **PASS**.
 - `./gradlew testDebugUnitTest assembleDebug lintDebug` với JDK 17 và cấu hình Firebase client công khai tạm thời: **PASS**. APK debug chỉ có `SCHEDULE_EXACT_ALARM`, không có `USE_EXACT_ALARM` (kiểm merged Manifest và AAPT).
 - `npm --prefix functions test`: **172/172 PASS**; `npm --prefix functions run lint`: **PASS** (Node 22, cài dependency cục bộ trong worktree).
+- Sau merge trên `main`: chạy lại `./gradlew testDebugUnitTest assembleDebug lintDebug` với JDK 17: **PASS**; `npm --prefix functions test`: **172/172 PASS**; `npm --prefix functions run lint`: **PASS**.
 
 ## Kiểm tra thiết bị
 
@@ -29,3 +30,4 @@ Ngày 2026-10-02. Nhánh `fix/pre-beta` tạo từ `main` tại `e500af0` trong 
 ## Phát hành
 
 - Duong đã duyệt merge/push `fix/pre-beta` sau khi Claude xác nhận G3 Pixel 9 PASS. Không deploy; không thêm permission, không đổi Room hoặc Functions.
+- Đã merge `fix/pre-beta` (`a82aad0`) vào `main` bằng `--no-ff`; merge SHA: `f5806f98638f225b404200b9ab278bc33eab168d`.
