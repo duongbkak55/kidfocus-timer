@@ -49,4 +49,10 @@ Nếu dùng bản debug cài qua ADB cho G3: mở app trên Pixel 9 khi có mạ
 - **G3 chưa chạy:** theo task, Duong tự thao tác UI, không chạy tự động. Checklist tại `docs/W7_G3_CHECKLIST.md`. Widget màn khoá phụ thuộc Pixel 9/OS có cho thêm hay không; cần ghi thực tế. Samsung không có máy để thử shortcut.
 - Tình huống câu “đi ngủ lúc 11 giờ 10 tối”: trước 23:10 hôm nay, mục bị coi là tương lai và không lưu; checklist hướng dẫn thử sau 23:10 hoặc nói “tối qua”.
 
+### G3 phản hồi trên Pixel 9 — bấm Gửi nhưng không thấy mục đã làm
+
+- Sau phản hồi của Duong, kiểm tra chỉ **số lượng và nguồn** bản ghi trong Room của bản debug trên Pixel 9: chưa có bản ghi nguồn `CHILD`. Không đọc/in nội dung nhập.
+- Log `aiSchedule` gần lúc thử (2026-10-03 06:41:17 và 06:42:16 giờ Việt Nam) ghi `auth=VALID`, `app=MISSING`. Function vẫn bật `ENFORCE_APP_CHECK=true`; Firebase Callable SDK từ chối request thiếu App Check trước handler. Đây là nguyên nhân rất có khả năng khiến LOG không lưu, chưa thể ghép request cụ thể với mỗi lần bấm của Duong vì log không chứa requestId công khai.
+- Bản debug có kho lưu Debug App Check cục bộ; không đọc/in token. Duong cần tự đăng ký debug token đúng Firebase Android app trong Firebase Console như hướng dẫn Phần 0, hoặc thử bản cài từ Google Play. Sau đó thử lại bằng dữ liệu giả. G3 mục nhập/lưu **chưa PASS**; không coi đây là lỗi đã được giải quyết bằng việc cài lại APK.
+
 Không gọi OpenRouter/production trong test tự động; không đăng nhập/mua hàng, không reboot Pixel. Worktree gốc với 19 file sửa dở và `.omc` không bị chỉnh.
