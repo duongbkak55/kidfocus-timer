@@ -96,6 +96,14 @@ class FirebaseAccountRepository @Inject constructor(
 
     fun firebaseApp(): FirebaseApp? = auth?.app
 
+    /** Force fresh credentials before retrying a callable rejected by App Check. Token values stay inside the SDK. */
+    suspend fun refreshAiCredentials() {
+        val app = firebaseApp() ?: error("FIREBASE_NOT_CONFIGURED")
+        val user = auth?.currentUser ?: error("SIGN_IN_REQUIRED")
+        user.getIdToken(true).await()
+        FirebaseAppCheck.getInstance(app).getAppCheckToken(true).await()
+    }
+
     suspend fun signIn(email: String, password: String) {
         requireConfigured()
         auth!!.signInWithEmailAndPassword(email.trim(), password).await()

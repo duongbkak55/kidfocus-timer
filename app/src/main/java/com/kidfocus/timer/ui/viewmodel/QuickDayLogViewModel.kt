@@ -6,6 +6,7 @@ import com.kidfocus.timer.data.repository.DayLogRepository
 import com.kidfocus.timer.data.remote.*
 import com.kidfocus.timer.domain.daylog.*
 import com.google.firebase.functions.FirebaseFunctionsException
+import com.kidfocus.timer.data.cloud.FirebaseAccountRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -14,13 +15,14 @@ import java.time.LocalDateTime
 import java.util.UUID
 import javax.inject.Inject
 
-enum class LogError { NETWORK, QUOTA, SIGN_IN, DISABLED, PROFILE_CHANGED, STALE, STORAGE }
+enum class LogError { NETWORK, QUOTA, SIGN_IN, APP_VERIFY, DISABLED, PROFILE_CHANGED, STALE, STORAGE }
 data class QuickDayLogState(val text: String = "", val busy: Boolean = false, val preview: DayLogPreview? = null,
     val selected: Set<Int> = emptySet(), val future: Set<Int> = emptySet(), val request: DayLogRequest? = null, val profileId: String? = null,
     val error: LogError? = null, val usage: AiUsage? = null, val undoBatch: List<DayLogEntry> = emptyList(),
     val saved: Boolean = false, val restored: Boolean = false, val ownerId: String? = null)
 @HiltViewModel
-class QuickDayLogViewModel @Inject constructor(private val logger: ScheduleLogger, private val logs: DayLogRepository) : ViewModel() {
+class QuickDayLogViewModel @Inject constructor(private val logger: ScheduleLogger, private val logs: DayLogRepository,
+    private val account: FirebaseAccountRepository) : ViewModel() {
     private val _state = MutableStateFlow(QuickDayLogState())
     val state = _state.asStateFlow()
     private var revision = 0L
@@ -54,12 +56,18 @@ class QuickDayLogViewModel @Inject constructor(private val logger: ScheduleLogge
                     request = request, profileId = profile, usage = reply.usage)
             } catch (_: TimeoutCancellationException) { if (captured == revision) _state.value = _state.value.copy(error = LogError.NETWORK) }
             catch (e: CancellationException) { throw e }
-            catch (e: Exception) { if (captured == revision) _state.value = _state.value.copy(error = when ((e as? FirebaseFunctionsException)?.code) {
-                FirebaseFunctionsException.Code.RESOURCE_EXHAUSTED -> LogError.QUOTA
-                FirebaseFunctionsException.Code.UNAUTHENTICATED -> LogError.SIGN_IN
-                FirebaseFunctionsException.Code.FAILED_PRECONDITION -> LogError.DISABLED
-                else -> LogError.NETWORK
-            }) }
+            catch (e: Exception) {
+                if (captured == revision) {
+                    val authError = AiErrorMapper.auth(e, account.account.value.isSignedIn)
+                    _state.value = _state.value.copy(error = when {
+                        authError == AiAuthError.SIGN_IN -> LogError.SIGN_IN
+                        authError == AiAuthError.APP_VERIFY -> LogError.APP_VERIFY
+                        e is FirebaseFunctionsException && e.code == FirebaseFunctionsException.Code.RESOURCE_EXHAUSTED -> LogError.QUOTA
+                        e is FirebaseFunctionsException && e.code == FirebaseFunctionsException.Code.FAILED_PRECONDITION -> LogError.DISABLED
+                        else -> LogError.NETWORK
+                    })
+                }
+            }
             finally { if (captured == revision) _state.value = _state.value.copy(busy = false) }
         }
     }

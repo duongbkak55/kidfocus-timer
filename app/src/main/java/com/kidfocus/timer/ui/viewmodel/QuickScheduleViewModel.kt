@@ -4,6 +4,9 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.functions.FirebaseFunctionsException
+import com.kidfocus.timer.data.cloud.FirebaseAccountRepository
+import com.kidfocus.timer.data.remote.AiAuthError
+import com.kidfocus.timer.data.remote.AiErrorMapper
 import com.kidfocus.timer.data.database.ChildProfileEntity
 import com.kidfocus.timer.data.remote.AiUsage
 import com.kidfocus.timer.data.remote.ScheduleParser
@@ -23,7 +26,7 @@ import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-enum class QuickScheduleError { NETWORK, QUOTA, PARSE, SIGN_IN, DISABLED, STALE, APPLY, IMAGE, IMAGE_TIER }
+enum class QuickScheduleError { NETWORK, QUOTA, PARSE, SIGN_IN, APP_VERIFY, DISABLED, STALE, APPLY, IMAGE, IMAGE_TIER }
 data class QuickScheduleState(
     val text: String = "", val draft: ScheduleDraft? = null, val busy: Boolean = false,
     val error: QuickScheduleError? = null, val usage: AiUsage? = null,
@@ -40,6 +43,7 @@ class QuickScheduleViewModel @Inject constructor(
     private val applySchedule: ApplyScheduleUseCase,
     private val store: RoomScheduleStore,
     private val images: ScheduleImageProcessor,
+    private val account: FirebaseAccountRepository,
 ) : ViewModel() {
     private val _state = MutableStateFlow(QuickScheduleState())
     val state = _state.asStateFlow()
@@ -155,9 +159,11 @@ class QuickScheduleViewModel @Inject constructor(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Exception) {
+                val authError = AiErrorMapper.auth(error, account.account.value.isSignedIn)
                 val kind = when {
                     error is FirebaseFunctionsException && error.code == FirebaseFunctionsException.Code.RESOURCE_EXHAUSTED -> QuickScheduleError.QUOTA
-                    error is FirebaseFunctionsException && error.code == FirebaseFunctionsException.Code.UNAUTHENTICATED -> QuickScheduleError.SIGN_IN
+                    authError == AiAuthError.SIGN_IN -> QuickScheduleError.SIGN_IN
+                    authError == AiAuthError.APP_VERIFY -> QuickScheduleError.APP_VERIFY
                     error.message?.contains("IMAGE_TIER_REQUIRED") == true -> QuickScheduleError.IMAGE_TIER
                     error.message?.contains("AI_PARSE_FAILED") == true -> QuickScheduleError.PARSE
                     error.message?.contains("AI_SCHEDULE_DISABLED") == true -> QuickScheduleError.DISABLED

@@ -13,6 +13,9 @@ import com.kidfocus.timer.data.schedule.SchedulePlansRepository
 import com.kidfocus.timer.data.remote.ScheduleAdviser
 import com.kidfocus.timer.data.remote.AiUsage
 import com.google.firebase.functions.FirebaseFunctionsException
+import com.kidfocus.timer.data.cloud.FirebaseAccountRepository
+import com.kidfocus.timer.data.remote.AiAuthError
+import com.kidfocus.timer.data.remote.AiErrorMapper
 import java.util.Locale
 import java.util.UUID
 import com.kidfocus.timer.domain.model.RoutineTime
@@ -29,7 +32,7 @@ import kotlinx.coroutines.delay
 data class SmartScheduleUiState(val profile: ChildProfileEntity, val schedule: ScheduleState, val findings: List<Finding>, val canUndo: Boolean,
     val routineStats: List<RoutineStat> = emptyList(), val plan: SchedulePlan? = null,
     val actualStats: com.kidfocus.timer.domain.daylog.ActualScheduleStats = com.kidfocus.timer.domain.daylog.ActualScheduleStats())
-enum class AdviceError { NETWORK, QUOTA, SIGN_IN, DISABLED, STALE, APPLY }
+enum class AdviceError { NETWORK, QUOTA, SIGN_IN, APP_VERIFY, DISABLED, STALE, APPLY }
 data class AdviceUiState(val note: String = "", val tags: Set<NoteTag> = emptySet(), val advice: ScheduleAdvice? = null,
     val rows: List<AdviceRow> = emptyList(), val selected: Set<Int> = emptySet(), val expected: ScheduleState? = null,
     val error: AdviceError? = null, val usage: AiUsage? = null)
@@ -47,6 +50,7 @@ class SmartScheduleViewModel @Inject constructor(
     private val plans: SchedulePlansRepository,
     dayLogs: com.kidfocus.timer.data.repository.DayLogRepository,
     private val settingsDataStore: com.kidfocus.timer.data.datastore.SettingsDataStore,
+    private val account: FirebaseAccountRepository,
 ) : ViewModel() {
     private val _advice = MutableStateFlow(AdviceUiState())
     val advice = _advice.asStateFlow()
@@ -142,12 +146,16 @@ class SmartScheduleViewModel @Inject constructor(
                 if (revision == profileRevision) _advice.value = _advice.value.copy(error = AdviceError.NETWORK)
             } catch (cancelled: CancellationException) { throw cancelled }
             catch (error: Exception) {
-                if (revision == profileRevision) _advice.value = _advice.value.copy(error = when ((error as? FirebaseFunctionsException)?.code) {
-                    FirebaseFunctionsException.Code.RESOURCE_EXHAUSTED -> AdviceError.QUOTA
-                    FirebaseFunctionsException.Code.UNAUTHENTICATED -> AdviceError.SIGN_IN
-                    FirebaseFunctionsException.Code.FAILED_PRECONDITION -> AdviceError.DISABLED
-                    else -> AdviceError.NETWORK
-                })
+                if (revision == profileRevision) {
+                    val authError = AiErrorMapper.auth(error, account.account.value.isSignedIn)
+                    _advice.value = _advice.value.copy(error = when {
+                        authError == AiAuthError.SIGN_IN -> AdviceError.SIGN_IN
+                        authError == AiAuthError.APP_VERIFY -> AdviceError.APP_VERIFY
+                        error is FirebaseFunctionsException && error.code == FirebaseFunctionsException.Code.RESOURCE_EXHAUSTED -> AdviceError.QUOTA
+                        error is FirebaseFunctionsException && error.code == FirebaseFunctionsException.Code.FAILED_PRECONDITION -> AdviceError.DISABLED
+                        else -> AdviceError.NETWORK
+                    })
+                }
             } finally { busy.value = false }
         }
     }

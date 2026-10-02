@@ -492,6 +492,7 @@
     <string name="quick_sign_in_help">Đăng nhập Google để dùng AI nhập lịch. Người đăng ký sớm được dùng thử khi chương trình đang mở.</string>
     <string name="quick_sign_in">Đăng nhập Google</string>
     <string name="quick_sign_in_failed">Chưa đăng nhập được. Vui lòng thử lại.</string>
+    <string name="ai_app_verify">Không xác minh được ứng dụng. Hãy cài/cập nhật KidFocus từ Google Play rồi thử lại.</string>
     <string name="quick_input">Bạn muốn thêm gì vào lịch tuần?</string>
     <string name="quick_mic">🎤 Nói để nhập</string>
     <string name="quick_examples">Bấm một ví dụ để điền</string>

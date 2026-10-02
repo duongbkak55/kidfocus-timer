@@ -93,6 +93,7 @@ fun QuickDayLogPanel(viewModel: QuickDayLogViewModel, data: DayLogData, date: Lo
         state.error?.let { error -> Text(stringResource(when(error) {
             LogError.QUOTA -> R.string.log_quota
             LogError.SIGN_IN -> R.string.log_sign_in
+            LogError.APP_VERIFY -> R.string.ai_app_verify
             LogError.DISABLED -> R.string.quick_disabled
             LogError.PROFILE_CHANGED -> R.string.daylog_profile_changed
             LogError.STALE -> R.string.log_stale

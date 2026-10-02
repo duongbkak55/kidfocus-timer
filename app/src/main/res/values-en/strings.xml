@@ -466,6 +466,7 @@
     <string name="quick_sign_in_help">Sign in with Google to use AI schedule entry. Early registrants receive a trial while enrollment is open.</string>
     <string name="quick_sign_in">Sign in with Google</string>
     <string name="quick_sign_in_failed">Could not sign in. Please try again.</string>
+    <string name="ai_app_verify">Couldn\'t verify the app. Please install or update KidFocus from Google Play and try again.</string>
     <string name="quick_input">What would you like to add to the weekly schedule?</string>
     <string name="quick_mic">🎤 Speak to enter</string>
     <string name="quick_examples">Tap an example to fill in</string>

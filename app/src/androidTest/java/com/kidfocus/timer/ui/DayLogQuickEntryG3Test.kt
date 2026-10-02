@@ -106,7 +106,8 @@ class DayLogQuickEntryG3Test {
                 }
             }
             val factory = object : ViewModelProvider.Factory {
-                @Suppress("UNCHECKED_CAST") override fun <T : ViewModel> create(modelClass: Class<T>): T = QuickDayLogViewModel(logger, repository) as T
+                @Suppress("UNCHECKED_CAST") override fun <T : ViewModel> create(modelClass: Class<T>): T = QuickDayLogViewModel(logger, repository,
+                    com.kidfocus.timer.data.cloud.FirebaseAccountRepository(activity.applicationContext)) as T
             }
             quick = ViewModelProvider(activity, factory)["w5b-offline-log", QuickDayLogViewModel::class.java]
             dayLogs.selectDate(today)

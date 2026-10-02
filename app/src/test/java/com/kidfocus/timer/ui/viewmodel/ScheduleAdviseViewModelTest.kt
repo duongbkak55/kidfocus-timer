@@ -3,6 +3,8 @@ package com.kidfocus.timer.ui.viewmodel
 import android.app.Application
 import androidx.lifecycle.viewModelScope
 import com.kidfocus.timer.data.database.ChildProfileEntity
+import com.kidfocus.timer.data.cloud.CloudAccount
+import com.kidfocus.timer.data.cloud.FirebaseAccountRepository
 import com.kidfocus.timer.data.repository.*
 import com.kidfocus.timer.data.remote.*
 import com.kidfocus.timer.data.schedule.*
@@ -70,7 +72,9 @@ class ScheduleAdviseViewModelTest {
         coEvery { adviser.advise(any()) } returns reply()
         val settings = mockk<com.kidfocus.timer.data.datastore.SettingsDataStore>()
         every { settings.focusExtensions } returns flowOf(emptyMap())
-        vm = SmartScheduleViewModel(profiles, tasks, routines, anchors, ApplyScheduleUseCase(store), store, adviser, plans, dayLogsFixture(), settings)
+        val account = mockk<FirebaseAccountRepository>()
+        every { account.account } returns MutableStateFlow(CloudAccount(configured = true, userId = "test"))
+        vm = SmartScheduleViewModel(profiles, tasks, routines, anchors, ApplyScheduleUseCase(store), store, adviser, plans, dayLogsFixture(), settings, account)
     }
     @After fun teardown() { vm.viewModelScope.cancel(); Dispatchers.resetMain() }
     private fun TestScope.observe() { backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.state.collect() }; runCurrent() }
@@ -106,6 +110,12 @@ class ScheduleAdviseViewModelTest {
         rows.value = rows.value.map { it.copy(name = "Changed") }; runCurrent()
         vm.applyAdvice(setOf(0)); runCurrent(); assertEquals(AdviceError.STALE, vm.advice.value.error)
         assertEquals(20, rows.value.single().hour)
+    }
+    @Test fun `App Check failure does not ask signed-in parent to sign in again`() = runTest(dispatcher) {
+        observe()
+        coEvery { adviser.advise(any()) } throws AiAppVerificationException(IllegalStateException())
+        vm.requestAdvice(); runCurrent()
+        assertEquals(AdviceError.APP_VERIFY, vm.advice.value.error)
     }
     @Test fun `late response discarded after changing profile and switching back`() = runTest(dispatcher) {
         observe(); val pending = CompletableDeferred<ScheduleAdviseReply>()
