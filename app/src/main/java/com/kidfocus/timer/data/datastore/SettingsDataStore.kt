@@ -47,6 +47,7 @@ class SettingsDataStore @Inject constructor(
         val LEARNING_AGE_BAND = stringPreferencesKey("learning_age_band")
         val CALM_MODE_ENABLED = booleanPreferencesKey("calm_mode_enabled")
         val KEEP_SCREEN_ON_ENABLED = booleanPreferencesKey("keep_screen_on_enabled")
+        val ALLOW_LOCK_SCREEN_CHILD_LOG = booleanPreferencesKey("allow_lock_screen_child_log")
         val ALLOW_CHILD_EXTEND_FOCUS = booleanPreferencesKey("allow_child_extend_focus")
         val MAX_EXTRA_FOCUS_MINUTES = intPreferencesKey("max_extra_focus_minutes")
         val ACTIVE_CHILD_PROFILE_ID = stringPreferencesKey("active_child_profile_id")
@@ -171,6 +172,7 @@ class SettingsDataStore @Inject constructor(
                 ?: TimerSettings.DEFAULT_LEARNING_AGE_BAND,
             calmModeEnabled = prefs[Keys.CALM_MODE_ENABLED] ?: false,
             keepScreenOnEnabled = prefs[Keys.KEEP_SCREEN_ON_ENABLED] ?: true,
+            allowLockScreenChildLog = prefs[Keys.ALLOW_LOCK_SCREEN_CHILD_LOG] ?: true,
             allowChildExtendFocus = prefs[Keys.ALLOW_CHILD_EXTEND_FOCUS] ?: true,
             maxExtraFocusMinutes = prefs[Keys.MAX_EXTRA_FOCUS_MINUTES] ?: TimerSettings.DEFAULT_MAX_EXTRA_FOCUS_MINUTES,
             activeChildProfileId = prefs[Keys.ACTIVE_CHILD_PROFILE_ID]
@@ -191,6 +193,7 @@ class SettingsDataStore @Inject constructor(
             prefs[Keys.LEARNING_AGE_BAND] = settings.learningAgeBand
             prefs[Keys.CALM_MODE_ENABLED] = settings.calmModeEnabled
             prefs[Keys.KEEP_SCREEN_ON_ENABLED] = settings.keepScreenOnEnabled
+            prefs[Keys.ALLOW_LOCK_SCREEN_CHILD_LOG] = settings.allowLockScreenChildLog
             prefs[Keys.ALLOW_CHILD_EXTEND_FOCUS] = settings.allowChildExtendFocus
             prefs[Keys.MAX_EXTRA_FOCUS_MINUTES] = settings.maxExtraFocusMinutes
             prefs[Keys.ACTIVE_CHILD_PROFILE_ID] = settings.activeChildProfileId
