@@ -20,7 +20,8 @@ Ngày 2026-10-02. Nhánh `fix/pre-beta` tạo từ `main` tại `e500af0` trong 
 - Pixel 9 (Android 17) kết nối qua ADB không dây, cài đè APK `fix/pre-beta` bằng `adb install -r` và giữ dữ liệu/phiên đăng nhập. APK dùng cấu hình Firebase client công khai tạm thời trong môi trường build, không ghi vào repo.
 - Khi tắt special access `SCHEDULE_EXACT_ALARM`, Lịch ngày hiện đúng thẻ “For on-time reminders, allow Alarms & reminders” và nút “Open settings”. Nút mở đúng trang **Alarms and reminders** của KidFocus; bật quyền trên trang đó rồi quay về, thẻ biến mất. `dumpsys alarm` cho task thử cho thấy `window=0 exactAllowReason=permission`, chứng tỏ app đã lên lịch lại sau cấp quyền. Nhánh fallback `setAndAllowWhileIdle` khi không có quyền đã qua `AlarmSchedulerTest` (mock AlarmManager); không chờ thông báo trễ trên máy ở trạng thái bị từ chối.
 - Tạo hoạt động synthetic `BetaAlarmTest` lúc 20:50 ngày 2026-10-02; alarm thực tế trong `dumpsys alarm` đặt đúng 20:50, thông báo trên Pixel ghi “Time to start BetaAlarmTest!” lúc khoảng 20:50:09. Không dùng nội dung lịch/nhật ký thật của trẻ. Hoạt động thử cần xoá khi Pixel được mở khoá.
-- Còn chờ Pixel 9 được mở khoá để kiểm PIN và xoá hoạt động thử; Pixel 3a chưa được ADB cấp quyền để thử đồng bộ sửa lịch, thêm nhật ký và xoá mềm offline→online trên hai máy.
+- Sau khi Pixel 9 được mở khoá, thử một PIN sai rồi nhập ngay bốn số đúng **không bấm xoá**: vào được màn phụ huynh, xác nhận ô nhập tự xoá sau lỗi. PIN chỉ đối chiếu hash cục bộ của app debug, không in/lưu plaintext. Đã xoá `BetaAlarmTest` khỏi lịch và xoá mềm đúng log timer ngắn phát sinh khi chạm nhầm nút bắt đầu; timeline không còn mục thử, alarm lần sau cũng không còn trong `dumpsys alarm`.
+- Pixel 3a chưa được ADB cấp quyền để thử đồng bộ sửa lịch, thêm nhật ký và xoá mềm offline→online trên hai máy. Pixel 9 hiện có cả USB và ADB không dây; có thể chuyển cáp sang Pixel 3a mà vẫn giữ kết nối Pixel 9.
 
 ## Phát hành
 
