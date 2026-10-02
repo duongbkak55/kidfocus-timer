@@ -18,6 +18,6 @@ fun dayLogFromCloud(id: String, data: Map<String, Any?>?): DayLogEntry? = runCat
         if (d["task_id"] == null) null else number("task_id"), d["name"] as String,
         DayLogCategory.valueOf(d["category"] as String), number("start_minute").toInt(),
         if (d["end_minute"] == null) null else number("end_minute").toInt(),
-        DayLogSource.valueOf(d["source"] as String), number("created_at"), number("updated_at"), d["deleted"] as Boolean)
+        dayLogSourceOrManual(d["source"] as String), number("created_at"), number("updated_at"), d["deleted"] as Boolean)
         .also { it.validate(); require(number("start_minute") in 0..1439 && (d["end_minute"] == null || number("end_minute") in 0..1439)) }
 }.getOrNull()

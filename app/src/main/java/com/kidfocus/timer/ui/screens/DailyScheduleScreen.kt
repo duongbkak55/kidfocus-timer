@@ -63,6 +63,7 @@ fun DailyScheduleScreen(
     onBack: () -> Unit,
     onStartTask: (ScheduledTask) -> Unit,
     onActualAndComparison: (java.time.LocalDate) -> Unit = {},
+    onChildQuickLog: () -> Unit = {},
     quickEntryEnabled: Boolean = false,
     onQuickEntry: () -> Unit = {},
     onAddTaskAtTime: (hour: Int, minute: Int) -> Unit = { _, _ -> },
@@ -112,6 +113,11 @@ fun DailyScheduleScreen(
                     displayCal.get(Calendar.YEAR), displayCal.get(Calendar.MONTH) + 1, displayCal.get(Calendar.DAY_OF_MONTH))) },
                 modifier = Modifier.padding(horizontal = 16.dp),
             ) { Text(stringResource(R.string.daylog_actual_and_compare)) }
+
+            androidx.compose.material3.Button(onClick = onChildQuickLog,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).height(52.dp)) {
+                Text(stringResource(R.string.child_log_title))
+            }
 
             if (quickEntryEnabled) androidx.compose.material3.TextButton(onClick = onQuickEntry, modifier = Modifier.padding(horizontal = 16.dp)) {
                 Text(stringResource(R.string.quick_title))

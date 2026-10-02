@@ -51,6 +51,7 @@ sealed class NavRoutes(val route: String) {
     data object QuickSchedule : NavRoutes("quick_schedule")
 
     data object DayLogs : NavRoutes("day_logs")
+    data object ChildQuickLog : NavRoutes("child_quick_log")
     data object WeeklyComparison : NavRoutes("weekly_comparison")
 
     data object SmartSchedule : NavRoutes("smart_schedule")

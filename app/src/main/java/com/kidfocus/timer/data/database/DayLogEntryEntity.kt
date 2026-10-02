@@ -23,7 +23,7 @@ data class DayLogEntryEntity(
     val deleted: Boolean,
 ) {
     fun toEntry() = DayLogEntry(id, profileId, LocalDate.parse(date), taskId, name,
-        DayLogCategory.valueOf(category), startMinute, endMinute, DayLogSource.valueOf(source), createdAt, updatedAt, deleted)
+        DayLogCategory.valueOf(category), startMinute, endMinute, dayLogSourceOrManual(source), createdAt, updatedAt, deleted)
     companion object {
         fun fromEntry(e: DayLogEntry) = DayLogEntryEntity(e.id, e.profileId, e.date.toString(), e.taskId,
             e.name, e.category.name, e.startMinute, e.endMinute, e.source.name, e.createdAt, e.updatedAt, e.deleted)
