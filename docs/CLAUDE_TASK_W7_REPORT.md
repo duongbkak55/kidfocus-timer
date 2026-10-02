@@ -45,6 +45,7 @@ Nếu dùng bản debug cài qua ADB cho G3: mở app trên Pixel 9 khi có mạ
 
 - `./gradlew testDebugUnitTest lint assembleDebug assembleDebugAndroidTest`: **PASS** (330 unit tests). Sau sửa mic: `./gradlew testDebugUnitTest lint assembleDebug`: **PASS**. Có unit test nguồn lạ Room/Cloud, CHILD round-trip, chọn/lọc mục, Hoàn tác, profile/account đổi, giới hạn ký tự, activity isolation và cờ cho phép nhận ActivityResult. `git diff --check`: **PASS**.
 - APK debug được build với Firebase Android config công khai trong `local.properties` bị git ignore, không đưa config/secret vào commit hoặc báo cáo. Cài/cập nhật `adb install -r` lên Pixel 9 qua wireless sau sửa mic: **Success**, giữ dữ liệu. Chưa xác nhận debug App Check token đã được đăng ký; Duong cần làm theo hướng dẫn ở trên nếu AI bị từ chối.
+- Pixel 9 có activity Google (`com.google.android.tts`) xử lý `android.speech.action.RECOGNIZE_SPEECH`, xác nhận bằng `cmd package resolve-activity`. Việc nhận chữ trong lúc máy khoá vẫn cần Duong thử trên UI; chưa coi đây là G3 PASS.
 - **G3 chưa chạy:** theo task, Duong tự thao tác UI, không chạy tự động. Checklist tại `docs/W7_G3_CHECKLIST.md`. Widget màn khoá phụ thuộc Pixel 9/OS có cho thêm hay không; cần ghi thực tế. Samsung không có máy để thử shortcut.
 - Tình huống câu “đi ngủ lúc 11 giờ 10 tối”: trước 23:10 hôm nay, mục bị coi là tương lai và không lưu; checklist hướng dẫn thử sau 23:10 hoặc nói “tối qua”.
 
