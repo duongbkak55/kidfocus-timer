@@ -37,15 +37,18 @@ class DayLogRepository @Inject constructor(
         entries.forEach { it.validate(); require(it.profileId == entries.first().profileId && it.source == source) }
         val uid = account.account.value.userId
         entries.forEach { if (uid != null) ownership.claim(it.id, uid) }
-        dao.addAiBatch(entries.map(DayLogEntryEntity::fromEntry))
+        dao.addGeneratedBatch(entries.map(DayLogEntryEntity::fromEntry))
     }
     suspend fun undoAiBatch(expected: List<DayLogEntry>) {
-        check(expected.all { ownership.visible(it.id, account.account.value.userId) }) { "STALE" }
-        dao.undoAiBatch(expected.map(DayLogEntryEntity::fromEntry))
+        undoBatch(expected, DayLogSource.AI)
     }
     suspend fun undoChildBatch(expected: List<DayLogEntry>) {
-        require(expected.isNotEmpty() && expected.all { it.source == DayLogSource.CHILD })
-        undoAiBatch(expected)
+        undoBatch(expected, DayLogSource.CHILD)
+    }
+    private suspend fun undoBatch(expected: List<DayLogEntry>, source: DayLogSource) {
+        check(expected.isNotEmpty() && expected.all { it.source == source &&
+            ownership.visible(it.id, account.account.value.userId) }) { "STALE" }
+        dao.undoGeneratedBatch(expected.map(DayLogEntryEntity::fromEntry))
     }
     suspend fun edit(entry: DayLogEntry) {
         entry.validate()

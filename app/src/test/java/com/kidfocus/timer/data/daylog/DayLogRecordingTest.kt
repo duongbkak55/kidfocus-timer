@@ -136,4 +136,15 @@ class DayLogRecordingTest {
         assertFalse(logs.get(batch.last().id)!!.deleted)
     }
 
+    @Test fun childBatchPersistsAndUndoCreatesTombstones() = runTest {
+        val batch = (1..2).map { DayLogEntry(profileId = "default", date = LocalDate.parse("2026-09-29"),
+            name = "Child $it", category = DayLogCategory.OTHER, startMinute = 600,
+            source = DayLogSource.CHILD, createdAt = 1000) }
+        logs.addChildBatch(batch)
+        assertEquals(2, db.dayLogDao().getAll().count { it.source == DayLogSource.CHILD.name && !it.deleted })
+        logs.undoChildBatch(batch)
+        batch.forEach { assertTrue(logs.get(it.id)!!.deleted) }
+        assertEquals(0, db.dayLogDao().getAll().count { !it.deleted })
+    }
+
 }
