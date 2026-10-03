@@ -18,9 +18,9 @@ Branch: `play-prep` từ main mới nhất (worktree riêng). Không push/deploy
 - Kiểm tra lại toàn văn: không còn câu nào mâu thuẫn với W5/W6/W7 (đọc kỹ, liệt kê các chỗ đã đổi trong report).
 
 ## 2. Hosting trang privacy (Firebase Hosting, project kid-focus-app)
-- Thêm `hosting` vào `firebase.json`: `public: "site"`, `cleanUrls: true`, header `Cache-Control: max-age=300`.
+- Dùng site riêng `kidfocus-studio` qua target `legal` trong `firebase.json` và `.firebaserc`; `public: "site"`, `cleanUrls: true`, header `Cache-Control: max-age=300`. Hosting mặc định đang phục vụ dashboard, không deploy lên đó.
 - `site/privacy.html` = bản build từ `docs/privacy-policy.html` (script copy đơn giản, không sửa tay 2 nơi); `site/index.html` chuyển hướng tới `/privacy`.
-- URL kỳ vọng: `https://kid-focus-app.web.app/privacy`. Lệnh deploy để sẵn trong report: `firebase deploy --only hosting --project kid-focus-app` — **KHÔNG chạy** khi chưa có Duong duyệt.
+- URL kỳ vọng: `https://kidfocus-studio.web.app/privacy` và `https://kidfocus-studio.web.app/terms`. Hai lệnh chờ Duong duyệt: `firebase hosting:sites:create kidfocus-studio --project kid-focus-app`, rồi `firebase deploy --only hosting:legal --project kid-focus-app`. **KHÔNG chạy** khi chưa có Duong duyệt; không deploy Hosting mặc định.
 - Không deploy kèm functions/rules/remoteconfig.
 
 ## 3. Store listing (`store-listing/vi-VN`, `store-listing/en-US`)

@@ -10,7 +10,7 @@ Cập nhật: 2026-10-03 · Soạn: Claude · Điền: Duong · Xác minh kỹ t
 | Ứng dụng có thu thập hoặc chia sẻ loại dữ liệu bắt buộc nào không? | Có |
 | Toàn bộ dữ liệu người dùng được mã hoá khi truyền? | Có |
 | Người dùng có thể yêu cầu xoá dữ liệu? | Có — trong app (Cài đặt phụ huynh → Tài khoản & dữ liệu → Xoá tài khoản) hoặc email kidfocusstudio@gmail.com |
-| URL xoá dữ liệu (nếu được hỏi) | https://kid-focus-app.web.app/privacy#xoa-du-lieu (chỉ dùng sau khi Hosting được duyệt và deploy) |
+| URL xoá dữ liệu (nếu được hỏi) | https://kidfocus-studio.web.app/privacy#xoa-du-lieu (chỉ dùng sau khi Hosting riêng được duyệt và deploy) |
 
 ## Loại dữ liệu
 | Nhóm → Loại | Thu thập | Chia sẻ | Tạm thời (ephemeral) | Bắt buộc/Tuỳ chọn | Mục đích |

@@ -1,12 +1,12 @@
-# Play prep — chờ G2
+# Play prep — F-PP-3 chờ G2
 
-Ngày 2026-10-03. Branch `play-prep`, worktree `KidFocusTimer-play-prep`, base `main` `032c9a5`. Commit nội dung `cb78b35`. Chưa push, merge, deploy Hosting hoặc sửa Play Console. Nội dung mô tả W5–W7 để dùng sau khi bản có W7 được phát hành; W7 hiện chưa nằm trong `main` của branch này và G3 màn khóa còn chờ Duong.
+Ngày 2026-10-03. Branch `play-prep`, worktree `KidFocusTimer-play-prep`, base `main` `032c9a5`. Commit chuẩn bị ban đầu `cb78b35`; F-PP-1 `75be895`. Chưa push, merge, deploy Hosting hoặc sửa Play Console. Nội dung mô tả W5–W7 để dùng sau khi bản có W7 được phát hành; W7 hiện chưa nằm trong `main` của branch này và G3 màn khóa còn chờ Duong.
 
 ## File và nội dung
 
 - `docs/privacy-policy.html`: ngày mới, email `kidfocusstudio@gmail.com`, anchor `#xoa-du-lieu`; mục 3a giới hạn Nhập nhanh **lịch tuần** sau PIN, ghi rõ nhập ảnh đang tắt ở beta; mục 3c VI/EN mô tả Nhật ký hôm nay và Con tự kể, giọng nói qua dịch vụ nhận dạng, lối vào màn khóa do phụ huynh bật/tắt, dữ liệu gửi AI và dữ liệu được lưu/đồng bộ. Mục 4 VI và đoạn EN nêu ngoại lệ Con tự kể khỏi PIN. Mục 1–2/đoạn EN cũng thêm nhật ký và so sánh kế hoạch–thực tế. Phần xóa dữ liệu và liên hệ EN được làm rõ.
 - `docs/index.html`, `docs/terms.html`: thay email cũ còn xuất hiện trong tài liệu công khai. Kiểm `rg` trên các trang public `docs/index.html`, `docs/privacy-policy.html`, `docs/terms.html`, `site/` và `store-listing/`: **không còn email cũ**. Task gốc giữ tên email cũ làm chỉ dẫn nội bộ.
-- `firebase.json`: Hosting phục vụ `site/`, `cleanUrls: true`, header `Cache-Control: public, max-age=300`. `scripts/build-privacy-site.sh` sao chép chính sách sang `site/privacy.html`; `site/index.html` chuyển tới `/privacy`. URL kỳ vọng: `https://kid-focus-app.web.app/privacy`; URL xóa dữ liệu: `https://kid-focus-app.web.app/privacy#xoa-du-lieu`.
+- `firebase.json` và `.firebaserc`: target Hosting `legal` trỏ tới site riêng `kidfocus-studio`, phục vụ `site/` với `cleanUrls: true` và header `Cache-Control: public, max-age=300`. `scripts/build-privacy-site.sh` sao chép chính sách và điều khoản sang `site/privacy.html` và `site/terms.html`; `site/index.html` chuyển tới `/privacy`. URL dự kiến: `https://kidfocus-studio.web.app/privacy`, `https://kidfocus-studio.web.app/terms`; URL xóa dữ liệu: `https://kidfocus-studio.web.app/privacy#xoa-du-lieu`.
 - `store-listing/vi-VN`, `en-US`: giữ title; short/full description thêm lịch tuần, nhật ký thực tế, Con tự kể và thời gian tập trung linh hoạt. Không quảng cáo nhập ảnh đang tắt. Câu giữ màn hình sáng ghi rõ phụ huynh có thể tắt cài đặt này; lối vào màn khóa được ghi “trên thiết bị hỗ trợ” vì G3 thiết bị còn chờ.
 - `store-listing/release-notes/beta-1.vi.txt`, `.en.txt`: release notes hai ngôn ngữ.
 - `docs/launch/TASK_PLAY_PREP.md` và `DATA_SAFETY.md`: đưa task gốc vào branch để Claude review được; cập nhật bảng Data safety theo 3 kết quả kiểm tra và email/URL liên hệ, đồng thời đánh dấu URL Hosting chỉ được dùng sau khi deploy.
@@ -38,7 +38,11 @@ Manifest chỉ khai `SCHEDULE_EXACT_ALARM`, không có `USE_EXACT_ALARM`. `Exact
 
 ## Kiểm tra và deploy chờ duyệt
 
-- `bash scripts/build-privacy-site.sh` và `cmp docs/privacy-policy.html site/privacy.html`: PASS; `firebase.json` parse JSON: PASS.
+- `bash scripts/build-privacy-site.sh`, `cmp docs/privacy-policy.html site/privacy.html` và `cmp docs/terms.html site/terms.html`: PASS. Kiểm JSON `firebase.json`/`.firebaserc`: chỉ có target `legal` trỏ tới `kidfocus-studio`, PASS.
 - Mở trang `site/privacy.html` trên máy bằng trình duyệt: render VI/EN đúng, thấy mục 3c, liên hệ mới và anchor xóa dữ liệu; không thay đổi giao diện app.
 - Đếm ký tự bằng Python: cả 6 tệp listing/release notes trong giới hạn; `git diff --check`: PASS.
-- Chờ G2 của Claude và duyệt của Duong. Lệnh deploy riêng Hosting khi được duyệt: `firebase deploy --only hosting --project kid-focus-app`. Chưa chạy lệnh này, chưa đụng Functions/rules/Remote Config.
+- F-PP-3: `testDebugUnitTest` và `lintDebug`: PASS; rà `app/`, privacy/listing và `docs/launch/` không còn URL Hosting cũ hoặc lệnh deploy Hosting mặc định: PASS.
+- F-PP-3: Hosting mặc định của project đang chạy dashboard Next.js, kể cả ở các route `/privacy` và `/terms`. Trang pháp lý phải nằm trên site riêng; deploy Hosting mặc định sẽ ghi đè dashboard. Hai lệnh **chỉ chờ Duong duyệt**, chưa chạy:
+  1. `firebase hosting:sites:create kidfocus-studio --project kid-focus-app`
+  2. `firebase deploy --only hosting:legal --project kid-focus-app`
+- Chưa tạo site, deploy, push hoặc merge; chưa đụng Functions/rules/Remote Config. Chỉ dùng URL mới trong Play sau khi site riêng hoạt động và đã kiểm tra trang thật.

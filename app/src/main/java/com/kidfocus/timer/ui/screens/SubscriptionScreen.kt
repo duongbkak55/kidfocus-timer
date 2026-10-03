@@ -197,5 +197,5 @@ private fun android.content.Context.openUrl(url: String) {
     startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
 }
 
-private const val PRIVACY_URL = "https://kid-focus-app.web.app/privacy"
-private const val TERMS_URL = "https://kid-focus-app.web.app/terms"
+private const val PRIVACY_URL = "https://kidfocus-studio.web.app/privacy"
+private const val TERMS_URL = "https://kidfocus-studio.web.app/terms"
