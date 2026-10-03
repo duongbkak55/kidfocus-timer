@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chính sách quyền riêng tư – KidFocus</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.7; }
+    .container { max-width: 720px; margin: 0 auto; padding: 48px 24px; }
+    .logo { text-align: center; margin-bottom: 32px; }
+    .logo h1 { font-size: 28px; color: #0284c7; font-weight: 700; }
+    .logo p  { color: #64748b; margin-top: 4px; }
+    h2 { font-size: 18px; color: #0f172a; margin: 32px 0 12px; padding-bottom: 6px; border-bottom: 2px solid #e2e8f0; }
+    p, li { font-size: 15px; color: #475569; margin-bottom: 10px; }
+    ul { padding-left: 20px; }
+    .badge { display: inline-block; background: #dcfce7; color: #166534; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 16px; }
+    .highlight { background: #f0f9ff; border-left: 4px solid #0284c7; padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+    footer { text-align: center; margin-top: 48px; font-size: 13px; color: #94a3b8; }
+    a { color: #0284c7; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <h1>🎓 KidFocus</h1>
+      <p>Học tập · Thói quen · Tập trung</p>
+    </div>
+
+    <div class="badge">✅ Không quảng cáo · Không bán dữ liệu</div>
+
+    <h2>Chính sách quyền riêng tư</h2>
+    <p><em>Cập nhật lần cuối: ngày 3 tháng 10 năm 2026</em></p>
+
+    <div class="highlight">
+      <strong>Tóm tắt:</strong> KidFocus hoạt động offline nếu không đăng nhập. Khi phụ huynh chủ động đăng nhập, dữ liệu ứng dụng được đồng bộ qua Firebase. Ứng dụng không có quảng cáo, không bán dữ liệu và không yêu cầu trẻ cung cấp thông tin nhận dạng.
+    </div>
+
+    <h2>1. Thông tin chúng tôi thu thập</h2>
+    <p>Tùy cách phụ huynh sử dụng ứng dụng, KidFocus có thể xử lý:</p>
+    <ul>
+      <li>Email, tên hiển thị, ảnh đại diện và mã tài khoản do Firebase Authentication/Google Sign-In cung cấp khi phụ huynh đăng nhập.</li>
+      <li>Cài đặt, lịch học, lịch sinh hoạt, nhật ký việc đã làm, phiên tập trung và kết quả học (tên trò chơi, nhóm tuổi/lớp, điểm, số câu và thời lượng).</li>
+      <li>Nội dung câu hỏi phụ huynh hoặc trẻ chủ động gửi tới Trợ lý AI.</li>
+      <li>Trạng thái gói Premium và mã giao dịch cần thiết để xác nhận quyền lợi thuê bao.</li>
+    </ul>
+    <p>Chúng tôi không yêu cầu tên thật, ngày sinh, địa chỉ, vị trí chính xác hoặc trường học của trẻ. Khi không đăng nhập, lịch, cài đặt và tiến độ chỉ được lưu trên thiết bị.</p>
+
+    <h2>2. Cách chúng tôi sử dụng thông tin</h2>
+    <p>Dữ liệu được dùng để vận hành tài khoản, đồng bộ giữa các thiết bị, hiển thị tiến độ và so sánh lịch với nhật ký thực tế, gửi lời nhắc, trả lời câu hỏi học tập và xác nhận quyền lợi Premium. Kết quả trò chơi không được gửi tới nhà cung cấp AI.</p>
+
+    <h2>3. Chia sẻ dữ liệu với bên thứ ba</h2>
+    <p>KidFocus sử dụng các nhà cung cấp dịch vụ sau để vận hành tính năng do phụ huynh lựa chọn:</p>
+    <ul>
+      <li>Google Firebase: đăng nhập, App Check, Cloud Functions và lưu dữ liệu đồng bộ Firestore.</li>
+      <li>Google Play hoặc Apple App Store và RevenueCat: xử lý/đối soát thuê bao. KidFocus không nhận số thẻ thanh toán.</li>
+      <li>OpenRouter và nhà cung cấp mô hình được chọn: xử lý nội dung câu hỏi AI, phần hội thoại cần thiết, chữ nhập lịch và chữ kể lại hoạt động khi gia đình dùng tính năng AI; ảnh nhập lịch chỉ được xử lý nếu tính năng ảnh được bật.</li>
+    </ul>
+    <p>Ứng dụng không tích hợp quảng cáo, Firebase Analytics hoặc SDK theo dõi hành vi. Chúng tôi không bán hoặc cho thuê dữ liệu.</p>
+
+    <h2>3a. Nhập nhanh lịch bằng chữ, giọng nói hoặc ảnh</h2>
+    <p>Nhập nhanh lịch tuần dành cho phụ huynh (sau PIN) và yêu cầu đăng nhập. Giọng nói được trình nhận giọng của thiết bị/Google chuyển thành chữ (trên máy hoặc qua dịch vụ Google, tùy thiết bị và cài đặt). KidFocus không tự thu, lưu hay gửi bản ghi âm tới máy chủ AI.</p>
+    <p>Khi phụ huynh bấm tạo bản nháp, chữ và ảnh do phụ huynh xác nhận (nếu chọn), nhóm tuổi, ngày/ngôn ngữ và phần lịch hiện tại cần thiết được gửi qua kết nối mã hóa tới Firebase Cloud Functions và OpenRouter để hiểu lịch. App không gửi trường tên bé trong hồ sơ; phụ huynh vui lòng không đưa tên bé, trường hoặc thông tin riêng tư vào nội dung nhập/tên hoạt động.</p>
+    <p>Nội dung nhập và bản nháp không được lưu tại máy chủ KidFocus hoặc ghi vào log. Yêu cầu OpenRouter đặt <code>data_collection: deny</code>, chỉ định tuyến tới nhà cung cấp không dùng nội dung để huấn luyện. Máy chủ chỉ giữ hạn mức sử dụng và ngày hết dùng thử gắn với tài khoản. Lịch chỉ được lưu trên máy khi phụ huynh bấm Áp dụng; nếu bật đồng bộ, lịch đã lưu được đồng bộ qua Firebase như các lịch nhập tay. Bản nháp chưa áp dụng chỉ nằm tạm trong bộ nhớ ứng dụng.</p>
+
+    <p>Nhập ảnh hiện được tắt cho bản dùng thử; nếu được bật sau này, tính năng sẽ chỉ dành cho tài khoản đủ điều kiện. Ảnh được chọn qua Photo Picker hoặc chụp bằng ứng dụng camera hệ thống; KidFocus không xin quyền camera hay truy cập toàn bộ thư viện. Trên máy, ảnh được xoay đúng, thu cạnh dài tối đa 1600 pixel, nén lại thành JPEG tối đa 1 MB để bỏ EXIF/GPS. Phụ huynh xem ảnh, có thể cắt phần riêng tư và phải tích xác nhận trước khi gửi; nên che tên/trường của bé và các thông tin nhận dạng trên ảnh. Có thể gửi kèm chữ về giờ vào/ra học.</p>
+    <p>Ảnh chỉ được xử lý tạm thời qua Firebase Functions/OpenRouter, không được lưu trên máy chủ KidFocus hoặc ghi vào log. Yêu cầu đặt <code>data_collection: deny</code>. File cache của ảnh đã xử lý và ảnh camera được xóa sau khi gửi, hủy, gặp lỗi hoặc rời màn hình; file còn sót nếu ứng dụng bị hệ thống kết thúc được dọn ở lần mở luồng ảnh tiếp theo. Ảnh gốc được chọn từ thư viện không bị sửa hay xóa. KidFocus không đồng bộ ảnh nhập lịch; chỉ lịch mà phụ huynh đã Áp dụng được lưu/đồng bộ.</p>
+
+    <h2>3b. Nhờ AI sắp lại lịch</h2>
+    <p>Khi phụ huynh chủ động dùng Nhờ AI sắp lại, KidFocus gửi lịch rút gọn (mã hoạt động tạm, tên hoạt động, loại, ngày, giờ, thời lượng), giờ ngủ/thức và ca học không có nhãn trường, các góp ý từ bộ quy tắc trên máy, số đếm routine trễ/bỏ trong 7 ngày, nhóm tuổi, ngày/ngôn ngữ và ghi chú/thẻ quan sát tuỳ chọn tới Firebase Functions/OpenRouter. Không gửi ID cơ sở dữ liệu, hồ sơ/tên bé, ảnh, lịch sử từng lần tick hoặc thông tin trường. Vui lòng không ghi tên riêng/trường trong tên hoạt động và ghi chú. Nội dung và đề xuất không được lưu hoặc ghi log trên server KidFocus; yêu cầu tới nhà cung cấp từ chối thu thập dữ liệu/huấn luyện. Quota tài khoản vẫn được lưu như trên. Đề xuất được kiểm tra lại trên máy và chỉ lưu khi phụ huynh duyệt. Kế hoạch áp dụng dần lưu cục bộ và đồng bộ như cài đặt khi bật sync; không tự chạy nền.</p>
+
+    <h2>3c. Nhật ký hôm nay và “Con tự kể”</h2>
+    <p>Phụ huynh hoặc trẻ có thể kể lại việc đã làm bằng cách gõ hoặc nói; trình nhận giọng của thiết bị/Google chuyển lời nói thành chữ. Trẻ dùng “Con tự kể” không cần PIN trong ứng dụng, hoặc từ widget/ô Cài đặt nhanh khi máy đang khóa nếu phụ huynh bật tính năng này. Phụ huynh có thể tắt trong Cài đặt phụ huynh. Màn hình khóa chỉ hiển thị ô nhập và kết quả của lần nhập hiện tại, không hiển thị lịch, lịch sử hay thông tin khác của trẻ.</p>
+    <p>Khi bấm Gửi, chữ nhập, nhóm tuổi, ngày/giờ và phần kế hoạch ngày đó được rút gọn bằng mã tham chiếu tạm được gửi qua Firebase Functions/OpenRouter để hiểu nội dung. KidFocus không gửi trường tên bé, không lưu hoặc ghi log câu nhập thô trên máy chủ, và yêu cầu nhà cung cấp đặt <code>data_collection: deny</code>. Lượt dùng AI tính vào hạn mức của tài khoản phụ huynh. Xin đừng nói hoặc gõ tên, trường hay thông tin riêng tư của bé.</p>
+    <p>Các mục đã hiểu được lưu trong nhật ký trên máy và đồng bộ qua Firebase nếu phụ huynh đăng nhập; phụ huynh có thể xem, sửa hoặc xóa. Câu nhập chưa hiểu không tự tạo mục nhật ký. KidFocus không tự thu, lưu hoặc gửi bản ghi âm tới máy chủ AI.</p>
+
+    <h2>4. Trẻ em</h2>
+    <p>KidFocus có nội dung dành cho trẻ từ 2 tuổi đến lớp 3. Tài khoản, đồng bộ cloud, quản lý lịch/AI, liên kết bên ngoài và mua hàng được thiết kế cho phụ huynh và đặt sau khu vực có khóa phụ huynh. Ngoại lệ là “Con tự kể”: trẻ có thể ghi nhật ký qua AI không cần PIN khi phụ huynh bật, kể cả từ màn hình khóa; trẻ không được truy cập phần quản lý khác qua lối này. Phụ huynh không nên nhập tên đầy đủ, địa chỉ, số điện thoại, trường học hoặc thông tin riêng tư của trẻ vào lịch hay câu hỏi AI.</p>
+
+    <h2 id="xoa-du-lieu">5. Quyền xóa dữ liệu</h2>
+    <p>Phụ huynh có thể xóa dữ liệu cục bộ bằng cách:</p>
+    <ul>
+      <li>Vào <strong>Cài đặt Android → Ứng dụng → KidFocus → Xóa dữ liệu</strong></li>
+      <li>Hoặc gỡ cài đặt ứng dụng.</li>
+    </ul>
+    <p>Để xóa tài khoản và dữ liệu cloud, vào <strong>Cài đặt phụ huynh → Tài khoản &amp; dữ liệu → Xóa tài khoản</strong>, hoặc gửi yêu cầu từ đúng email tài khoản tới địa chỉ liên hệ bên dưới. Gói thuê bao phải được hủy riêng trong cửa hàng ứng dụng; một số hồ sơ giao dịch có thể được cửa hàng giữ lại theo yêu cầu pháp luật.</p>
+
+    <h2>6. Bảo mật</h2>
+    <p>PIN phụ huynh được băm trước khi lưu cục bộ. Dữ liệu cloud được giới hạn theo mã tài khoản Firebase và truyền qua kết nối mã hóa. Không có phương thức lưu trữ nào an toàn tuyệt đối; chúng tôi áp dụng quyền truy cập tối thiểu và khuyến nghị bật khóa màn hình thiết bị.</p>
+
+    <h2>7. Thay đổi chính sách</h2>
+    <p>Nếu có thay đổi trong chính sách quyền riêng tư, chúng tôi sẽ cập nhật trang này và thông báo qua bản cập nhật ứng dụng.</p>
+
+    <h2>8. Liên hệ</h2>
+    <p>Nếu bạn có câu hỏi về chính sách này, vui lòng liên hệ:</p>
+    <ul>
+      <li>Email: <a href="mailto:kidfocusstudio@gmail.com">kidfocusstudio@gmail.com</a></li>
+    </ul>
+
+    <hr style="margin: 40px 0; border: none; border-top: 1px solid #e2e8f0;">
+    <p style="font-size:13px;color:#94a3b8;">Chính sách này cũng áp dụng bằng tiếng Anh:</p>
+    <h2>Privacy Policy (English)</h2>
+    <p>KidFocus works offline without an account. If a parent signs in, account details, settings, schedules, day-log entries, focus sessions, and learning progress are synced through Firebase. AI questions are processed through our Firebase backend and OpenRouter; game results are not sent to AI providers. Subscriptions are processed by the applicable app store and RevenueCat. We do not display ads, sell data, or use third-party behavioral analytics.</p>
+    <p>Quick weekly schedule entry is for signed-in parents behind a PIN. Speech is converted to text by the device/Google speech service, locally or through Google depending on settings. KidFocus does not record or send audio to AI. Creating a draft sends text and, if photo import is enabled and a parent selects one, a parent-confirmed photo, plus age band, date/language and compact schedule context to Firebase Functions and OpenRouter over encrypted connections. Photo import is currently disabled in beta. The child profile name is not sent; please omit personal names and school details from entered text and activity names. KidFocus does not store or log input/drafts on its server. OpenRouter requests deny data collection and training. Only account quota and trial expiry are retained on the backend. Applying a reviewed draft saves the schedule locally and syncs it via Firebase if sync is enabled.</p>
+    <p>When a parent chooses Ask AI to rearrange, KidFocus sends a compact schedule with temporary activity references, activity names/types/days/times/durations, sleep/wake anchors and unlabelled school blocks, on-device rule findings, routine late/missed counts for the last 7 days, age band/date/language and optional notes/observation tags to Firebase Functions/OpenRouter. Database IDs, child profile/name, photos, individual routine completion history and school identifiers are not sent. Please omit personal names/school details from activity names and notes. KidFocus does not store or log this content or suggestions on its server; provider requests deny data collection/training. Account quota is retained as described above. Suggestions are checked on-device and saved only after parental approval. Gradual plans are stored locally and synced as settings if enabled; they never run automatically in the background.</p>
+    <p>If photo import is enabled later, it will be optional for eligible accounts. KidFocus uses the system Photo Picker or camera app without requesting camera or broad media permissions. On the device, photos are oriented, resized to a maximum 1600-pixel edge and re-encoded as JPEG up to 1 MB to remove EXIF/GPS. Parents can crop private details and must confirm before sending; cover the child’s name/school and other identifying details first. Optional text can supply school hours. Photos are processed temporarily through Firebase Functions/OpenRouter; KidFocus does not store them on its server or log them, and requests deny data collection. Temporary processed and camera files are deleted after sending, cancelling, errors or leaving the screen; files abandoned by process termination are cleaned when the photo flow is next opened. Library originals remain untouched. Imported photos are never synced; only the applied schedule is saved/synced.</p>
+    <h2>Today's log and “Tell what you just did”</h2>
+    <p>A parent or child can describe a completed activity by typing or speaking; the device/Google speech service converts speech to text. A child can use this feature without the parent PIN inside the app, or from the lock-screen widget/Quick Settings tile when a parent enables it in Parent settings. The lock-screen view shows only the input and the current submission's result, not the child's schedule, history or other details. The parent can turn the feature off.</p>
+    <p>On Send, text, age band, date/time and a compact plan for that day with temporary references go through Firebase Functions/OpenRouter for interpretation. The child profile name is not sent. KidFocus does not store or log the raw input on its server; provider requests set <code>data_collection: deny</code>. Usage counts against the parent's AI quota. Please omit the child's name, school and other private details. Understood entries are stored on-device and synced through Firebase if signed in; parents can view, edit and delete them. Unclear input does not automatically create a log entry. KidFocus does not record, store or send audio to its AI server.</p>
+    <p>Parent account, cloud sync, schedule management, other AI tools, external links and purchases remain behind the parent PIN; child quick logging is the parent-controlled exception. To remove local data, clear KidFocus's app data or uninstall it. To delete a signed-in account and cloud data, use Parent settings → Account &amp; data → Delete account, or request deletion from the signed-in email at the contact address below.</p>
+    <p>Contact: <a href="mailto:kidfocusstudio@gmail.com">kidfocusstudio@gmail.com</a></p>
+
+    <footer>
+      <p>© 2026 KidFocus · <a href="index.html">Trang chủ</a></p>
+    </footer>
+  </div>
+</body>
+</html>

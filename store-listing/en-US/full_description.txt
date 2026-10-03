@@ -19,6 +19,8 @@ KidFocus brings learning, healthy routines, and focus time together in one famil
 ⏱️ A CHILD-FRIENDLY FOCUS TIMER
 
 • Customize focus and break durations
+• Kids can choose a 5–120 minute focus session and add 5 minutes when needed, within a parent-set limit
+• Keep the screen on while the timer runs when the parent enables this option
 • Use a clear interface with a friendly mascot
 • Receive sound and vibration alerts when a session ends
 • Track focus minutes and completed sessions each day
@@ -28,6 +30,8 @@ KidFocus brings learning, healthy routines, and focus time together in one famil
 • Protect parent settings with a PIN
 • Quick schedule entry by typing or voice: parents review a draft and tap Apply to save (requires sign-in and enabled AI).
 • Offline weekly schedule advice highlights overlaps and sleep timing by age band for parents to review.
+• Today's log records what your child actually did and compares it with the weekly plan.
+• Kids can tell the app what they just did by typing or speaking, including from the lock screen using a widget or Quick Settings tile on supported devices; parents can turn this on or off.
 • Create a separate profile for each child
 • Choose a color theme your child enjoys
 • No ads and no sale of personal data
