@@ -142,9 +142,10 @@ class DayLogRecordingTest {
             source = DayLogSource.CHILD, createdAt = 1000) }
         logs.addChildBatch(batch)
         assertEquals(2, db.dayLogDao().getAll().count { it.source == DayLogSource.CHILD.name && !it.deleted })
+        assertEquals(2, logs.observe("default").first().count { it.source == DayLogSource.CHILD && !it.deleted })
         logs.undoChildBatch(batch)
         batch.forEach { assertTrue(logs.get(it.id)!!.deleted) }
-        assertEquals(0, db.dayLogDao().getAll().count { !it.deleted })
+        assertEquals(0, logs.observe("default").first().count { !it.deleted })
     }
 
 }
