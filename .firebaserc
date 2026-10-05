@@ -1,5 +1,12 @@
 {
   "projects": {
     "default": "kid-focus-app"
+  },
+  "targets": {
+    "kid-focus-app": {
+      "hosting": {
+        "legal": ["kidfocus-studio"]
+      }
+    }
   }
 }

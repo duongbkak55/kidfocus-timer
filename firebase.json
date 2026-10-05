@@ -6,6 +6,19 @@
   "remoteconfig": {
     "template": "remoteconfig.template.json"
   },
+  "hosting": [
+    {
+      "target": "legal",
+      "public": "site",
+      "cleanUrls": true,
+      "headers": [
+        {
+          "source": "**",
+          "headers": [{ "key": "Cache-Control", "value": "public, max-age=300" }]
+        }
+      ]
+    }
+  ],
   "firestore": {
     "rules": "firestore.rules"
   }

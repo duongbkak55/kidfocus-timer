@@ -19,6 +19,8 @@ KidFocus giúp bé vừa học, vừa xây dựng thói quen tốt và tập tru
 ⏱️ ĐỒNG HỒ TẬP TRUNG CHO BÉ
 
 • Tùy chỉnh thời gian tập trung và nghỉ giải lao
+• Bé tự chọn phiên tập trung từ 5–120 phút; khi cần có thể thêm 5 phút trong giới hạn phụ huynh đặt
+• Giữ màn hình sáng khi đang đếm giờ nếu phụ huynh bật tùy chọn này
 • Giao diện trực quan với linh vật thân thiện
 • Chuông và rung khi kết thúc phiên
 • Theo dõi số phút và số phiên hoàn thành trong ngày
@@ -28,6 +30,8 @@ KidFocus giúp bé vừa học, vừa xây dựng thói quen tốt và tập tru
 • PIN bảo vệ khu vực cài đặt phụ huynh
 • Nhập nhanh lịch bằng gõ hoặc giọng nói: phụ huynh kiểm tra bản nháp rồi bấm Áp dụng để lưu (cần đăng nhập và AI được bật).
 • Góp ý lịch tuần hoạt động offline, nhắc lịch chồng chéo và giờ ngủ theo nhóm tuổi để phụ huynh xem lại.
+• Nhật ký hôm nay ghi lại những gì con thực sự làm và so sánh với kế hoạch tuần.
+• Con tự kể việc vừa làm bằng gõ hoặc giọng nói, kể cả từ màn hình khóa qua widget hoặc ô Cài đặt nhanh trên thiết bị hỗ trợ; phụ huynh bật/tắt được.
 • Hồ sơ riêng cho từng bé
 • Đổi màu giao diện phù hợp sở thích
 • Không quảng cáo và không bán dữ liệu cá nhân

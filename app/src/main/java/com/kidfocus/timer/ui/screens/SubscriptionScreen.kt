@@ -197,5 +197,5 @@ private fun android.content.Context.openUrl(url: String) {
     startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
 }
 
-private const val PRIVACY_URL = "https://duongbkak55.github.io/kidfocus-timer/privacy-policy.html"
-private const val TERMS_URL = "https://duongbkak55.github.io/kidfocus-timer/terms.html"
+private const val PRIVACY_URL = "https://kidfocus-studio.web.app/privacy"
+private const val TERMS_URL = "https://kidfocus-studio.web.app/terms"
