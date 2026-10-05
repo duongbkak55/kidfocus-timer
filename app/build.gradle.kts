@@ -31,14 +31,14 @@ val firebaseDebugAppId = configValue("FIREBASE_DEBUG_APP_ID")
 
 android {
     namespace = "com.kidfocus.timer"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.kidfocusstudio.timer"
         minSdk = 26
-        targetSdk = 35
-        versionCode = 4
-        versionName = "1.0.0-rc.2"
+        targetSdk = 36
+        versionCode = 5
+        versionName = "1.0.0-rc.3"
         resourceConfigurations += listOf("vi", "en")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
