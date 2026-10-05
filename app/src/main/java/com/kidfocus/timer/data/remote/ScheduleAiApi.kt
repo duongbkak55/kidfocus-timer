@@ -41,9 +41,16 @@ class ScheduleAiApi @Inject constructor(private val account: FirebaseAccountRepo
     private fun functions(): FirebaseFunctions = FirebaseFunctions.getInstance(
         account.firebaseApp() ?: error("FIREBASE_NOT_CONFIGURED"), "asia-southeast1")
 
+    private suspend fun callAi(payload: Map<String, Any>): Map<*, *> = retryAiCall(
+        payload = payload,
+        isSignedIn = { account.account.value.isSignedIn },
+        refreshCredentials = { account.refreshAiCredentials() },
+        send = { request -> functions().getHttpsCallable("aiSchedule").withAiScheduleTimeout()
+            .call(request).await().data as? Map<*, *> ?: error("AI_REQUEST_FAILED") },
+    )
+
     override suspend fun log(request: com.kidfocus.timer.domain.daylog.DayLogRequest): ScheduleLogReply = withAiScheduleTimeout {
-        val reply = functions().getHttpsCallable("aiSchedule").withAiScheduleTimeout()
-            .call(request.payload).await().data as? Map<*, *> ?: error("AI_LOG_FAILED")
+        val reply = callAi(request.payload)
         val usage = reply["usage"] as? Map<*, *> ?: error("AI_LOG_FAILED")
         ScheduleLogReply(com.kidfocus.timer.domain.daylog.DayLogDraft.fromMap(reply["log"] as? Map<*, *> ?: error("AI_LOG_FAILED"), request),
             AiUsage((usage["remainingQuestions"] as? Number)?.toInt() ?: 0, (usage["remainingCredits"] as? Number)?.toInt() ?: 0,
@@ -56,7 +63,7 @@ class ScheduleAiApi @Inject constructor(private val account: FirebaseAccountRepo
     }
 
     override suspend fun advise(payload: Map<String, Any>): ScheduleAdviseReply = withAiScheduleTimeout {
-        val reply = functions().getHttpsCallable("aiSchedule").withAiScheduleTimeout().call(payload).await().data as? Map<*, *> ?: error("AI_ADVISE_FAILED")
+        val reply = callAi(payload)
         ScheduleAdviseReply(ScheduleAdvicePayload.advice(reply["advice"] as? Map<*, *> ?: error("AI_ADVISE_FAILED")),
             (reply["usage"] as? Map<*, *>)?.let { usage -> AiUsage((usage["remainingQuestions"] as? Number)?.toInt() ?: 0, (usage["remainingCredits"] as? Number)?.toInt() ?: 0, usage["premium"] == true, usage["tier"] as? String ?: "free", (usage["earlyAccessUntil"] as? Number)?.toLong(), (usage["remainingScheduleParses"] as? Number)?.toInt()) } ?: error("AI_ADVISE_FAILED"))
     }
@@ -67,8 +74,7 @@ class ScheduleAiApi @Inject constructor(private val account: FirebaseAccountRepo
     private suspend fun parseRequest(text: String, image: String?, ageBand: String, current: ScheduleState): ScheduleParseReply = withAiScheduleTimeout {
         require((text.isNotBlank() || image != null) && text.length <= 2000)
         require(image == null || image.length in 1..1_400_000)
-        val response = functions().getHttpsCallable("aiSchedule").withAiScheduleTimeout()
-            .call(mapOf("requestId" to UUID.randomUUID().toString(), "text" to text,
+        val payload = mapOf("requestId" to UUID.randomUUID().toString(), "text" to text,
                 "ageBand" to (ageBand.takeIf { it in ScheduleThresholds.sleepMinutes } ?: "4-5"),
                 "today" to LocalDate.now().toString(), "locale" to Locale.getDefault().let { locale -> locale.language + (locale.country.takeIf { it.length == 2 }?.let { "-$it" } ?: "") },
                 "current" to current.tasks.take(60).map { task -> mapOf(
@@ -77,8 +83,8 @@ class ScheduleAiApi @Inject constructor(private val account: FirebaseAccountRepo
                 ) }, "currentSchool" to current.anchors.school.take(30).map { block -> mapOf(
                     "days" to block.days.sortedBy { it.value }.map { it.name.take(3) },
                     "start" to block.start.toString(), "end" to block.end.toString(),
-                ) }) + (image?.let { mapOf("image" to it) } ?: emptyMap()))
-            .await().data as? Map<*, *> ?: error("AI_PARSE_FAILED")
+                ) }) + (image?.let { mapOf("image" to it) } ?: emptyMap())
+        val response = callAi(payload)
         val rawDraft = response["draft"] as? Map<*, *> ?: error("AI_PARSE_FAILED")
         val usage = response["usage"] as? Map<*, *> ?: error("AI_PARSE_FAILED")
         ScheduleParseReply(ScheduleDraftMapper.fromMap(rawDraft.entries.associate { it.key.toString() to it.value }),

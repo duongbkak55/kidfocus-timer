@@ -121,6 +121,14 @@ class SettingsViewModel @Inject constructor(
         save(current.copy(keepScreenOnEnabled = enabled))
     }
 
+    fun setAllowLockScreenChildLog(enabled: Boolean, onSaved: (Boolean) -> Unit = {}) {
+        val current = settings.value ?: return
+        viewModelScope.launch {
+            runCatching { saveTimerSettingsUseCase(current.copy(allowLockScreenChildLog = enabled)) }
+                .onSuccess { onSaved(enabled) }
+        }
+    }
+
     fun setAllowChildExtendFocus(enabled: Boolean) {
         val current = settings.value ?: return
         save(current.copy(allowChildExtendFocus = enabled))

@@ -27,21 +27,36 @@ class DayLogRepository @Inject constructor(
         dao.merge(DayLogEntryEntity.fromEntry(entry))
     }
     suspend fun addAiBatch(entries: List<DayLogEntry>) {
-        entries.forEach { it.validate(); require(it.profileId == entries.first().profileId && it.source == DayLogSource.AI) }
+        addBatch(entries, DayLogSource.AI)
+    }
+    suspend fun addChildBatch(entries: List<DayLogEntry>) {
+        addBatch(entries, DayLogSource.CHILD)
+    }
+    private suspend fun addBatch(entries: List<DayLogEntry>, source: DayLogSource) {
+        require(entries.isNotEmpty())
+        entries.forEach { it.validate(); require(it.profileId == entries.first().profileId && it.source == source) }
         val uid = account.account.value.userId
         entries.forEach { if (uid != null) ownership.claim(it.id, uid) }
-        dao.addAiBatch(entries.map(DayLogEntryEntity::fromEntry))
+        dao.addGeneratedBatch(entries.map(DayLogEntryEntity::fromEntry))
     }
     suspend fun undoAiBatch(expected: List<DayLogEntry>) {
-        check(expected.all { ownership.visible(it.id, account.account.value.userId) }) { "STALE" }
-        dao.undoAiBatch(expected.map(DayLogEntryEntity::fromEntry))
+        undoBatch(expected, DayLogSource.AI)
+    }
+    suspend fun undoChildBatch(expected: List<DayLogEntry>) {
+        undoBatch(expected, DayLogSource.CHILD)
+    }
+    private suspend fun undoBatch(expected: List<DayLogEntry>, source: DayLogSource) {
+        check(expected.isNotEmpty() && expected.all { it.source == source &&
+            ownership.visible(it.id, account.account.value.userId) }) { "STALE" }
+        dao.undoGeneratedBatch(expected.map(DayLogEntryEntity::fromEntry))
     }
     suspend fun edit(entry: DayLogEntry) {
         entry.validate()
         if (!ownership.visible(entry.id, account.account.value.userId)) return
         dao.edit(entry.id) { old ->
             require(old.profileId == entry.profileId && !old.deleted)
-            DayLogEntryEntity.fromEntry(entry.copy(createdAt = old.createdAt, source = DayLogSource.MANUAL))
+            DayLogEntryEntity.fromEntry(entry.copy(createdAt = old.createdAt,
+                source = if (old.source == DayLogSource.CHILD.name) DayLogSource.CHILD else DayLogSource.MANUAL))
         }
     }
     suspend fun delete(id: String, profileId: String) {

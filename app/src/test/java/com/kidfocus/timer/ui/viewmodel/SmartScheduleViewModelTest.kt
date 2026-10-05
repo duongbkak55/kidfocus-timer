@@ -4,6 +4,8 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.kidfocus.timer.data.database.ChildProfileEntity
+import com.kidfocus.timer.data.cloud.CloudAccount
+import com.kidfocus.timer.data.cloud.FirebaseAccountRepository
 import com.kidfocus.timer.data.database.RoutineCompletionEntity
 import com.kidfocus.timer.data.database.RoutineEntity
 import com.kidfocus.timer.data.repository.ChildProfileRepository
@@ -71,7 +73,9 @@ class SmartScheduleViewModelTest {
         every { plans.observe(any()) } returns flowOf(null)
         val settings = mockk<com.kidfocus.timer.data.datastore.SettingsDataStore>()
         every { settings.focusExtensions } returns flowOf(emptyMap())
-        return SmartScheduleViewModel(profiles, tasks, routines, anchors, mockk<ApplyScheduleUseCase>(), store, mockk<com.kidfocus.timer.data.remote.ScheduleAdviser>(), plans, dayLogsFixture(), settings)
+        val account = mockk<FirebaseAccountRepository>()
+        every { account.account } returns MutableStateFlow(CloudAccount(configured = true, userId = "test"))
+        return SmartScheduleViewModel(profiles, tasks, routines, anchors, mockk<ApplyScheduleUseCase>(), store, mockk<com.kidfocus.timer.data.remote.ScheduleAdviser>(), plans, dayLogsFixture(), settings, account)
             .also { viewModel = it }
     }
 

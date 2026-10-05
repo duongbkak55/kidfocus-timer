@@ -23,15 +23,17 @@ abstract class DayLogDao {
         if (newerDayLog(old?.toEntry(), row.toEntry()) != old?.toEntry()) put(row)
     }
     @Transaction
-    open suspend fun addAiBatch(rows: List<DayLogEntryEntity>) {
+    open suspend fun addGeneratedBatch(rows: List<DayLogEntryEntity>) {
         require(rows.isNotEmpty() && rows.size <= 30 && rows.map { it.id }.distinct().size == rows.size)
-        rows.forEach { require(get(it.id) == null && it.source == "AI" && !it.deleted); it.toEntry().validate() }
+        require(rows.map { it.source }.distinct().single() in setOf("AI", "CHILD"))
+        rows.forEach { require(get(it.id) == null && !it.deleted); it.toEntry().validate() }
         rows.forEach { put(it) }
     }
     @Transaction
-    open suspend fun undoAiBatch(expected: List<DayLogEntryEntity>) {
+    open suspend fun undoGeneratedBatch(expected: List<DayLogEntryEntity>) {
         val current = expected.map { get(it.id) }
-        check(current == expected && expected.all { it.source == "AI" && !it.deleted }) { "STALE" }
+        check(expected.isNotEmpty() && expected.map { it.source }.distinct().single() in setOf("AI", "CHILD") &&
+            current == expected && expected.all { !it.deleted }) { "STALE" }
         expected.forEach { put(it.copy(deleted = true, updatedAt = maxOf(System.currentTimeMillis(), it.updatedAt + 1))) }
     }
     @Transaction

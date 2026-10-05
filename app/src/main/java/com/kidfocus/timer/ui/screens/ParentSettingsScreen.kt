@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kidfocus.timer.domain.model.TimerSettings
@@ -61,6 +62,7 @@ fun ParentSettingsScreen(
     cloudSyncStatus: CloudSyncStatus = CloudSyncStatus.LocalOnly,
 ) {
     val colors = KidFocusTheme.colors
+    val context = LocalContext.current
     val settings by settingsViewModel.settings.collectAsState()
     val current = settings ?: run {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -141,6 +143,18 @@ fun ParentSettingsScreen(
                     Text(stringResource(R.string.smart_advice_title), style = MaterialTheme.typography.bodyMedium)
                 }
             }
+            Spacer(modifier = Modifier.height(24.dp))
+
+            SettingToggleRow(
+                title = stringResource(R.string.child_log_lock_setting),
+                subtitle = stringResource(R.string.child_log_lock_setting_hint),
+                checked = current.allowLockScreenChildLog,
+                onCheckedChange = { enabled ->
+                    settingsViewModel.setAllowLockScreenChildLog(enabled) {
+                        com.kidfocus.timer.childlog.ChildLogEntryControls.update(context, it)
+                    }
+                },
+            )
             Spacer(modifier = Modifier.height(24.dp))
 
             // Section: Timer durations

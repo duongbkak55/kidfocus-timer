@@ -28,6 +28,8 @@ import com.kidfocus.timer.ui.screens.ParentSettingsScreen
 import com.kidfocus.timer.ui.screens.PinEntryScreen
 import com.kidfocus.timer.ui.screens.DailyScheduleScreen
 import com.kidfocus.timer.ui.screens.DayLogsScreen
+import com.kidfocus.timer.ui.screens.ChildQuickLogScreen
+import com.kidfocus.timer.ui.viewmodel.ChildQuickLogViewModel
 import com.kidfocus.timer.ui.screens.SmartScheduleScreen
 import com.kidfocus.timer.ui.screens.ScheduleScreen
 import com.kidfocus.timer.ui.screens.TaskEditScreen
@@ -298,6 +300,7 @@ fun AppNavigation(
         composable(NavRoutes.DailySchedule.route) {
             DailyScheduleScreen(
                 viewModel = scheduleViewModel,
+                onChildQuickLog = { navController.navigate(NavRoutes.ChildQuickLog.route) },
                 onActualAndComparison = { date ->
                     dayLogs.selectDate(date)
                     navController.navigate(parentGateRoute(settings?.hasPinSet == true, NavRoutes.DayLogs.route))
@@ -318,6 +321,13 @@ fun AppNavigation(
                     navController.navigate(NavRoutes.TaskEdit.buildRoute(0L, TaskType.CUSTOM.name, hour, minute))
                 },
             )
+        }
+
+        // Child-only quick log deliberately bypasses the parent PIN gate.
+        composable(NavRoutes.ChildQuickLog.route) {
+            val childLog: ChildQuickLogViewModel = hiltViewModel()
+            ChildQuickLogScreen(childLog, scheduleAccess, lockScreen = false,
+                onBack = { navController.popBackStack() })
         }
 
         parentScheduleDestination(NavRoutes.DayLogs.route, navController, settingsViewModel) {

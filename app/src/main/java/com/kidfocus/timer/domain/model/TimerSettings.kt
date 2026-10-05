@@ -25,6 +25,7 @@ data class TimerSettings(
     val learningAgeBand: String = DEFAULT_LEARNING_AGE_BAND,
     val calmModeEnabled: Boolean = false,
     val keepScreenOnEnabled: Boolean = true,
+    val allowLockScreenChildLog: Boolean = true,
     val allowChildExtendFocus: Boolean = true,
     val maxExtraFocusMinutes: Int = DEFAULT_MAX_EXTRA_FOCUS_MINUTES,
     val activeChildProfileId: String = DEFAULT_CHILD_PROFILE_ID,

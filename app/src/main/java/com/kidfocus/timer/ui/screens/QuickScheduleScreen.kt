@@ -179,6 +179,7 @@ fun QuickScheduleScreen(onBack: () -> Unit, access: ScheduleAccessViewModel, vie
                     QuickScheduleError.QUOTA -> R.string.quick_error_quota
                     QuickScheduleError.PARSE -> R.string.quick_error_parse
                     QuickScheduleError.SIGN_IN -> R.string.quick_sign_in_help
+                    QuickScheduleError.APP_VERIFY -> R.string.ai_app_verify
                     QuickScheduleError.DISABLED -> R.string.quick_disabled
                     QuickScheduleError.STALE -> R.string.quick_error_stale
                     QuickScheduleError.APPLY -> R.string.smart_error

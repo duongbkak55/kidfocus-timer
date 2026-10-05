@@ -234,7 +234,9 @@ class ParentScheduleNavigationTest {
                 com.kidfocus.timer.domain.daylog.DayLogCandidate(date, "p0", "Homework", com.kidfocus.timer.domain.daylog.DayLogCategory.STUDY, 1140, 1170, .95),
                 com.kidfocus.timer.domain.daylog.DayLogCandidate(date, "p1", "Reading", com.kidfocus.timer.domain.daylog.DayLogCategory.STUDY, 1200, 1230, .4),
             ), emptyList()), com.kidfocus.timer.data.remote.AiUsage(9, 9, false))
-        val quick = QuickDayLogViewModel(logger, repository)
+        val account = mockk<com.kidfocus.timer.data.cloud.FirebaseAccountRepository>()
+        every { account.account } returns kotlinx.coroutines.flow.MutableStateFlow(com.kidfocus.timer.data.cloud.CloudAccount(configured = true, userId = "test"))
+        val quick = QuickDayLogViewModel(logger, repository, account)
         try {
             graph(NavRoutes.DayLogs.route, quick, DayLogData("default", tasks))
             compose.onNodeWithTag("log_text").assertDoesNotExist()

@@ -3,6 +3,8 @@ package com.kidfocus.timer.ui.viewmodel
 import android.app.Application
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.functions.FirebaseFunctionsException
+import com.kidfocus.timer.data.cloud.CloudAccount
+import com.kidfocus.timer.data.cloud.FirebaseAccountRepository
 import com.kidfocus.timer.data.database.ChildProfileEntity
 import com.kidfocus.timer.data.remote.*
 import com.kidfocus.timer.data.repository.*
@@ -36,6 +38,7 @@ class QuickScheduleViewModelTest {
     private val parser = mockk<ScheduleParser>()
     private val useCase = mockk<ApplyScheduleUseCase>()
     private val images = mockk<ScheduleImageProcessor>(relaxed = true)
+    private val account = mockk<FirebaseAccountRepository>()
     private val store = mockk<RoomScheduleStore>()
     private val active = MutableStateFlow(ChildProfileEntity.default())
     private lateinit var vm: QuickScheduleViewModel
@@ -48,7 +51,8 @@ class QuickScheduleViewModelTest {
         every { tasks.allTasks } returns flowOf(emptyList())
         every { anchors.observe(any()) } returns flowOf(ScheduleAnchors())
         coEvery { store.read(any()) } returns before
-        vm = QuickScheduleViewModel(profiles, tasks, anchors, parser, useCase, store, images)
+        every { account.account } returns MutableStateFlow(CloudAccount(configured = true, userId = "test"))
+        vm = QuickScheduleViewModel(profiles, tasks, anchors, parser, useCase, store, images, account)
     }
     @After fun teardown() { vm.viewModelScope.cancel(); Dispatchers.resetMain() }
     @Test fun `quota failure keeps input and preview unchanged and is retryable`() = runTest(dispatcher) {
@@ -81,6 +85,13 @@ class QuickScheduleViewModelTest {
         vm.parse(); runCurrent()
         assertEquals(QuickScheduleError.NETWORK, vm.state.value.error)
         assertEquals("Keep this text", vm.state.value.text)
+    }
+    @Test fun `App Check failure is not shown as a sign-in prompt`() = runTest(dispatcher) {
+        runCurrent(); vm.editText("Tối nay ngủ lúc 23h10")
+        coEvery { parser.parse(any(), any(), any()) } throws AiAppVerificationException(IllegalStateException())
+        vm.parse(); runCurrent()
+        assertEquals(QuickScheduleError.APP_VERIFY, vm.state.value.error)
+        assertEquals("Tối nay ngủ lúc 23h10", vm.state.value.text)
     }
     @Test fun `apply uses captured schedule preserves draft on stale failure and passes selected edits`() = runTest(dispatcher) {
         runCurrent(); vm.editText("English")

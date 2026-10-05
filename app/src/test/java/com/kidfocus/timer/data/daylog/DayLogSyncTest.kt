@@ -122,10 +122,19 @@ class DayLogSyncTest {
     }
     @Test fun malformedRemoteRowsAreRejectedAndMidnightRoundTrips() {
         assertNull(dayLogFromCloud(entry.id,entry.toDayLogCloud()+mapOf("start_minute" to 5000000000L)))
-        assertNull(dayLogFromCloud(entry.id,entry.toDayLogCloud()+mapOf("source" to "UNKNOWN")))
+        assertEquals(DayLogSource.MANUAL,
+            dayLogFromCloud(entry.id,entry.toDayLogCloud()+mapOf("source" to "UNKNOWN"))?.source)
         assertNull(dayLogFromCloud(entry.id,null))
         val overnight=entry.copy(startMinute=1430,endMinute=30)
         assertEquals(overnight,dayLogFromCloud(overnight.id,overnight.toDayLogCloud()))
+    }
+    @Test fun roomAndCloudKeepChildSourceAndFallBackForUnknownSource() {
+        val child = entry.copy(source = DayLogSource.CHILD)
+        assertEquals(DayLogSource.CHILD, DayLogEntryEntity.fromEntry(child).toEntry().source)
+        assertEquals(DayLogSource.CHILD, dayLogFromCloud(child.id, child.toDayLogCloud())?.source)
+        assertEquals(DayLogSource.MANUAL, DayLogEntryEntity.fromEntry(child).copy(source = "FUTURE_SOURCE").toEntry().source)
+        assertEquals(DayLogSource.MANUAL,
+            dayLogFromCloud(child.id, child.toDayLogCloud() + ("source" to "FUTURE_SOURCE"))?.source)
     }
     @Test fun bootstrapQueryIsBoundedAndExplicitHistoricalWeekIsFetchedWithoutErasingLocal()=runTest {
         assertSame(query,sync.recentQuery("a",LocalDate.parse("2026-09-29")))

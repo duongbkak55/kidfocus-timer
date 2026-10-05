@@ -86,7 +86,7 @@ fun DayLogTimeline(viewModel: DayLogViewModel, onEdit: () -> Unit, onStart: (Sch
                                     if (end < entry.startMinute) stringResource(R.string.daylog_next_day_end, logTime(end))
                                     else stringResource(R.string.daylog_end_at, logTime(end))
                                 } ?: stringResource(R.string.daylog_open), style = MaterialTheme.typography.bodySmall)
-                                Text(stringResource(when(entry.source) { DayLogSource.TIMER -> R.string.daylog_source_timer; DayLogSource.ROUTINE -> R.string.daylog_source_routine; DayLogSource.MANUAL -> R.string.daylog_source_manual; DayLogSource.AI -> R.string.daylog_source_ai }), style = MaterialTheme.typography.labelSmall)
+                                Text(stringResource(when(entry.source) { DayLogSource.TIMER -> R.string.daylog_source_timer; DayLogSource.ROUTINE -> R.string.daylog_source_routine; DayLogSource.MANUAL -> R.string.daylog_source_manual; DayLogSource.AI -> R.string.daylog_source_ai; DayLogSource.CHILD -> R.string.daylog_source_child }), style = MaterialTheme.typography.labelSmall)
                             }
                         }
                     }
@@ -217,8 +217,12 @@ fun WeeklyComparisonScreen(viewModel: DayLogViewModel, onBack: () -> Unit) {
                             Text(stringResource(when { difference > 0 -> R.string.daylog_longer; difference < 0 -> R.string.daylog_shorter; else -> R.string.daylog_same_duration }, kotlin.math.abs(difference)), style = MaterialTheme.typography.bodySmall)
                         }
                         if (row.actual != null && row.actualDuration == null) Text(stringResource(R.string.daylog_open), style = MaterialTheme.typography.bodySmall)
+                        if (row.actual?.source == DayLogSource.CHILD) Text(stringResource(R.string.daylog_source_child), style = MaterialTheme.typography.labelSmall)
                     }
-                    day.incidental.forEach { entry -> Text(stringResource(R.string.daylog_incidental_item, entry.name, logTime(entry.startMinute))) }
+                    day.incidental.forEach { entry ->
+                        Text(stringResource(R.string.daylog_incidental_item, entry.name, logTime(entry.startMinute)))
+                        if (entry.source == DayLogSource.CHILD) Text(stringResource(R.string.daylog_source_child), style = MaterialTheme.typography.labelSmall)
+                    }
                 } }
             }
             item { Spacer(Modifier.height(24.dp)) }

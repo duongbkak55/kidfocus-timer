@@ -2,12 +2,15 @@ package com.kidfocus.timer.ui.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import com.kidfocus.timer.data.repository.DayLogRepository
+import com.kidfocus.timer.data.cloud.CloudAccount
+import com.kidfocus.timer.data.cloud.FirebaseAccountRepository
 import com.kidfocus.timer.data.remote.*
 import com.kidfocus.timer.domain.daylog.*
 import com.kidfocus.timer.domain.model.*
 import com.kidfocus.timer.domain.schedule.ScheduleAnchors
 import io.mockk.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.*
 import org.junit.*
 import org.junit.Assert.*
@@ -18,6 +21,7 @@ class QuickDayLogViewModelTest {
     private val dispatcher=StandardTestDispatcher()
     private val logs=mockk<DayLogRepository>(relaxed=true)
     private val logger=mockk<ScheduleLogger>()
+    private val account=mockk<FirebaseAccountRepository>()
     private val today=LocalDate.parse("2026-09-29")
     private val task=ScheduledTask(42,TaskType.HOMEWORK,"Homework","x",19,0,(1..7).toSet(),30,5)
     private val data=DayLogData("child",listOf(task),ScheduleAnchors())
@@ -28,7 +32,8 @@ class QuickDayLogViewModelTest {
         coEvery { logger.log(any()) } returns ScheduleLogReply(DayLogPreview(listOf(
             DayLogCandidate(today,"p0","Homework",DayLogCategory.STUDY,1140,1170,.9),
             DayLogCandidate(today,null,"Extra",DayLogCategory.OTHER,1200,null,.4)),listOf("Confirm extra time")),AiUsage(9,9,false))
-        vm=QuickDayLogViewModel(logger,logs);vm.context("child",today);vm.editText("Làm bài lúc 19h, chơi lúc 20h")
+        every { account.account } returns MutableStateFlow(CloudAccount(configured=true,userId="test"))
+        vm=QuickDayLogViewModel(logger,logs,account);vm.context("child",today);vm.editText("Làm bài lúc 19h, chơi lúc 20h")
     }
     @After fun close() { vm.viewModelScope.cancel();Dispatchers.resetMain() }
     @Test fun previewSelectionSaveSourceAiAndUndoBatchUseTheFrozenProfileAndTask()=runTest(dispatcher) {
@@ -55,6 +60,12 @@ class QuickDayLogViewModelTest {
         vm.preview(data.copy(profileId=null),today);coVerify(exactly=0) { logger.log(any()) }
         coEvery { logger.log(any()) } throws IllegalStateException("No network")
         vm.preview(data,today);runCurrent();assertEquals(LogError.NETWORK,vm.state.value.error);assertFalse(vm.state.value.busy)
+        coVerify(exactly=0) { logs.addAiBatch(any()) }
+    }
+    @Test fun appCheckFailureShowsVerificationErrorWithoutSaving()=runTest(dispatcher) {
+        coEvery { logger.log(any()) } throws AiAppVerificationException(IllegalStateException())
+        vm.preview(data,today);runCurrent()
+        assertEquals(LogError.APP_VERIFY,vm.state.value.error)
         coVerify(exactly=0) { logs.addAiBatch(any()) }
     }
     @Test fun profileSwitchDuringWriteCannotExposeTheOtherChildUndoAndStaleUndoPreservesBatch()=runTest(dispatcher) {

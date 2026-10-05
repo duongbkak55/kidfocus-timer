@@ -50,6 +50,7 @@ internal fun ScheduleAdvicePanel(current: SmartScheduleUiState, busy: Boolean, a
     advice.error?.let { error -> Text(stringResource(when (error) {
         AdviceError.QUOTA -> R.string.advise_quota
         AdviceError.SIGN_IN -> R.string.quick_sign_in
+        AdviceError.APP_VERIFY -> R.string.ai_app_verify
         AdviceError.DISABLED -> R.string.advise_disabled
         AdviceError.STALE -> R.string.advise_stale
         AdviceError.APPLY -> R.string.smart_error
