@@ -3,7 +3,7 @@ package com.kidfocus.timer.domain.daylog
 import java.time.LocalDate
 import java.util.UUID
 
-enum class DayLogSource { TIMER, ROUTINE, MANUAL, AI, CHILD }
+enum class DayLogSource { TIMER, ROUTINE, MANUAL, AI, CHILD, SKIP }
 
 fun dayLogSourceOrManual(value: String): DayLogSource =
     DayLogSource.entries.firstOrNull { it.name == value } ?: DayLogSource.MANUAL
@@ -29,6 +29,7 @@ data class DayLogEntry(
         require(name.isNotBlank() && name.length <= 80)
         require(startMinute in 0..1439 && (endMinute == null || endMinute in 0..1439))
         require(taskId == null || taskId > 0)
+        if (source == DayLogSource.SKIP) require(taskId != null && endMinute == null)
         require(createdAt > 0 && updatedAt >= createdAt)
     }
     val durationMinutes: Int? get() = endMinute?.let { if (it < startMinute) it + 1440 - startMinute else it - startMinute }

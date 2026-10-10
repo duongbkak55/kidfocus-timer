@@ -10,6 +10,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.kidfocus.timer.R
 import com.kidfocus.timer.domain.daylog.DayLogCategory
+import com.kidfocus.timer.domain.daylog.ActualScheduleAdvisor
 import com.kidfocus.timer.domain.model.ScheduledTask
 import com.kidfocus.timer.ui.viewmodel.*
 import com.kidfocus.timer.ui.components.ScheduleExactAlarmReminder
@@ -22,6 +23,7 @@ fun DayLogsScreen(
     alarmPermission: ScheduleAlarmPermissionViewModel = androidx.hilt.navigation.compose.hiltViewModel(),
     dayLogs: DayLogViewModel = androidx.hilt.navigation.compose.hiltViewModel(),
     onCompare: () -> Unit = {},
+    onTimingReview: () -> Unit = {},
     onEditPlan: () -> Unit = {},
     quickEntry: @Composable (DayLogData, LocalDate) -> Unit = { data, date ->
         val log: QuickDayLogViewModel = androidx.hilt.navigation.compose.hiltViewModel()
@@ -52,6 +54,10 @@ fun DayLogsScreen(
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 TextButton(onClick = onEditPlan) { Text(stringResource(R.string.daylog_edit_plan)) }
                 TextButton(onClick = onCompare) { Text(stringResource(R.string.daylog_compare_title)) }
+            }
+            TextButton(onClick = onTimingReview,
+                enabled = ActualScheduleAdvisor.hasTimingEvidence(data.anchors, data.entries)) {
+                Text(stringResource(R.string.daylog_timing_review))
             }
             quickEntry(data, date)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {

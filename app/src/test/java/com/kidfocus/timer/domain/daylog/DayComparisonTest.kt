@@ -2,6 +2,8 @@ package com.kidfocus.timer.domain.daylog
 
 import com.kidfocus.timer.domain.model.*
 import com.kidfocus.timer.domain.schedule.*
+import com.kidfocus.timer.data.daylog.toDayLogCloud
+import com.kidfocus.timer.data.daylog.dayLogFromCloud
 import org.junit.Assert.*
 import org.junit.Test
 import java.time.*
@@ -46,6 +48,24 @@ class DayComparisonTest {
     @Test fun openTimerIsNotCompletedAndTombstonesDoNotCountAsData() {
         assertEquals(0, week(listOf(entry(1080, null))).summary.completedPercent)
         assertEquals(0, week(listOf(entry(1080, 1110).copy(deleted = true))).summary.recordedDays)
+    }
+    @Test fun skipMarksOnlyTodaysOccurrenceAndCanBeUndoneWithoutChangingWeeklyPlan() {
+        val skip = entry(1080, null).copy(source = DayLogSource.SKIP)
+        skip.validate()
+        assertEquals(skip, dayLogFromCloud(skip.id, skip.toDayLogCloud()))
+        val result = week(listOf(skip))
+        assertEquals(DayComparisonStatus.SKIPPED, result.days[0].rows.single().status)
+        assertTrue(result.days[0].incidental.isEmpty())
+        assertEquals(0, result.summary.completedPercent)
+        val another = task.copy(id = 43, hour = 20)
+        val twoTasks = week(listOf(skip), listOf(task, another)).days[0].rows
+        assertEquals(DayComparisonStatus.NO_DATA, twoTasks.single { it.plan.taskId == 43L }.status)
+        assertEquals(DayComparisonStatus.NO_DATA,
+            compareWeek(monday.plusWeeks(1), listOf(task), ScheduleAnchors(), listOf(skip),
+                today = monday.plusWeeks(2)).days[0].rows.single().status)
+        assertEquals(DayComparisonStatus.NO_DATA, week(listOf(skip.copy(deleted = true))).days[0].rows.single().status)
+        assertEquals(DayComparisonStatus.ON_TIME, week(listOf(skip, entry(1080, 1110))).days[0].rows.single().status)
+        assertEquals(1, planForDate(monday.plusWeeks(1), listOf(task), ScheduleAnchors()).size)
     }
     @Test fun futureTasksOnRecordedTodayAreNotMissed() {
         val result = compareWeek(monday, listOf(task), ScheduleAnchors(), listOf(entry(600, 610, taskId = null)), monday, 700)

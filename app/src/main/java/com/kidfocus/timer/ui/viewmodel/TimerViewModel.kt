@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.kidfocus.timer.domain.model.TimerPhase
 import com.kidfocus.timer.domain.model.FocusTimePolicy
 import com.kidfocus.timer.domain.model.TimerState
+import com.kidfocus.timer.domain.daylog.DayLogCategory
 import com.kidfocus.timer.data.repository.RoutineRepository
 import com.kidfocus.timer.service.RoutineAlarmScheduler
 import com.kidfocus.timer.service.RoutineNotificationManager
@@ -120,34 +121,38 @@ class TimerViewModel @Inject constructor(
     // ---- Timer control -------------------------------------------------------------------------
 
     /** Starts a focus countdown of [totalSeconds] seconds. */
-    fun startFocus(totalSeconds: Int) {
+    fun startFocusForActivity(name: String, totalSeconds: Int) {
+        require(name.isNotBlank())
         linkedRoutineId = null
         linkedOccurrenceDate = null
-        startFocusInternal(totalSeconds)
+        startFocusInternal(totalSeconds, activityName = name.trim().take(80), category = DayLogCategory.OTHER)
     }
 
     /** Starts a focus timer that completes the linked routine only after the timer finishes. */
-    fun startFocusForRoutine(routineId: Long, occurrenceDate: LocalDate, totalSeconds: Int) {
+    fun startFocusForRoutine(routineId: Long, occurrenceDate: LocalDate, totalSeconds: Int, activityName: String) {
         linkedRoutineId = routineId
         linkedOccurrenceDate = occurrenceDate
-        startFocusInternal(totalSeconds)
+        startFocusInternal(totalSeconds, activityName = activityName, category = DayLogCategory.ROUTINE)
     }
 
-    fun startFocusForTask(task: com.kidfocus.timer.domain.model.ScheduledTask) {
+    fun startFocusForTask(task: com.kidfocus.timer.domain.model.ScheduledTask, totalSeconds: Int = task.focusDurationMinutes * 60) {
         linkedRoutineId = null
         linkedOccurrenceDate = null
-        startFocusInternal(task.focusDurationMinutes * 60, task.id)
+        startFocusInternal(totalSeconds, task.id, task.name, DayLogCategory.valueOf(task.taskType.category.name))
     }
 
-    private fun startFocusInternal(totalSeconds: Int, taskId: Long? = null) {
+    private fun startFocusInternal(totalSeconds: Int, taskId: Long? = null, activityName: String? = null,
+        category: DayLogCategory = DayLogCategory.OTHER) {
         lastRecordedTotalSeconds = -1
         awaitingPhase = TimerPhase.Focus
         _completedSessionMinutes.value = 0
         ensureServiceStarted()
-        timerBinder?.startFocus(totalSeconds, taskId) ?: startServiceWithAction(
+        timerBinder?.startFocus(totalSeconds, taskId, activityName, category) ?: startServiceWithAction(
             action = TimerService.ACTION_START_FOCUS,
             totalSeconds = totalSeconds,
             taskId = taskId,
+            activityName = activityName,
+            category = category,
         )
     }
 
@@ -203,11 +208,14 @@ class TimerViewModel @Inject constructor(
         context.startForegroundService(intent)
     }
 
-    private fun startServiceWithAction(action: String, totalSeconds: Int, taskId: Long? = null) {
+    private fun startServiceWithAction(action: String, totalSeconds: Int, taskId: Long? = null,
+        activityName: String? = null, category: DayLogCategory = DayLogCategory.OTHER) {
         val intent = Intent(context, TimerService::class.java).apply {
             this.action = action
             putExtra(TimerService.EXTRA_TOTAL_SECONDS, totalSeconds)
             taskId?.let { putExtra(TimerService.EXTRA_TASK_ID, it) }
+            activityName?.let { putExtra(TimerService.EXTRA_ACTIVITY_NAME, it) }
+            putExtra(TimerService.EXTRA_ACTIVITY_CATEGORY, category.name)
         }
         context.startForegroundService(intent)
     }

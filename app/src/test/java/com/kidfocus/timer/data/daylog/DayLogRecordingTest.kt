@@ -67,6 +67,17 @@ class DayLogRecordingTest {
         recorder.start(null,"Break",4000,zone,record=false)
         assertEquals(1,db.dayLogDao().getAll().size)
     }
+    @Test fun namedOneOffFocusIsRecordedForTodayWithoutChangingTheWeeklyPlan() = runTest {
+        recorder.start(null, "Draw a picture", millis("2026-09-28T17:00:00"), zone)
+        recorder.finish(millis("2026-09-28T17:20:00"), zone)
+        val entry = db.dayLogDao().getAll().single().toEntry()
+        assertEquals("Draw a picture", entry.name)
+        assertEquals(DayLogSource.TIMER, entry.source)
+        assertEquals(DayLogCategory.OTHER, entry.category)
+        assertEquals(20, entry.durationMinutes)
+        assertNull(entry.taskId)
+        assertTrue(db.scheduledTaskDao().getAllForSync().isEmpty())
+    }
     @Test fun startingAnotherTimerClosesTheOldOneAndManualEditsAndDeletesStayAuthoritative() = runTest {
         recorder.start(null,"First",1000,zone)
         recorder.start(null,"Second",61000,zone)

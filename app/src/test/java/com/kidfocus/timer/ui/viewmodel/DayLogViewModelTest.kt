@@ -7,6 +7,9 @@ import com.kidfocus.timer.data.schedule.ScheduleAnchorsRepository
 import com.kidfocus.timer.data.daylog.DayLogSyncManager
 import com.kidfocus.timer.domain.daylog.*
 import com.kidfocus.timer.domain.schedule.ScheduleAnchors
+import com.kidfocus.timer.domain.schedule.DayCodec
+import com.kidfocus.timer.domain.model.ScheduledTask
+import com.kidfocus.timer.domain.model.TaskType
 import io.mockk.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,6 +25,8 @@ class DayLogViewModelTest {
     private val profiles=mockk<ChildProfileRepository>()
     private val active=MutableStateFlow("default")
     private val rows=MutableStateFlow(listOf(ChildProfileEntity.default(),ChildProfileEntity.default().copy(id="other")))
+    private val taskRows=MutableStateFlow<List<ScheduledTask>>(emptyList())
+    private val entryRows=MutableStateFlow<List<DayLogEntry>>(emptyList())
     private lateinit var vm: DayLogViewModel
     private val plan=DayPlanItem("task:42",LocalDate.parse("2026-09-28"),42,"Homework",DayLogCategory.STUDY,1080,30)
     @Before fun setup() {
@@ -29,9 +34,9 @@ class DayLogViewModelTest {
         every { profiles.activeProfileId } returns active
         every { profiles.profiles } returns rows
         coEvery { logs.activeProfileId() } coAnswers { active.value.takeIf { rows.value.any { p -> p.id == it } } }
-        every { logs.observe(any()) } returns MutableStateFlow(emptyList())
+        every { logs.observe(any()) } returns entryRows
         val tasks=mockk<ScheduledTaskRepository>()
-        every { tasks.allTasks } returns MutableStateFlow(emptyList())
+        every { tasks.allTasks } returns taskRows
         val anchors=mockk<ScheduleAnchorsRepository>()
         every { anchors.all } returns MutableStateFlow(mapOf("default" to ScheduleAnchors()))
         val sync=mockk<DayLogSyncManager>()
@@ -63,5 +68,25 @@ class DayLogViewModelTest {
         coVerify { logs.delete(entry.id,"default") }
         rows.value=emptyList();runCurrent();vm.openNew(DayLogCategory.SLEEP,"Sleep")
         assertNull(vm.draft.value);assertEquals(DayLogError.NO_PROFILE,vm.error.value)
+    }
+    @Test fun skipTodayPersistsOnceAndUndoDeletesOnlyTheSkipMarker()=runTest(dispatcher) {
+        val task=ScheduledTask(id=42,taskType=TaskType.HOMEWORK,name="Homework",emoji="x",hour=18,minute=0,
+            daysOfWeek=setOf(DayCodec.toCalendar(LocalDate.now().dayOfWeek)),focusDurationMinutes=30,breakDurationMinutes=5)
+        taskRows.value=listOf(task)
+        runCurrent()
+        vm.skipTaskToday(task)
+        vm.skipTaskToday(task)
+        runCurrent()
+        val saved=slot<DayLogEntry>()
+        coVerify(exactly=1) { logs.add(capture(saved)) }
+        assertEquals(DayLogSource.SKIP,saved.captured.source)
+        assertEquals(LocalDate.now(),saved.captured.date)
+        assertEquals(42L,saved.captured.taskId)
+        assertNull(saved.captured.endMinute)
+        entryRows.value=listOf(saved.captured)
+        runCurrent()
+        vm.undoSkip(saved.captured)
+        runCurrent()
+        coVerify(exactly=1) { logs.delete(saved.captured.id,"default") }
     }
 }

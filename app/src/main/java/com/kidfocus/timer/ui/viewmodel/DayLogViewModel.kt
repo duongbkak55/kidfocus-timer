@@ -8,6 +8,7 @@ import com.kidfocus.timer.data.daylog.DayLogSyncManager
 import com.kidfocus.timer.domain.daylog.*
 import com.kidfocus.timer.domain.model.ScheduledTask
 import com.kidfocus.timer.domain.schedule.ScheduleAnchors
+import com.kidfocus.timer.domain.schedule.DayCodec
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -44,6 +45,7 @@ class DayLogViewModel @Inject constructor(private val logs: DayLogRepository, pr
     val error = _error.asStateFlow()
     private val _saving = MutableStateFlow(false)
     val saving = _saving.asStateFlow()
+    private val pendingSkips = mutableSetOf<Long>()
     val syncError = sync.error
 
     init { viewModelScope.launch { data.map { it.profileId }.distinctUntilChanged().drop(1).collect { cancelEdit() } } }
@@ -72,6 +74,34 @@ class DayLogViewModel @Inject constructor(private val logs: DayLogRepository, pr
     }
     fun cancelEdit() { _draft.value = null; _error.value = null }
     fun clearError() { _error.value = null }
+    fun skipTaskToday(task: ScheduledTask) {
+        val profile = data.value.profileId ?: run { _error.value = DayLogError.NO_PROFILE; return }
+        val today = LocalDate.now()
+        if (task.id <= 0 || task.childProfileId != profile || !task.enabled ||
+            DayCodec.toCalendar(today.dayOfWeek) !in task.daysOfWeek || data.value.entries.any {
+                !it.deleted && it.source == DayLogSource.SKIP && it.date == today && it.taskId == task.id
+            }) return
+        if (!pendingSkips.add(task.id)) return
+        viewModelScope.launch {
+            try {
+                if (logs.activeProfileId() != profile) { _error.value = DayLogError.PROFILE_CHANGED; return@launch }
+                logs.add(DayLogEntry(profileId = profile, date = today, taskId = task.id, name = task.name,
+                    category = DayLogCategory.valueOf(task.taskType.category.name),
+                    startMinute = task.hour * 60 + task.minute, source = DayLogSource.SKIP,
+                    createdAt = System.currentTimeMillis()))
+            } catch (e: Exception) { if (e is kotlinx.coroutines.CancellationException) throw e; _error.value = DayLogError.STORAGE }
+            finally { pendingSkips.remove(task.id) }
+        }
+    }
+    fun undoSkip(entry: DayLogEntry) {
+        if (entry.source != DayLogSource.SKIP || entry.deleted || entry.date != LocalDate.now()) return
+        viewModelScope.launch {
+            try {
+                if (logs.activeProfileId() != entry.profileId) { _error.value = DayLogError.PROFILE_CHANGED; return@launch }
+                logs.delete(entry.id, entry.profileId)
+            } catch (e: Exception) { if (e is kotlinx.coroutines.CancellationException) throw e; _error.value = DayLogError.STORAGE }
+        }
+    }
     fun save(name: String, start: String, end: String, category: DayLogCategory) {
         if (_saving.value) return
         val old = draft.value ?: return

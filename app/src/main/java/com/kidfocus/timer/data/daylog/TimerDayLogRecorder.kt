@@ -19,14 +19,15 @@ class TimerDayLogRecorder @Inject constructor(private val logs: DayLogRepository
     private val mutex = Mutex()
     private var activeId: String? = null
     suspend fun start(taskId: Long?, freeName: String, atMillis: Long = System.currentTimeMillis(),
-        zone: ZoneId = ZoneId.systemDefault(), record: Boolean = true): TimerLogContext = mutex.withLock {
+        zone: ZoneId = ZoneId.systemDefault(), record: Boolean = true,
+        freeCategory: DayLogCategory = DayLogCategory.OTHER): TimerLogContext = mutex.withLock {
         finishLocked(atMillis, zone)
         val profileId = logs.activeProfileId() ?: return@withLock TimerLogContext(null, null)
         if (!record) return@withLock TimerLogContext(profileId, null)
         val task = taskId?.let { id -> tasks.allTasks.first().firstOrNull { it.id == id && it.childProfileId == profileId } }
         val now = Instant.ofEpochMilli(atMillis).atZone(zone)
         val entry = DayLogEntry(profileId = profileId, date = now.toLocalDate(), taskId = task?.id,
-            name = task?.name ?: freeName, category = task?.taskType?.category?.name?.let(DayLogCategory::valueOf) ?: DayLogCategory.STUDY,
+            name = task?.name ?: freeName, category = task?.taskType?.category?.name?.let(DayLogCategory::valueOf) ?: freeCategory,
             startMinute = now.hour * 60 + now.minute, source = DayLogSource.TIMER, createdAt = atMillis)
         logs.add(entry)
         activeId = entry.id

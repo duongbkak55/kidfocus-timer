@@ -174,6 +174,12 @@ fun AppNavigation(
                     timerViewModel.stop()
                     navController.popBackStack()
                 },
+                onTakeBreak = {
+                    timerViewModel.stop()
+                    navController.navigate(NavRoutes.BreakTimer.route) {
+                        popUpTo(NavRoutes.Focus.route) { inclusive = true }
+                    }
+                },
             )
         }
 
@@ -298,8 +304,10 @@ fun AppNavigation(
 
         // ---- Daily Schedule ------------------------------------------------------------------
         composable(NavRoutes.DailySchedule.route) {
+            val dayLogData by dayLogs.data.collectAsState()
             DailyScheduleScreen(
                 viewModel = scheduleViewModel,
+                actualEntries = dayLogData.entries,
                 onChildQuickLog = { navController.navigate(NavRoutes.ChildQuickLog.route) },
                 onActualAndComparison = { date ->
                     dayLogs.selectDate(date)
@@ -317,6 +325,8 @@ fun AppNavigation(
                         navController.navigate(NavRoutes.Focus.route)
                     }
                 },
+                onSkipTask = dayLogs::skipTaskToday,
+                onUndoSkip = dayLogs::undoSkip,
                 onAddTaskAtTime = { hour, minute ->
                     navController.navigate(NavRoutes.TaskEdit.buildRoute(0L, TaskType.CUSTOM.name, hour, minute))
                 },
@@ -334,6 +344,7 @@ fun AppNavigation(
             DayLogsScreen(dayLogs = dayLogs,
                 alarmPermission = alarmPermission, onBack = { navController.popBackStack() },
                 onCompare = { navController.navigate(NavRoutes.WeeklyComparison.route) },
+                onTimingReview = { navController.navigate(NavRoutes.SmartSchedule.route) },
                 onEditPlan = { navController.navigate(NavRoutes.Schedule.route) },
                 onStartTask = { task ->
                     if (task.taskType == TaskType.LEARNING_GAMES) navController.navigate(NavRoutes.LearningHub.route)
@@ -427,6 +438,7 @@ fun AppNavigation(
                             routineId = todayRoutine.routine.id,
                             occurrenceDate = todayRoutine.occurrenceDate,
                             totalSeconds = minutes * 60,
+                            activityName = todayRoutine.routine.title,
                         )
                         navController.navigate(NavRoutes.Focus.route)
                     }

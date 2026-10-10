@@ -19,11 +19,43 @@ data class ActualScheduleResult(val findings: List<Finding>, val stats: ActualSc
 
 /** Seven calendar days; only recorded days and due occurrences can count as missed. */
 object ActualScheduleAdvisor {
+    private fun overlapsSchool(date: LocalDate, startMinute: Int, durationMinutes: Int?, anchors: ScheduleAnchors): Boolean {
+        val start = date.atStartOfDay().plusMinutes(startMinute.toLong())
+        val end = start.plusMinutes((durationMinutes ?: 1).coerceAtLeast(1).toLong())
+        return anchors.school.any { block ->
+            listOf(date.minusDays(1), date, date.plusDays(1)).any { schoolDate ->
+                if (schoolDate.dayOfWeek !in block.days) false else {
+                    val schoolStart = schoolDate.atStartOfDay().plusMinutes(block.start.minutes().toLong())
+                    val endMinute = block.end.minutes() + if (block.end <= block.start) 1440 else 0
+                    val schoolEnd = schoolDate.atStartOfDay().plusMinutes(endMinute.toLong())
+                    start < schoolEnd && end > schoolStart
+                }
+            }
+        }
+    }
+
+    fun hasTimingEvidence(anchors: ScheduleAnchors, entries: List<DayLogEntry>, today: LocalDate = LocalDate.now()): Boolean =
+        entries.any { entry -> !entry.deleted && entry.source != DayLogSource.SKIP &&
+            entry.date in today.minusDays(6)..today && entry.category != DayLogCategory.SCHOOL &&
+            (entry.category == DayLogCategory.SLEEP || entry.category == DayLogCategory.WAKE ||
+                !overlapsSchool(entry.date, entry.startMinute, entry.durationMinutes, anchors)) }
+
     fun evaluate(tasks: List<ScheduledTask>, anchors: ScheduleAnchors, entries: List<DayLogEntry>,
         today: LocalDate = LocalDate.now(), nowMinute: Int = 1439,
         extendedMinutesByLogId: Map<String, Int> = emptyMap()): ActualScheduleResult {
-        val days = compareWeek(today.minusDays(6), tasks, anchors, entries, today, nowMinute).days.filter { it.hasData }
-        val rows = days.flatMap { it.rows }
+        // School hours are fixed context for scheduling, not a measure of the child's own timing.
+        // A school-only log must not turn an otherwise unrecorded day into a missed-task day.
+        val outsideSchool = entries.filter { entry ->
+            entry.category != DayLogCategory.SCHOOL &&
+                (entry.category == DayLogCategory.SLEEP || entry.category == DayLogCategory.WAKE ||
+                    !overlapsSchool(entry.date, entry.startMinute, entry.durationMinutes, anchors))
+        }
+        val days = compareWeek(today.minusDays(6), tasks, anchors, outsideSchool, today, nowMinute).days.filter { it.hasData }
+        val rows = days.flatMap { it.rows }.filter { row ->
+            row.plan.category != DayLogCategory.SCHOOL &&
+                (row.plan.category == DayLogCategory.SLEEP || row.plan.category == DayLogCategory.WAKE ||
+                    !overlapsSchool(row.plan.date, row.plan.startMinute, row.plan.durationMinutes, anchors))
+        }
         val lateBeds = rows.filter { it.plan.category == DayLogCategory.SLEEP && (it.startDelta ?: 0) >= 30 }
         val badBedDates = lateBeds.map { it.plan.date }.distinct()
         val findings = mutableListOf<Finding>()
@@ -35,7 +67,7 @@ object ActualScheduleAdvisor {
                 it.actualDuration!! * 2 > it.plan.durationMinutes * 3 &&
                 it.actualDuration - it.plan.durationMinutes > (it.actual?.takeIf { entry -> entry.source == DayLogSource.TIMER }
                     ?.let { entry -> extendedMinutesByLogId[entry.id] } ?: 0) }
-            val missed = occurrences.filter { it.status == DayComparisonStatus.MISSED }
+            val missed = occurrences.filter { it.status == DayComparisonStatus.MISSED || it.status == DayComparisonStatus.SKIPPED }
             if (overrun.size >= 3) findings += Finding(RuleId.TASK_OVERRUN, Severity.MEDIUM,
                 overrun.map { it.plan.date.dayOfWeek }.toSet(), setOf(id), mapOf("count" to overrun.size))
             if (missed.size >= 3) findings += Finding(RuleId.OFTEN_SKIPPED, Severity.MEDIUM,

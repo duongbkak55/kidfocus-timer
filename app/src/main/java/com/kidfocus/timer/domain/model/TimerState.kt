@@ -18,6 +18,7 @@ data class TimerState(
     val isPaused: Boolean = false,
     val completedFocusSessions: Int = 0,
     val extendedMinutes: Int = 0,
+    val activityName: String? = null,
 ) {
     /** Progress from 0.0 (start) to 1.0 (complete). */
     val progress: Float
