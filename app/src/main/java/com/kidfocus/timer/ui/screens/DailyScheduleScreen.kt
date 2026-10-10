@@ -207,6 +207,9 @@ fun DailyScheduleScreen(
                                     recorded = actualEntries.any { !it.deleted && it.source != DayLogSource.SKIP && it.taskId == task.id && it.endMinute != null &&
                                         it.date == java.time.LocalDate.of(displayCal.get(Calendar.YEAR), displayCal.get(Calendar.MONTH) + 1,
                                             displayCal.get(Calendar.DAY_OF_MONTH)) },
+                                    completed = actualEntries.any { !it.deleted && it.source == DayLogSource.TIMER_DONE &&
+                                        it.taskId == task.id && it.date == java.time.LocalDate.of(displayCal.get(Calendar.YEAR),
+                                            displayCal.get(Calendar.MONTH) + 1, displayCal.get(Calendar.DAY_OF_MONTH)) },
                                     inProgress = actualEntries.any { !it.deleted && it.source == DayLogSource.TIMER &&
                                         it.taskId == task.id && it.endMinute == null &&
                                         it.date == java.time.LocalDate.of(displayCal.get(Calendar.YEAR), displayCal.get(Calendar.MONTH) + 1,
@@ -310,6 +313,7 @@ private fun TimelineTaskItem(
     isPast: Boolean,
     isCurrent: Boolean,
     recorded: Boolean,
+    completed: Boolean,
     inProgress: Boolean,
     skipEntry: DayLogEntry?,
     onStart: () -> Unit,
@@ -384,8 +388,8 @@ private fun TimelineTaskItem(
                     TaskVisual(
                         photoUri = task.photoUri,
                         emoji = task.emoji,
-                        modifier = Modifier.size(40.dp),
-                        emojiSize = 22.sp,
+                        modifier = Modifier.size(48.dp),
+                        emojiSize = 28.sp,
                     )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
@@ -418,7 +422,9 @@ private fun TimelineTaskItem(
                         style = MaterialTheme.typography.bodySmall,
                         color = colors.onBackground.copy(alpha = 0.5f * alpha),
                     )
-                    if (recorded) Text(stringResource(R.string.daily_recorded),
+                    if (completed) Text(stringResource(R.string.daily_completed),
+                        style = MaterialTheme.typography.labelSmall, color = colors.primary)
+                    else if (recorded) Text(stringResource(R.string.daily_recorded),
                         style = MaterialTheme.typography.labelSmall, color = colors.primary)
                     if (inProgress) Text(stringResource(R.string.daily_in_progress),
                         style = MaterialTheme.typography.labelSmall, color = colors.primary)

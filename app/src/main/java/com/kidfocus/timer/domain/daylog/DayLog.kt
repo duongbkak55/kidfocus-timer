@@ -3,7 +3,7 @@ package com.kidfocus.timer.domain.daylog
 import java.time.LocalDate
 import java.util.UUID
 
-enum class DayLogSource { TIMER, ROUTINE, MANUAL, AI, CHILD, SKIP }
+enum class DayLogSource { TIMER, TIMER_DONE, ROUTINE, MANUAL, AI, CHILD, SKIP }
 
 fun dayLogSourceOrManual(value: String): DayLogSource =
     DayLogSource.entries.firstOrNull { it.name == value } ?: DayLogSource.MANUAL

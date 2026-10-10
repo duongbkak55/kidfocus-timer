@@ -34,13 +34,13 @@ import com.kidfocus.timer.ui.viewmodel.SettingsViewModel
 /**
  * Celebration screen with confetti overlay, shown after a focus session completes.
  *
- * @param focusMinutes Minutes focused in the session just completed.
+ * @param focusSeconds Actual seconds focused in the session just completed.
  * @param onStartBreak Navigate to the break timer.
  * @param onGoHome Navigate back to the home screen.
  */
 @Composable
 fun CelebrationScreen(
-    focusMinutes: Int,
+    focusSeconds: Int,
     settingsViewModel: SettingsViewModel,
     onStartBreak: () -> Unit,
     onGoHome: () -> Unit,
@@ -84,7 +84,11 @@ fun CelebrationScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = stringResource(R.string.celebration_focused_format, focusMinutes),
+                text = if (focusSeconds % 60 == 0) {
+                    stringResource(R.string.celebration_focused_format, focusSeconds / 60)
+                } else {
+                    stringResource(R.string.celebration_focused_seconds_format, focusSeconds / 60, focusSeconds % 60)
+                },
                 style = MaterialTheme.typography.titleLarge,
                 color = colors.onBackground,
                 fontWeight = FontWeight.SemiBold,

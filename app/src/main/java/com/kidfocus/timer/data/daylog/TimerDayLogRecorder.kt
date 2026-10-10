@@ -33,13 +33,14 @@ class TimerDayLogRecorder @Inject constructor(private val logs: DayLogRepository
         activeId = entry.id
         TimerLogContext(profileId, task?.id, entry.id)
     }
-    suspend fun finish(atMillis: Long = System.currentTimeMillis(), zone: ZoneId = ZoneId.systemDefault()) = mutex.withLock {
-        finishLocked(atMillis, zone)
+    suspend fun finish(atMillis: Long = System.currentTimeMillis(), zone: ZoneId = ZoneId.systemDefault(),
+        completed: Boolean = false) = mutex.withLock {
+        finishLocked(atMillis, zone, completed)
     }
-    private suspend fun finishLocked(atMillis: Long, zone: ZoneId) {
+    private suspend fun finishLocked(atMillis: Long, zone: ZoneId, completed: Boolean = false) {
         val id = activeId ?: return
         val now = Instant.ofEpochMilli(atMillis).atZone(zone)
-        logs.finishTimer(id, now.hour * 60 + now.minute, atMillis)
+        logs.finishTimer(id, now.hour * 60 + now.minute, atMillis, completed)
         activeId = null
     }
 }

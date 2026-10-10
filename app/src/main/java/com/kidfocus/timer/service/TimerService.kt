@@ -24,6 +24,7 @@ import com.kidfocus.timer.R
 import com.kidfocus.timer.data.datastore.SettingsDataStore
 import com.kidfocus.timer.domain.model.TimerPhase
 import com.kidfocus.timer.domain.model.FocusTimePolicy
+import com.kidfocus.timer.domain.model.EarlyFocusCompletion
 import com.kidfocus.timer.domain.model.TimerState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -91,6 +92,7 @@ class TimerService : Service() {
         fun pause() = this@TimerService.pauseTimer()
         fun resume() = this@TimerService.resumeTimer()
         fun extendFocus(minutes: Int) = this@TimerService.extendFocus(minutes)
+        fun completeEarly() = this@TimerService.completeEarly()
         fun stop() = this@TimerService.stopTimer()
     }
 
@@ -146,6 +148,7 @@ class TimerService : Service() {
             ACTION_PAUSE -> pauseTimer()
             ACTION_RESUME -> resumeTimer()
             ACTION_EXTEND_FOCUS -> extendFocus(intent.getIntExtra(EXTRA_EXTEND_MINUTES, 0))
+            ACTION_COMPLETE_EARLY -> completeEarly()
             ACTION_STOP -> stopTimer()
         }
         return START_STICKY
@@ -266,10 +269,21 @@ class TimerService : Service() {
         stopSelf()
     } }
 
-    private suspend fun onPhaseCompleted(phase: TimerPhase, previousCompletedSessions: Int) {
-        safeFinishLog()
+    private fun completeEarly() { commands.trySend {
+        val state = _timerState.value
+        val elapsed = EarlyFocusCompletion.elapsedSeconds(state) ?: return@trySend
+        countdownJob?.cancel()
+        countdownJob = null
+        countdownGeneration++
+        onPhaseCompleted(TimerPhase.Focus, state.completedFocusSessions, elapsed)
+    } }
+
+    private suspend fun onPhaseCompleted(phase: TimerPhase, previousCompletedSessions: Int,
+        actualDurationSeconds: Int? = null) {
+        safeFinishLog(completed = phase.isFocus)
+        val durationSeconds = actualDurationSeconds ?: _timerState.value.totalSeconds
         try {
-            if (logContext.profileId != null) recordSession(_timerState.value.totalSeconds, phase.isFocus, scheduledTaskId = logContext.taskId, profileId = logContext.profileId)
+            if (logContext.profileId != null) recordSession(durationSeconds, phase.isFocus, scheduledTaskId = logContext.taskId, profileId = logContext.profileId)
         } catch (e: Exception) { if (e is kotlinx.coroutines.CancellationException) throw e; android.util.Log.w("KidFocusTimer", "SESSION_RECORD_FAILED") }
         val newCompletedCount = if (phase.isFocus) previousCompletedSessions + 1
         else previousCompletedSessions
@@ -277,6 +291,7 @@ class TimerService : Service() {
         _timerState.update {
             it.copy(
                 remainingSeconds = 0,
+                totalSeconds = durationSeconds,
                 isRunning = false,
                 isPaused = false,
                 completedFocusSessions = newCompletedCount,
@@ -307,8 +322,8 @@ class TimerService : Service() {
         com.kidfocus.timer.data.daylog.TimerLogContext(null, null)
     }
 
-    private suspend fun safeFinishLog() {
-        try { dayLogRecorder.finish() }
+    private suspend fun safeFinishLog(completed: Boolean = false) {
+        try { dayLogRecorder.finish(completed = completed) }
         catch (e: Exception) { if (e is kotlinx.coroutines.CancellationException) throw e; android.util.Log.w("KidFocusTimer", "DAY_LOG_END_FAILED") }
     }
 
@@ -453,6 +468,7 @@ class TimerService : Service() {
         const val ACTION_PAUSE = "com.kidfocus.timer.ACTION_PAUSE"
         const val ACTION_RESUME = "com.kidfocus.timer.ACTION_RESUME"
         const val ACTION_EXTEND_FOCUS = "com.kidfocus.timer.ACTION_EXTEND_FOCUS"
+        const val ACTION_COMPLETE_EARLY = "com.kidfocus.timer.ACTION_COMPLETE_EARLY"
         const val ACTION_STOP = "com.kidfocus.timer.ACTION_STOP"
         const val EXTRA_TASK_ID = "extra_scheduled_task_id"
         const val EXTRA_ACTIVITY_NAME = "extra_activity_name"

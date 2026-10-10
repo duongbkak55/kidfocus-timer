@@ -47,6 +47,12 @@
     <string name="focus_take_break_confirm_title">Nghỉ ngay?</string>
     <string name="focus_take_break_confirm_body">Lượt tập trung hiện tại sẽ kết thúc. Thời gian đã tập vẫn được ghi vào Thực tế.</string>
     <string name="focus_take_break_confirm_action">Kết thúc và nghỉ</string>
+    <string name="focus_finish_early">Xong sớm</string>
+    <string name="focus_take_break_short">Nghỉ ngay</string>
+    <string name="focus_finish_early_confirm_title">Đã làm xong hoạt động?</string>
+    <string name="focus_finish_early_confirm_body">Kết thúc lượt tập trung, ghi thời gian thực tế và đánh dấu hoạt động hoàn thành.</string>
+    <string name="focus_finish_early_confirm_action">Hoàn thành</string>
+    <string name="daily_completed">Đã hoàn thành</string>
     <string name="daily_recorded">Đã ghi thực tế</string>
     <string name="daily_in_progress">Đang tập trung</string>
     <string name="daily_skip_today">Bỏ qua hôm nay</string>
@@ -86,6 +92,7 @@
     <!-- Celebration screen -->
     <string name="celebration_title">Tuyệt vời!</string>
     <string name="celebration_focused_format">Bạn vừa tập trung %d phút!</string>
+    <string name="celebration_focused_seconds_format">Bạn vừa tập trung %1$d phút %2$d giây!</string>
     <string name="celebration_praise">Bạn thật giỏi! Hãy tiếp tục phát huy nhé!</string>
     <string name="celebration_take_break_format">Nghỉ %d phút</string>
     <string name="celebration_go_home">Về trang chủ</string>

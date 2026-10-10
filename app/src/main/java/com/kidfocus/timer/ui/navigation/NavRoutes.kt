@@ -23,9 +23,9 @@ sealed class NavRoutes(val route: String) {
     /** Active break countdown screen. */
     data object BreakTimer : NavRoutes("break_timer")
 
-    /** Celebration screen shown after a focus session completes. Receives focused minutes. */
-    data object Celebration : NavRoutes("celebration/{$ARG_MINUTES}") {
-        fun buildRoute(minutes: Int) = "celebration/$minutes"
+    /** Celebration screen shown after a focus session completes. Receives actual focused seconds. */
+    data object Celebration : NavRoutes("celebration/{$ARG_SECONDS}") {
+        fun buildRoute(seconds: Int) = "celebration/$seconds"
     }
 
     /** Color theme picker screen. */
@@ -96,7 +96,7 @@ sealed class NavRoutes(val route: String) {
     data object ChildProfileSettings : NavRoutes("child_profile_settings")
 
     companion object {
-        const val ARG_MINUTES = "minutes"
+        const val ARG_SECONDS = "seconds"
         const val ARG_DESTINATION = "destination"
         const val ARG_TASK_ID = "task_id"
         const val ARG_TASK_TYPE = "task_type"

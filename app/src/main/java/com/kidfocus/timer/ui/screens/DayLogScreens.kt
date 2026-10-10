@@ -93,7 +93,7 @@ fun DayLogTimeline(viewModel: DayLogViewModel, onEdit: () -> Unit, onStart: (Sch
                                     if (end < entry.startMinute) stringResource(R.string.daylog_next_day_end, logTime(end))
                                     else stringResource(R.string.daylog_end_at, logTime(end))
                                 } ?: stringResource(R.string.daylog_open), style = MaterialTheme.typography.bodySmall)
-                                Text(stringResource(when(entry.source) { DayLogSource.TIMER -> R.string.daylog_source_timer; DayLogSource.ROUTINE -> R.string.daylog_source_routine; DayLogSource.MANUAL -> R.string.daylog_source_manual; DayLogSource.AI -> R.string.daylog_source_ai; DayLogSource.CHILD -> R.string.daylog_source_child; DayLogSource.SKIP -> R.string.daily_skipped_today }), style = MaterialTheme.typography.labelSmall)
+                                Text(stringResource(when(entry.source) { DayLogSource.TIMER -> R.string.daylog_source_timer; DayLogSource.TIMER_DONE -> R.string.daily_completed; DayLogSource.ROUTINE -> R.string.daylog_source_routine; DayLogSource.MANUAL -> R.string.daylog_source_manual; DayLogSource.AI -> R.string.daylog_source_ai; DayLogSource.CHILD -> R.string.daylog_source_child; DayLogSource.SKIP -> R.string.daily_skipped_today }), style = MaterialTheme.typography.labelSmall)
                             }
                         }
                     }

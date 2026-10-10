@@ -42,6 +42,12 @@
     <string name="focus_take_break_confirm_title">Take a break now?</string>
     <string name="focus_take_break_confirm_body">This focus session will end. The time spent focusing will still appear in the actual log.</string>
     <string name="focus_take_break_confirm_action">End and take a break</string>
+    <string name="focus_finish_early">Done early</string>
+    <string name="focus_take_break_short">Take a break</string>
+    <string name="focus_finish_early_confirm_title">Finished this activity?</string>
+    <string name="focus_finish_early_confirm_body">End the focus session, record the actual time, and mark the activity complete.</string>
+    <string name="focus_finish_early_confirm_action">Complete</string>
+    <string name="daily_completed">Completed</string>
     <string name="daily_recorded">Recorded in actual log</string>
     <string name="daily_in_progress">Focusing now</string>
     <string name="daily_skip_today">Skip today</string>
@@ -76,6 +82,7 @@
     <string name="break_tip">You can do something you enjoy during this break</string>
     <string name="celebration_title">Great job!</string>
     <string name="celebration_focused_format">You focused for %d minutes!</string>
+    <string name="celebration_focused_seconds_format">You focused for %1$d min %2$d sec!</string>
     <string name="celebration_praise">You did wonderfully! Keep it up!</string>
     <string name="celebration_take_break_format">Rest for %d minutes</string>
     <string name="celebration_go_home">Go home</string>

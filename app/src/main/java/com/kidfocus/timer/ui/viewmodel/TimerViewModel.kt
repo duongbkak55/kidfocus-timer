@@ -48,12 +48,12 @@ class TimerViewModel @Inject constructor(
     val timerState: StateFlow<TimerState> = _timerState.asStateFlow()
 
     /**
-     * Emits the total minutes of the session that just completed.
+     * Emits the actual seconds of the session that just completed.
      * Consumed by the navigation layer to route to the Celebration screen.
      * Reset to 0 after consumption with [consumeCompletedSession].
      */
-    private val _completedSessionMinutes = MutableStateFlow(0)
-    val completedSessionMinutes: StateFlow<Int> = _completedSessionMinutes.asStateFlow()
+    private val _completedSessionSeconds = MutableStateFlow(0)
+    val completedSessionSeconds: StateFlow<Int> = _completedSessionSeconds.asStateFlow()
 
     // ---- Service binding -----------------------------------------------------------------------
 
@@ -90,12 +90,12 @@ class TimerViewModel @Inject constructor(
         if (awaitingPhase == state.phase && state.remainingSeconds > 0) awaitingPhase = null
         _timerState.update { state }
 
-        // Emit completion feedback only once after a natural finish (not a manual stop).
+        // Emit completion feedback only once after natural or early completion, never manual stop.
         if (state.isFinished && state.totalSeconds != lastRecordedTotalSeconds) {
             lastRecordedTotalSeconds = state.totalSeconds
             viewModelScope.launch {
                 if (state.phase.isFocus) {
-                    _completedSessionMinutes.update { state.totalSeconds / 60 }
+                    _completedSessionSeconds.value = state.totalSeconds
                     completeLinkedRoutineIfNeeded()
                 }
             }
@@ -145,7 +145,7 @@ class TimerViewModel @Inject constructor(
         category: DayLogCategory = DayLogCategory.OTHER) {
         lastRecordedTotalSeconds = -1
         awaitingPhase = TimerPhase.Focus
-        _completedSessionMinutes.value = 0
+        _completedSessionSeconds.value = 0
         ensureServiceStarted()
         timerBinder?.startFocus(totalSeconds, taskId, activityName, category) ?: startServiceWithAction(
             action = TimerService.ACTION_START_FOCUS,
@@ -160,7 +160,7 @@ class TimerViewModel @Inject constructor(
     fun startBreak(totalSeconds: Int) {
         lastRecordedTotalSeconds = -1
         awaitingPhase = TimerPhase.Break
-        _completedSessionMinutes.value = 0
+        _completedSessionSeconds.value = 0
         ensureServiceStarted()
         timerBinder?.startBreak(totalSeconds) ?: startServiceWithAction(
             action = TimerService.ACTION_START_BREAK,
@@ -189,16 +189,22 @@ class TimerViewModel @Inject constructor(
         }
     }
 
+    /** Marks the linked activity complete, retaining only the time actually focused. */
+    fun completeEarly() {
+        timerBinder?.completeEarly() ?: sendServiceAction(TimerService.ACTION_COMPLETE_EARLY)
+    }
+
     /** Stops the timer and resets to idle. */
     fun stop() {
         awaitingPhase = null
+        _completedSessionSeconds.value = 0
         timerBinder?.stop() ?: sendServiceAction(TimerService.ACTION_STOP)
         _timerState.update { TimerState.IDLE }
     }
 
     /** Acknowledges the completed session signal so navigation fires only once. */
     fun consumeCompletedSession() {
-        _completedSessionMinutes.update { 0 }
+        _completedSessionSeconds.value = 0
     }
 
     // ---- Private helpers -----------------------------------------------------------------------

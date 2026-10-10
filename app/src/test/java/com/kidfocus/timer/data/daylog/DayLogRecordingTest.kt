@@ -78,6 +78,20 @@ class DayLogRecordingTest {
         assertNull(entry.taskId)
         assertTrue(db.scheduledTaskDao().getAllForSync().isEmpty())
     }
+    @Test fun completedFocusMarksLinkedTaskDoneButStoppedFocusOnlyRecordsTime() = runTest {
+        val task = ScheduledTask(id=42, taskType=TaskType.HOMEWORK,name="Homework",emoji="x",hour=17,minute=0,
+            daysOfWeek=setOf(1),focusDurationMinutes=25,breakDurationMinutes=5)
+        db.scheduledTaskDao().insert(ScheduledTaskEntity.fromDomain(task))
+        recorder.start(42, "Homework", millis("2026-09-28T17:00:00"), zone)
+        recorder.finish(millis("2026-09-28T17:07:00"), zone, completed = true)
+        val completed = db.dayLogDao().getAll().single().toEntry()
+        assertEquals(42L, completed.taskId)
+        assertEquals(DayLogSource.TIMER_DONE, completed.source)
+        assertEquals(7, completed.durationMinutes)
+        recorder.start(42, "Homework", millis("2026-09-28T18:00:00"), zone)
+        recorder.finish(millis("2026-09-28T18:02:00"), zone)
+        assertEquals(DayLogSource.TIMER, db.dayLogDao().getAll().first { it.id != completed.id }.toEntry().source)
+    }
     @Test fun startingAnotherTimerClosesTheOldOneAndManualEditsAndDeletesStayAuthoritative() = runTest {
         recorder.start(null,"First",1000,zone)
         recorder.start(null,"Second",61000,zone)

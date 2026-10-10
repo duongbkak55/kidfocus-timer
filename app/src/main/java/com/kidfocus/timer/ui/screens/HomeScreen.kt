@@ -409,8 +409,8 @@ fun HomeScreen(
                                 TaskVisual(
                                     photoUri = task.photoUri,
                                     emoji = task.emoji,
-                                    modifier = Modifier.size(28.dp),
-                                    emojiSize = 14.sp,
+                                    modifier = Modifier.size(36.dp),
+                                    emojiSize = 22.sp,
                                 )
                                 Spacer(Modifier.size(6.dp))
                                 Text(

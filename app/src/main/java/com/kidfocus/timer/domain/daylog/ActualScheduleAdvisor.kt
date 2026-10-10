@@ -65,7 +65,7 @@ object ActualScheduleAdvisor {
             val completed = occurrences.filter { it.actualDuration != null }
             val overrun = completed.filter { it.plan.durationMinutes != null && it.plan.durationMinutes > 0 &&
                 it.actualDuration!! * 2 > it.plan.durationMinutes * 3 &&
-                it.actualDuration - it.plan.durationMinutes > (it.actual?.takeIf { entry -> entry.source == DayLogSource.TIMER }
+                it.actualDuration - it.plan.durationMinutes > (it.actual?.takeIf { entry -> entry.source in setOf(DayLogSource.TIMER, DayLogSource.TIMER_DONE) }
                     ?.let { entry -> extendedMinutesByLogId[entry.id] } ?: 0) }
             val missed = occurrences.filter { it.status == DayComparisonStatus.MISSED || it.status == DayComparisonStatus.SKIPPED }
             if (overrun.size >= 3) findings += Finding(RuleId.TASK_OVERRUN, Severity.MEDIUM,

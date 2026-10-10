@@ -165,8 +165,8 @@ fun AppNavigation(
             FocusScreen(
                 timerViewModel = timerViewModel,
                 settingsViewModel = settingsViewModel,
-                onSessionComplete = { minutes ->
-                    navController.navigate(NavRoutes.Celebration.buildRoute(minutes)) {
+                onSessionComplete = { seconds ->
+                    navController.navigate(NavRoutes.Celebration.buildRoute(seconds)) {
                         popUpTo(NavRoutes.Focus.route) { inclusive = true }
                     }
                 },
@@ -206,12 +206,12 @@ fun AppNavigation(
         composable(
             route = NavRoutes.Celebration.route,
             arguments = listOf(
-                navArgument(NavRoutes.ARG_MINUTES) { type = NavType.IntType }
+                navArgument(NavRoutes.ARG_SECONDS) { type = NavType.IntType }
             ),
         ) { backStack ->
-            val minutes = backStack.arguments?.getInt(NavRoutes.ARG_MINUTES) ?: 0
+            val seconds = backStack.arguments?.getInt(NavRoutes.ARG_SECONDS) ?: 0
             CelebrationScreen(
-                focusMinutes = minutes,
+                focusSeconds = seconds,
                 settingsViewModel = settingsViewModel,
                 onStartBreak = {
                     navController.navigate(NavRoutes.BreakTimer.route) {
