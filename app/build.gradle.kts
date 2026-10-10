@@ -23,6 +23,30 @@ fun configValue(name: String): String = (System.getenv(name)
     .replace("\\", "\\\\")
     .replace("\"", "\\\"")
 
+// Play bundles cannot acquire these values after installation. Fail the release build
+// before packaging rather than shipping an app with disabled cloud sign-in.
+val requiredReleaseServiceValues = listOf(
+    "FIREBASE_API_KEY",
+    "FIREBASE_APP_ID",
+    "FIREBASE_PROJECT_ID",
+    "FIREBASE_WEB_CLIENT_ID",
+    "REVENUECAT_ANDROID_API_KEY",
+)
+
+val releaseBuildRequested = gradle.startParameter.taskNames.any { taskPath ->
+    val taskName = taskPath.substringAfterLast(':')
+    taskName.contains("Release") || taskName in setOf("build", "assemble", "bundle")
+}
+if (releaseBuildRequested) {
+    val missing = requiredReleaseServiceValues.filter { name ->
+        (System.getenv(name) ?: localProps.getProperty(name, "")).isBlank()
+    }
+    check(missing.isEmpty()) {
+        "Missing release service configuration: ${missing.joinToString()}. " +
+            "Set these values as environment variables or in local.properties."
+    }
+}
+
 val revenueCatDebugKey = configValue("REVENUECAT_TEST_API_KEY")
     .ifBlank { configValue("REVENUECAT_ANDROID_API_KEY") }
 val firebaseReleaseAppId = configValue("FIREBASE_APP_ID")
@@ -37,8 +61,8 @@ android {
         applicationId = "com.kidfocusstudio.timer"
         minSdk = 26
         targetSdk = 36
-        versionCode = 5
-        versionName = "1.0.0-rc.3"
+        versionCode = 6
+        versionName = "1.0.0-rc.4"
         resourceConfigurations += listOf("vi", "en")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
