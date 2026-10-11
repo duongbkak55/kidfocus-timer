@@ -37,14 +37,17 @@ class DailyScheduleScreenTest {
         every { permission.reminderVisible } returns MutableStateFlow(false)
         every { permission.settingsUnavailable } returns MutableStateFlow(false)
         var openedDate: LocalDate? = null
+        var startedTask: ScheduledTask? = null
         compose.setContent {
             KidFocusTheme {
-                DailyScheduleScreen(schedule, onBack = {}, onStartTask = {},
+                DailyScheduleScreen(schedule, onBack = {}, onStartTask = { startedTask = it },
                     alarmPermission = permission, onActualAndComparison = { openedDate = it })
             }
         }
         compose.onNodeWithTag("daily_week_strip").assertIsDisplayed()
-        compose.onNodeWithTag("daily_task_visual_42").assertIsDisplayed()
+        compose.onNodeWithTag("daily_task_visual_42", useUnmergedTree = true).assertIsDisplayed()
+        compose.onNodeWithTag("daily_focus_task_42").performClick()
+        compose.runOnIdle { assertEquals(task, startedTask) }
         for (label in listOf(R.string.daylog_add_incidental, R.string.daylog_sleep, R.string.daylog_wake,
             R.string.daylog_edit_plan, R.string.daylog_compare_title, R.string.daylog_actual)) {
             compose.onNodeWithText(compose.activity.getString(label)).assertDoesNotExist()

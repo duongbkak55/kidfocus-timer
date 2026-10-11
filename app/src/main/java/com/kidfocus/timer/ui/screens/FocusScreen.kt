@@ -20,6 +20,8 @@ import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Button
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -29,6 +31,9 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,6 +44,7 @@ import com.kidfocus.timer.R
 import com.kidfocus.timer.domain.model.TimerPhase
 import com.kidfocus.timer.domain.model.TimerSettings
 import com.kidfocus.timer.domain.model.FocusTimePolicy
+import com.kidfocus.timer.domain.model.EarlyFocusCompletion
 import com.kidfocus.timer.ui.components.FocusExtensionDial
 import com.kidfocus.timer.ui.components.KeepScreenOnWhileRunning
 import com.kidfocus.timer.ui.components.MascotWidget
@@ -51,8 +57,8 @@ import androidx.compose.ui.platform.testTag
 /**
  * Full-screen focus session screen.
  *
- * Observes [TimerViewModel.completedSessionMinutes] to fire [onSessionComplete] exactly once
- * when the countdown reaches zero.
+ * Observes [TimerViewModel.completedSessionSeconds] to fire [onSessionComplete] exactly once
+ * when the countdown completes or the child marks the activity done early.
  */
 @Composable
 fun FocusScreen(
@@ -60,12 +66,15 @@ fun FocusScreen(
     settingsViewModel: SettingsViewModel,
     onSessionComplete: (Int) -> Unit,
     onStop: () -> Unit,
+    onTakeBreak: () -> Unit,
 ) {
     val colors = KidFocusTheme.colors
     val timerState by timerViewModel.timerState.collectAsState()
-    val completedMinutes by timerViewModel.completedSessionMinutes.collectAsState()
+    val completedSeconds by timerViewModel.completedSessionSeconds.collectAsState()
     val settings by settingsViewModel.settings.collectAsState()
     val calmMode = settings?.calmModeEnabled ?: false
+    var confirmBreak by remember { mutableStateOf(false) }
+    var confirmEarly by remember { mutableStateOf(false) }
     KeepScreenOnWhileRunning(timerState.isRunning && (settings?.keepScreenOnEnabled ?: true))
 
     DisposableEffect(Unit) {
@@ -74,10 +83,10 @@ fun FocusScreen(
     }
 
     // Navigate away when session completes
-    LaunchedEffect(completedMinutes) {
-        if (completedMinutes > 0) {
+    LaunchedEffect(completedSeconds) {
+        if (completedSeconds > 0) {
             timerViewModel.consumeCompletedSession()
-            onSessionComplete(completedMinutes)
+            onSessionComplete(completedSeconds)
         }
     }
 
@@ -102,6 +111,11 @@ fun FocusScreen(
                     color = colors.onBackground,
                     fontWeight = FontWeight.Bold,
                 )
+                timerState.activityName?.let { name ->
+                    Text(name, style = MaterialTheme.typography.titleMedium,
+                        color = colors.primary, fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.testTag("focus_activity_name"))
+                }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = if (calmMode) {
@@ -114,6 +128,19 @@ fun FocusScreen(
                     style = MaterialTheme.typography.bodyMedium,
                     color = colors.onBackground.copy(alpha = 0.6f),
                 )
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                    Button(onClick = { confirmEarly = true },
+                        enabled = EarlyFocusCompletion.elapsedSeconds(timerState) != null,
+                        modifier = Modifier.weight(1f).height(52.dp).testTag("focus_finish_early")) {
+                        Text(stringResource(R.string.focus_finish_early))
+                    }
+                    Button(onClick = { confirmBreak = true },
+                        enabled = timerState.phase.isFocus && (timerState.isRunning || timerState.isPaused),
+                        modifier = Modifier.weight(1f).height(52.dp).testTag("focus_take_break")) {
+                        Text(stringResource(R.string.focus_take_break_short))
+                    }
+                }
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -227,4 +254,23 @@ fun FocusScreen(
             }
         }
     }
+    if (confirmBreak) AlertDialog(
+        onDismissRequest = { confirmBreak = false },
+        title = { Text(stringResource(R.string.focus_take_break_confirm_title)) },
+        text = { Text(stringResource(R.string.focus_take_break_confirm_body)) },
+        confirmButton = { TextButton(onClick = { confirmBreak = false; onTakeBreak() }) {
+            Text(stringResource(R.string.focus_take_break_confirm_action))
+        } },
+        dismissButton = { TextButton(onClick = { confirmBreak = false }) { Text(stringResource(R.string.cancel)) } },
+    )
+    if (confirmEarly) AlertDialog(
+        onDismissRequest = { confirmEarly = false },
+        title = { Text(stringResource(R.string.focus_finish_early_confirm_title)) },
+        text = { Text(stringResource(R.string.focus_finish_early_confirm_body)) },
+        confirmButton = { TextButton(onClick = {
+            confirmEarly = false
+            timerViewModel.completeEarly()
+        }) { Text(stringResource(R.string.focus_finish_early_confirm_action)) } },
+        dismissButton = { TextButton(onClick = { confirmEarly = false }) { Text(stringResource(R.string.cancel)) } },
+    )
 }

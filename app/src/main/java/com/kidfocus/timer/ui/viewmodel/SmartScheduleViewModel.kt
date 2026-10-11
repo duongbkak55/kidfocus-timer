@@ -31,7 +31,8 @@ import kotlinx.coroutines.delay
 
 data class SmartScheduleUiState(val profile: ChildProfileEntity, val schedule: ScheduleState, val findings: List<Finding>, val canUndo: Boolean,
     val routineStats: List<RoutineStat> = emptyList(), val plan: SchedulePlan? = null,
-    val actualStats: com.kidfocus.timer.domain.daylog.ActualScheduleStats = com.kidfocus.timer.domain.daylog.ActualScheduleStats())
+    val actualStats: com.kidfocus.timer.domain.daylog.ActualScheduleStats = com.kidfocus.timer.domain.daylog.ActualScheduleStats(),
+    val timingEvidence: Boolean = false)
 enum class AdviceError { NETWORK, QUOTA, SIGN_IN, APP_VERIFY, DISABLED, STALE, APPLY }
 data class AdviceUiState(val note: String = "", val tags: Set<NoteTag> = emptySet(), val advice: ScheduleAdvice? = null,
     val rows: List<AdviceRow> = emptyList(), val selected: Set<Int> = emptySet(), val expected: ScheduleState? = null,
@@ -108,7 +109,9 @@ class SmartScheduleViewModel @Inject constructor(
                 RoutineStat(routineRows.single { it.id == pattern.id }.title, count)
             }
             SmartScheduleUiState(profile, schedule, findings,
-                snapshot != null && snapshot.applied == schedule && System.currentTimeMillis() - snapshot.savedAtMillis in 0..604_800_000L, stats, actualStats = com.kidfocus.timer.domain.daylog.ActualScheduleAdvisor.evaluate(scoped, hours, actual, now.toLocalDate(), now.toLocalTime().minutes(), extensions).stats)
+                snapshot != null && snapshot.applied == schedule && System.currentTimeMillis() - snapshot.savedAtMillis in 0..604_800_000L, stats,
+                actualStats = com.kidfocus.timer.domain.daylog.ActualScheduleAdvisor.evaluate(scoped, hours, actual, now.toLocalDate(), now.toLocalTime().minutes(), extensions).stats,
+                timingEvidence = com.kidfocus.timer.domain.daylog.ActualScheduleAdvisor.hasTimingEvidence(hours, actual, now.toLocalDate()))
         }
         combine(scheduleFlow, plans.observe(profile.id)) { current, plan -> current.copy(plan = plan?.takeIf { it.matches(current.schedule.anchors) }) }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
@@ -123,7 +126,7 @@ class SmartScheduleViewModel @Inject constructor(
     }
     fun requestAdvice() {
         val current = state.value ?: return
-        if (busy.value || current.findings.isEmpty()) return
+        if (busy.value || (current.findings.isEmpty() && !current.timingEvidence)) return
         val revision = profileRevision
         val input = _advice.value
         val refs = ScheduleAdviceReview.refs(current.schedule)

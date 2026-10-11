@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -24,6 +25,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -52,6 +55,7 @@ import com.kidfocus.timer.data.cloud.CloudSyncStatus
 import com.kidfocus.timer.domain.model.TimerPhase
 import com.kidfocus.timer.domain.model.FocusTimePolicy
 import com.kidfocus.timer.domain.model.TimerSettings
+import com.kidfocus.timer.domain.model.ScheduledTask
 import com.kidfocus.timer.ui.components.FocusDurationDial
 import com.kidfocus.timer.ui.components.AccountAvatar
 import com.kidfocus.timer.ui.components.MascotWidget
@@ -96,6 +100,10 @@ fun HomeScreen(
     val activeChildName = childProfileName(childProfile)
     val settings by settingsViewModel.settings.collectAsState()
     var chooseFocusTime by remember { mutableStateOf(false) }
+    var chooseFocusActivity by remember { mutableStateOf(false) }
+    var selectedFocusTaskId by remember { mutableStateOf<Long?>(null) }
+    var customFocusActivity by remember { mutableStateOf(false) }
+    var customFocusName by remember { mutableStateOf("") }
     var chosenMinutes by remember(settings?.focusDurationMinutes) {
         mutableIntStateOf(FocusTimePolicy.selection(settings?.focusDurationMinutes ?: TimerSettings.DEFAULT_FOCUS_MINUTES))
     }
@@ -334,28 +342,11 @@ fun HomeScreen(
                         val upcoming = todayTasks.filter { it.hour * 60 + it.minute >= nowMin }.take(3)
                         val preview = upcoming.ifEmpty { todayTasks.take(3) }
                         preview.forEach { task ->
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(vertical = 2.dp),
-                            ) {
-                                TaskVisual(
-                                    photoUri = task.photoUri,
-                                    emoji = task.emoji,
-                                    modifier = Modifier.size(28.dp),
-                                    emojiSize = 14.sp,
-                                )
-                                Spacer(Modifier.size(6.dp))
-                                Text(
-                                    text = task.timeFormatted,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = colors.onBackground.copy(alpha = 0.45f),
-                                )
-                                Spacer(Modifier.size(6.dp))
-                                Text(
-                                    text = task.name,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = colors.onBackground.copy(alpha = 0.8f),
-                                )
+                            HomeTaskPreviewRow(task) { selectedTask ->
+                                selectedFocusTaskId = selectedTask.id
+                                customFocusActivity = false
+                                chosenMinutes = FocusTimePolicy.selection(selectedTask.focusDurationMinutes)
+                                chooseFocusTime = true
                             }
                         }
                         if (todayTasks.size > 3) {
@@ -383,6 +374,7 @@ fun HomeScreen(
                             routineId = todayRoutine.routine.id,
                             occurrenceDate = todayRoutine.occurrenceDate,
                             totalSeconds = minutes * 60,
+                            activityName = todayRoutine.routine.title,
                         )
                         onStartFocus()
                     }
@@ -405,7 +397,13 @@ fun HomeScreen(
 
             // Start button
             Button(
-                onClick = { chosenMinutes = FocusTimePolicy.selection(settings?.focusDurationMinutes ?: TimerSettings.DEFAULT_FOCUS_MINUTES); chooseFocusTime = true },
+                onClick = {
+                    selectedFocusTaskId = null
+                    customFocusActivity = todayTasks.isEmpty()
+                    customFocusName = ""
+                    chosenMinutes = FocusTimePolicy.selection(settings?.focusDurationMinutes ?: TimerSettings.DEFAULT_FOCUS_MINUTES)
+                    chooseFocusActivity = true
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(64.dp),
@@ -460,21 +458,115 @@ fun HomeScreen(
             }
         }
     }
+    if (chooseFocusActivity) {
+        AlertDialog(
+            onDismissRequest = { chooseFocusActivity = false },
+            title = { Text(stringResource(R.string.focus_choose_activity)) },
+            text = {
+                Column(Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState())) {
+                    todayTasks.forEach { task ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth().clickable {
+                                selectedFocusTaskId = task.id
+                                customFocusActivity = false
+                                chosenMinutes = FocusTimePolicy.selection(task.focusDurationMinutes)
+                            }.padding(vertical = 6.dp).testTag("focus_task_${task.id}"),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            RadioButton(selected = !customFocusActivity && selectedFocusTaskId == task.id,
+                                onClick = {
+                                    selectedFocusTaskId = task.id
+                                    customFocusActivity = false
+                                    chosenMinutes = FocusTimePolicy.selection(task.focusDurationMinutes)
+                                })
+                            Text("${task.emoji} ${task.name}", modifier = Modifier.weight(1f))
+                        }
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth().clickable {
+                            customFocusActivity = true
+                            selectedFocusTaskId = null
+                        }.padding(vertical = 6.dp).testTag("focus_custom_activity"),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        RadioButton(selected = customFocusActivity, onClick = {
+                            customFocusActivity = true
+                            selectedFocusTaskId = null
+                        })
+                        Text(stringResource(R.string.focus_custom_activity))
+                    }
+                    if (customFocusActivity) OutlinedTextField(
+                        value = customFocusName,
+                        onValueChange = { customFocusName = it.take(80) },
+                        label = { Text(stringResource(R.string.focus_activity_name)) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth().testTag("focus_custom_name"),
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { chooseFocusActivity = false; chooseFocusTime = true },
+                    enabled = selectedFocusTaskId != null || (customFocusActivity && customFocusName.isNotBlank()),
+                    modifier = Modifier.testTag("focus_activity_next"),
+                ) { Text(stringResource(R.string.next)) }
+            },
+            dismissButton = { TextButton(onClick = { chooseFocusActivity = false }) { Text(stringResource(R.string.cancel)) } },
+        )
+    }
     if (chooseFocusTime) {
+        val selectedTask = todayTasks.firstOrNull { it.id == selectedFocusTaskId }
         AlertDialog(
             onDismissRequest = { chooseFocusTime = false },
             title = { Text(stringResource(R.string.focus_choose_duration)) },
-            text = { FocusDurationDial(chosenMinutes, { chosenMinutes = it }, colors.primary) },
+            text = { Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(selectedTask?.name ?: customFocusName.trim(), style = MaterialTheme.typography.titleMedium)
+                FocusDurationDial(chosenMinutes, { chosenMinutes = it }, colors.primary)
+            } },
             confirmButton = {
                 Button(onClick = {
                     chooseFocusTime = false
-                    timerViewModel.startFocus(chosenMinutes * 60)
+                    if (selectedTask != null) timerViewModel.startFocusForTask(selectedTask, chosenMinutes * 60)
+                    else timerViewModel.startFocusForActivity(customFocusName, chosenMinutes * 60)
                     onStartFocus()
-                }, modifier = Modifier.testTag("focus_start_selected")) {
+                }, enabled = selectedTask != null || (customFocusActivity && customFocusName.isNotBlank()),
+                    modifier = Modifier.testTag("focus_start_selected")) {
                     Text(stringResource(R.string.home_start_focus))
                 }
             },
             dismissButton = { TextButton(onClick = { chooseFocusTime = false }) { Text(stringResource(R.string.cancel)) } },
+        )
+    }
+}
+
+@Composable
+internal fun HomeTaskPreviewRow(task: ScheduledTask, onStartTask: (ScheduledTask) -> Unit) {
+    val colors = KidFocusTheme.colors
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClickLabel = stringResource(R.string.home_focus_task_action, task.name)) { onStartTask(task) }
+            .testTag("home_focus_task_${task.id}")
+            .padding(vertical = 6.dp),
+    ) {
+        TaskVisual(
+            photoUri = task.photoUri,
+            emoji = task.emoji,
+            modifier = Modifier.size(48.dp),
+            emojiSize = 28.sp,
+        )
+        Spacer(Modifier.size(6.dp))
+        Text(
+            text = task.timeFormatted,
+            style = MaterialTheme.typography.labelSmall,
+            color = colors.onBackground.copy(alpha = 0.45f),
+        )
+        Spacer(Modifier.size(6.dp))
+        Text(
+            text = task.name,
+            style = MaterialTheme.typography.bodySmall,
+            color = colors.onBackground.copy(alpha = 0.8f),
         )
     }
 }

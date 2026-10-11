@@ -68,12 +68,12 @@ fun SmartScheduleScreen(onBack: () -> Unit, onQuickEntry: () -> Unit = {}, acces
                 if (account.isSignedIn) ScheduleUsage(config.usage, config.scheduleParseCost)
             }
             SchedulePlanBanner(current, busy, viewModel)
-            AnchorsEditor(current.profile.id, current.schedule.anchors, busy, viewModel::saveAnchors)
-            if (current.canUndo) OutlinedButton(onClick = viewModel::undo, enabled = !busy) { Text(stringResource(R.string.smart_restore_previous)) }
             Text(stringResource(R.string.smart_advice_title), style = MaterialTheme.typography.titleLarge)
             Text(stringResource(R.string.smart_aasm), style = MaterialTheme.typography.bodySmall)
             Text(stringResource(R.string.smart_aasm_source), style = MaterialTheme.typography.bodySmall)
             ScheduleAdvicePanel(current, busy, access, viewModel)
+            AnchorsEditor(current.profile.id, current.schedule.anchors, busy, viewModel::saveAnchors)
+            if (current.canUndo) OutlinedButton(onClick = viewModel::undo, enabled = !busy) { Text(stringResource(R.string.smart_restore_previous)) }
             if (current.findings.isEmpty()) Text(stringResource(R.string.smart_no_findings))
             current.findings.forEach { finding ->
                 Card(Modifier.fillMaxWidth()) {

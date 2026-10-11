@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.kidfocus.timer.domain.model.TimerPhase
 import com.kidfocus.timer.domain.model.FocusTimePolicy
 import com.kidfocus.timer.domain.model.TimerState
+import com.kidfocus.timer.domain.daylog.DayLogCategory
 import com.kidfocus.timer.data.repository.RoutineRepository
 import com.kidfocus.timer.service.RoutineAlarmScheduler
 import com.kidfocus.timer.service.RoutineNotificationManager
@@ -47,12 +48,12 @@ class TimerViewModel @Inject constructor(
     val timerState: StateFlow<TimerState> = _timerState.asStateFlow()
 
     /**
-     * Emits the total minutes of the session that just completed.
+     * Emits the actual seconds of the session that just completed.
      * Consumed by the navigation layer to route to the Celebration screen.
      * Reset to 0 after consumption with [consumeCompletedSession].
      */
-    private val _completedSessionMinutes = MutableStateFlow(0)
-    val completedSessionMinutes: StateFlow<Int> = _completedSessionMinutes.asStateFlow()
+    private val _completedSessionSeconds = MutableStateFlow(0)
+    val completedSessionSeconds: StateFlow<Int> = _completedSessionSeconds.asStateFlow()
 
     // ---- Service binding -----------------------------------------------------------------------
 
@@ -89,12 +90,12 @@ class TimerViewModel @Inject constructor(
         if (awaitingPhase == state.phase && state.remainingSeconds > 0) awaitingPhase = null
         _timerState.update { state }
 
-        // Emit completion feedback only once after a natural finish (not a manual stop).
+        // Emit completion feedback only once after natural or early completion, never manual stop.
         if (state.isFinished && state.totalSeconds != lastRecordedTotalSeconds) {
             lastRecordedTotalSeconds = state.totalSeconds
             viewModelScope.launch {
                 if (state.phase.isFocus) {
-                    _completedSessionMinutes.update { state.totalSeconds / 60 }
+                    _completedSessionSeconds.value = state.totalSeconds
                     completeLinkedRoutineIfNeeded()
                 }
             }
@@ -120,34 +121,38 @@ class TimerViewModel @Inject constructor(
     // ---- Timer control -------------------------------------------------------------------------
 
     /** Starts a focus countdown of [totalSeconds] seconds. */
-    fun startFocus(totalSeconds: Int) {
+    fun startFocusForActivity(name: String, totalSeconds: Int) {
+        require(name.isNotBlank())
         linkedRoutineId = null
         linkedOccurrenceDate = null
-        startFocusInternal(totalSeconds)
+        startFocusInternal(totalSeconds, activityName = name.trim().take(80), category = DayLogCategory.OTHER)
     }
 
     /** Starts a focus timer that completes the linked routine only after the timer finishes. */
-    fun startFocusForRoutine(routineId: Long, occurrenceDate: LocalDate, totalSeconds: Int) {
+    fun startFocusForRoutine(routineId: Long, occurrenceDate: LocalDate, totalSeconds: Int, activityName: String) {
         linkedRoutineId = routineId
         linkedOccurrenceDate = occurrenceDate
-        startFocusInternal(totalSeconds)
+        startFocusInternal(totalSeconds, activityName = activityName, category = DayLogCategory.ROUTINE)
     }
 
-    fun startFocusForTask(task: com.kidfocus.timer.domain.model.ScheduledTask) {
+    fun startFocusForTask(task: com.kidfocus.timer.domain.model.ScheduledTask, totalSeconds: Int = task.focusDurationMinutes * 60) {
         linkedRoutineId = null
         linkedOccurrenceDate = null
-        startFocusInternal(task.focusDurationMinutes * 60, task.id)
+        startFocusInternal(totalSeconds, task.id, task.name, DayLogCategory.valueOf(task.taskType.category.name))
     }
 
-    private fun startFocusInternal(totalSeconds: Int, taskId: Long? = null) {
+    private fun startFocusInternal(totalSeconds: Int, taskId: Long? = null, activityName: String? = null,
+        category: DayLogCategory = DayLogCategory.OTHER) {
         lastRecordedTotalSeconds = -1
         awaitingPhase = TimerPhase.Focus
-        _completedSessionMinutes.value = 0
+        _completedSessionSeconds.value = 0
         ensureServiceStarted()
-        timerBinder?.startFocus(totalSeconds, taskId) ?: startServiceWithAction(
+        timerBinder?.startFocus(totalSeconds, taskId, activityName, category) ?: startServiceWithAction(
             action = TimerService.ACTION_START_FOCUS,
             totalSeconds = totalSeconds,
             taskId = taskId,
+            activityName = activityName,
+            category = category,
         )
     }
 
@@ -155,7 +160,7 @@ class TimerViewModel @Inject constructor(
     fun startBreak(totalSeconds: Int) {
         lastRecordedTotalSeconds = -1
         awaitingPhase = TimerPhase.Break
-        _completedSessionMinutes.value = 0
+        _completedSessionSeconds.value = 0
         ensureServiceStarted()
         timerBinder?.startBreak(totalSeconds) ?: startServiceWithAction(
             action = TimerService.ACTION_START_BREAK,
@@ -184,16 +189,22 @@ class TimerViewModel @Inject constructor(
         }
     }
 
+    /** Marks the linked activity complete, retaining only the time actually focused. */
+    fun completeEarly() {
+        timerBinder?.completeEarly() ?: sendServiceAction(TimerService.ACTION_COMPLETE_EARLY)
+    }
+
     /** Stops the timer and resets to idle. */
     fun stop() {
         awaitingPhase = null
+        _completedSessionSeconds.value = 0
         timerBinder?.stop() ?: sendServiceAction(TimerService.ACTION_STOP)
         _timerState.update { TimerState.IDLE }
     }
 
     /** Acknowledges the completed session signal so navigation fires only once. */
     fun consumeCompletedSession() {
-        _completedSessionMinutes.update { 0 }
+        _completedSessionSeconds.value = 0
     }
 
     // ---- Private helpers -----------------------------------------------------------------------
@@ -203,11 +214,14 @@ class TimerViewModel @Inject constructor(
         context.startForegroundService(intent)
     }
 
-    private fun startServiceWithAction(action: String, totalSeconds: Int, taskId: Long? = null) {
+    private fun startServiceWithAction(action: String, totalSeconds: Int, taskId: Long? = null,
+        activityName: String? = null, category: DayLogCategory = DayLogCategory.OTHER) {
         val intent = Intent(context, TimerService::class.java).apply {
             this.action = action
             putExtra(TimerService.EXTRA_TOTAL_SECONDS, totalSeconds)
             taskId?.let { putExtra(TimerService.EXTRA_TASK_ID, it) }
+            activityName?.let { putExtra(TimerService.EXTRA_ACTIVITY_NAME, it) }
+            putExtra(TimerService.EXTRA_ACTIVITY_CATEGORY, category.name)
         }
         context.startForegroundService(intent)
     }

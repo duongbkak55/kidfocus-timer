@@ -174,14 +174,20 @@ fun AppNavigation(
             FocusScreen(
                 timerViewModel = timerViewModel,
                 settingsViewModel = settingsViewModel,
-                onSessionComplete = { minutes ->
-                    navController.navigate(NavRoutes.Celebration.buildRoute(minutes)) {
+                onSessionComplete = { seconds ->
+                    navController.navigate(NavRoutes.Celebration.buildRoute(seconds)) {
                         popUpTo(NavRoutes.Focus.route) { inclusive = true }
                     }
                 },
                 onStop = {
                     timerViewModel.stop()
                     navController.popBackStack()
+                },
+                onTakeBreak = {
+                    timerViewModel.stop()
+                    navController.navigate(NavRoutes.BreakTimer.route) {
+                        popUpTo(NavRoutes.Focus.route) { inclusive = true }
+                    }
                 },
             )
         }
@@ -209,12 +215,12 @@ fun AppNavigation(
         composable(
             route = NavRoutes.Celebration.route,
             arguments = listOf(
-                navArgument(NavRoutes.ARG_MINUTES) { type = NavType.IntType }
+                navArgument(NavRoutes.ARG_SECONDS) { type = NavType.IntType }
             ),
         ) { backStack ->
-            val minutes = backStack.arguments?.getInt(NavRoutes.ARG_MINUTES) ?: 0
+            val seconds = backStack.arguments?.getInt(NavRoutes.ARG_SECONDS) ?: 0
             CelebrationScreen(
-                focusMinutes = minutes,
+                focusSeconds = seconds,
                 settingsViewModel = settingsViewModel,
                 onStartBreak = {
                     navController.navigate(NavRoutes.BreakTimer.route) {
@@ -316,8 +322,10 @@ fun AppNavigation(
 
         // ---- Daily Schedule ------------------------------------------------------------------
         composable(NavRoutes.DailySchedule.route) {
+            val dayLogData by dayLogs.data.collectAsState()
             DailyScheduleScreen(
                 viewModel = scheduleViewModel,
+                actualEntries = dayLogData.entries,
                 onChildQuickLog = { navController.navigate(NavRoutes.ChildQuickLog.route) },
                 onActualAndComparison = { date ->
                     dayLogs.selectDate(date)
@@ -335,6 +343,8 @@ fun AppNavigation(
                         navController.navigate(NavRoutes.Focus.route)
                     }
                 },
+                onSkipTask = dayLogs::skipTaskToday,
+                onUndoSkip = dayLogs::undoSkip,
                 onAddTaskAtTime = { hour, minute ->
                     navController.navigate(NavRoutes.TaskEdit.buildRoute(0L, TaskType.CUSTOM.name, hour, minute))
                 },
@@ -352,6 +362,7 @@ fun AppNavigation(
             DayLogsScreen(dayLogs = dayLogs,
                 alarmPermission = alarmPermission, onBack = { navController.popBackStack() },
                 onCompare = { navController.navigate(NavRoutes.WeeklyComparison.route) },
+                onTimingReview = { navController.navigate(NavRoutes.SmartSchedule.route) },
                 onEditPlan = { navController.navigate(NavRoutes.Schedule.route) },
                 onStartTask = { task ->
                     if (task.taskType == TaskType.LEARNING_GAMES) navController.navigate(NavRoutes.LearningHub.route)
@@ -445,6 +456,7 @@ fun AppNavigation(
                             routineId = todayRoutine.routine.id,
                             occurrenceDate = todayRoutine.occurrenceDate,
                             totalSeconds = minutes * 60,
+                            activityName = todayRoutine.routine.title,
                         )
                         navController.navigate(NavRoutes.Focus.route)
                     }

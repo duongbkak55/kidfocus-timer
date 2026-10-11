@@ -132,6 +132,9 @@ class DayLogSyncTest {
         val child = entry.copy(source = DayLogSource.CHILD)
         assertEquals(DayLogSource.CHILD, DayLogEntryEntity.fromEntry(child).toEntry().source)
         assertEquals(DayLogSource.CHILD, dayLogFromCloud(child.id, child.toDayLogCloud())?.source)
+        val completed = entry.copy(source = DayLogSource.TIMER_DONE)
+        assertEquals(DayLogSource.TIMER_DONE, DayLogEntryEntity.fromEntry(completed).toEntry().source)
+        assertEquals(DayLogSource.TIMER_DONE, dayLogFromCloud(completed.id, completed.toDayLogCloud())?.source)
         assertEquals(DayLogSource.MANUAL, DayLogEntryEntity.fromEntry(child).copy(source = "FUTURE_SOURCE").toEntry().source)
         assertEquals(DayLogSource.MANUAL,
             dayLogFromCloud(child.id, child.toDayLogCloud() + ("source" to "FUTURE_SOURCE"))?.source)

@@ -8,6 +8,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.kidfocus.timer.domain.model.TimerSettings
+import com.kidfocus.timer.domain.model.ScheduledTask
+import com.kidfocus.timer.domain.model.TaskType
 import com.kidfocus.timer.ui.viewmodel.SettingsViewModel
 import io.mockk.every
 import io.mockk.mockk
@@ -44,5 +46,17 @@ class HistoryEntryPointsTest {
         } }
         compose.onNodeWithText("View history").performClick()
         compose.runOnIdle { assertEquals(1, openings) }
+    }
+
+    @Test fun tappingAHomeTaskSelectsThatTaskForFocusRegardlessOfScheduleOrder() {
+        val laterTask = ScheduledTask(id = 77, taskType = TaskType.HOMEWORK, name = "Reading",
+            emoji = "📖", hour = 18, minute = 30, daysOfWeek = setOf(1),
+            focusDurationMinutes = 25, breakDurationMinutes = 5)
+        var selected: ScheduledTask? = null
+        compose.setContent { MaterialTheme {
+            HomeTaskPreviewRow(laterTask) { selected = it }
+        } }
+        compose.onNodeWithTag("home_focus_task_77").performClick()
+        compose.runOnIdle { assertEquals(laterTask, selected) }
     }
 }

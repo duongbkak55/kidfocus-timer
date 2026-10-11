@@ -37,7 +37,8 @@ fun DayLogTimeline(viewModel: DayLogViewModel, onEdit: () -> Unit, onStart: (Sch
     val data by viewModel.data.collectAsState()
     val date by viewModel.date.collectAsState()
     val plans = planForDate(date, data.tasks, data.anchors)
-    val actual = data.entries.filter { !it.deleted && it.date == date }
+    val actual = data.entries.filter { !it.deleted && it.source != DayLogSource.SKIP && it.date == date }
+    val skips = data.entries.filter { !it.deleted && it.source == DayLogSource.SKIP && it.date == date }
     val moments = (plans.map { it.startMinute } + actual.map { it.startMinute }).distinct().sorted()
     LazyColumn(Modifier.fillMaxSize().padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         item {
@@ -69,8 +70,14 @@ fun DayLogTimeline(viewModel: DayLogViewModel, onEdit: () -> Unit, onStart: (Sch
                                     if (plan.startMinute + duration >= 1440) Text(stringResource(R.string.daylog_next_day_end, logTime(plan.startMinute + duration)), style = MaterialTheme.typography.bodySmall)
                                 }
                                 Text(stringResource(R.string.daylog_record_plan), style = MaterialTheme.typography.labelSmall)
-                                data.tasks.firstOrNull { it.id == plan.taskId }?.let { task ->
-                                    TextButton(onClick = { onStart(task) }) { Text(stringResource(R.string.daily_start)) }
+                                skips.firstOrNull { it.taskId != null && it.taskId == plan.taskId }?.let { skipped ->
+                                    Text(stringResource(R.string.daily_skipped_today), style = MaterialTheme.typography.labelSmall)
+                                    if (date == java.time.LocalDate.now()) TextButton(onClick = { viewModel.undoSkip(skipped) }) {
+                                        Text(stringResource(R.string.smart_undo))
+                                    }
+                                }
+                                data.tasks.firstOrNull { it.id == plan.taskId }?.let { linkedTask ->
+                                    TextButton(onClick = { onStart(linkedTask) }) { Text(stringResource(R.string.daily_start)) }
                                 }
                             }
                         }
@@ -86,7 +93,7 @@ fun DayLogTimeline(viewModel: DayLogViewModel, onEdit: () -> Unit, onStart: (Sch
                                     if (end < entry.startMinute) stringResource(R.string.daylog_next_day_end, logTime(end))
                                     else stringResource(R.string.daylog_end_at, logTime(end))
                                 } ?: stringResource(R.string.daylog_open), style = MaterialTheme.typography.bodySmall)
-                                Text(stringResource(when(entry.source) { DayLogSource.TIMER -> R.string.daylog_source_timer; DayLogSource.ROUTINE -> R.string.daylog_source_routine; DayLogSource.MANUAL -> R.string.daylog_source_manual; DayLogSource.AI -> R.string.daylog_source_ai; DayLogSource.CHILD -> R.string.daylog_source_child }), style = MaterialTheme.typography.labelSmall)
+                                Text(stringResource(when(entry.source) { DayLogSource.TIMER -> R.string.daylog_source_timer; DayLogSource.TIMER_DONE -> R.string.daily_completed; DayLogSource.ROUTINE -> R.string.daylog_source_routine; DayLogSource.MANUAL -> R.string.daylog_source_manual; DayLogSource.AI -> R.string.daylog_source_ai; DayLogSource.CHILD -> R.string.daylog_source_child; DayLogSource.SKIP -> R.string.daily_skipped_today }), style = MaterialTheme.typography.labelSmall)
                             }
                         }
                     }
@@ -212,6 +219,7 @@ fun WeeklyComparisonScreen(viewModel: DayLogViewModel, onBack: () -> Unit) {
                             DayComparisonStatus.EARLY -> R.string.daylog_early
                             DayComparisonStatus.MISSED -> R.string.daylog_missed
                             DayComparisonStatus.NO_DATA -> R.string.daylog_no_data
+                            DayComparisonStatus.SKIPPED -> R.string.daily_skipped_today
                         }, kotlin.math.abs(row.startDelta ?: 0)), style = MaterialTheme.typography.bodySmall)
                         row.durationDelta?.let { difference ->
                             Text(stringResource(when { difference > 0 -> R.string.daylog_longer; difference < 0 -> R.string.daylog_shorter; else -> R.string.daylog_same_duration }, kotlin.math.abs(difference)), style = MaterialTheme.typography.bodySmall)

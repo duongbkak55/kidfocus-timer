@@ -45,7 +45,7 @@ class HomeViewModel @Inject constructor(
     val todayFocusMinutes: StateFlow<Int> = todaySessions.map { sessions ->
         sessions
             .filter { it.isFocus }
-            .sumOf { it.durationMinutes }
+            .sumOf { it.durationSeconds } / 60
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),

@@ -32,7 +32,7 @@ fun planForDate(date: LocalDate, tasks: List<ScheduledTask>, anchors: ScheduleAn
     return result.sortedBy { it.startMinute }
 }
 
-enum class DayComparisonStatus { ON_TIME, LATE, EARLY, MISSED, NO_DATA }
+enum class DayComparisonStatus { ON_TIME, LATE, EARLY, MISSED, NO_DATA, SKIPPED }
 data class PlanComparison(val plan: DayPlanItem, val actual: DayLogEntry?, val status: DayComparisonStatus,
     val startDelta: Int? = null, val durationDelta: Int? = null, val actualDuration: Int? = null)
 data class DayComparison(val date: LocalDate, val hasData: Boolean, val rows: List<PlanComparison>, val incidental: List<DayLogEntry>)
@@ -42,7 +42,8 @@ data class WeekSummary(val recordedDays: Int, val completedPercent: Int?, val av
 
 fun compareWeek(weekStart: LocalDate, tasks: List<ScheduledTask>, anchors: ScheduleAnchors,
     entries: List<DayLogEntry>, today: LocalDate = LocalDate.now(), nowMinute: Int = 1439): WeekComparison {
-    val alive = entries.filterNot { it.deleted }
+    val alive = entries.filterNot { it.deleted || it.source == DayLogSource.SKIP }
+    val skips = entries.filter { !it.deleted && it.source == DayLogSource.SKIP }
     fun stamp(date: LocalDate, minute: Int) = date.toEpochDay() * 1440 + minute
     fun key(plan: DayPlanItem) = plan.date.toString() + ":" + plan.key
     val candidates = (-1L..7L).flatMap { planForDate(weekStart.plusDays(it), tasks, anchors) }
@@ -71,7 +72,8 @@ fun compareWeek(weekStart: LocalDate, tasks: List<ScheduledTask>, anchors: Sched
         val date = weekStart.plusDays(offset)
         val actual = alive.filter { it.date == date }.sortedWith(compareBy({ it.startMinute }, { it.id }))
         val plans = planForDate(date, tasks, anchors)
-        val hasData = actual.isNotEmpty() || plans.any { key(it) in matched }
+        val hasActualData = actual.isNotEmpty() || plans.any { key(it) in matched }
+        val hasData = hasActualData || skips.any { it.date == date }
         val rows = plans.map { plan ->
             val match = matched[key(plan)]
             val delta = match?.let { (stamp(it.date, it.startMinute) - stamp(plan.date, plan.startMinute)).toInt() }
@@ -86,7 +88,8 @@ fun compareWeek(weekStart: LocalDate, tasks: List<ScheduledTask>, anchors: Sched
                 } else null
             }
             val status = when {
-                match == null && (!hasData || date > today || (date == today && plan.startMinute > nowMinute)) -> DayComparisonStatus.NO_DATA
+                match == null && skips.any { it.date == date && it.taskId == plan.taskId && plan.taskId != null } -> DayComparisonStatus.SKIPPED
+                match == null && (!hasActualData || date > today || (date == today && plan.startMinute > nowMinute)) -> DayComparisonStatus.NO_DATA
                 match == null -> DayComparisonStatus.MISSED
                 abs(delta!!) <= 10 -> DayComparisonStatus.ON_TIME
                 delta > 10 -> DayComparisonStatus.LATE

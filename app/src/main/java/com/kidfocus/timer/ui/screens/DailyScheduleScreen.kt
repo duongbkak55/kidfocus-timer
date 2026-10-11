@@ -47,6 +47,8 @@ import androidx.compose.ui.unit.sp
 import com.kidfocus.timer.R
 import com.kidfocus.timer.domain.schedule.*
 import com.kidfocus.timer.domain.model.ScheduledTask
+import com.kidfocus.timer.domain.daylog.DayLogEntry
+import com.kidfocus.timer.domain.daylog.DayLogSource
 import com.kidfocus.timer.ui.theme.KidFocusTheme
 import com.kidfocus.timer.ui.components.TaskVisual
 import com.kidfocus.timer.ui.viewmodel.ScheduleViewModel
@@ -62,6 +64,9 @@ fun DailyScheduleScreen(
     viewModel: ScheduleViewModel,
     onBack: () -> Unit,
     onStartTask: (ScheduledTask) -> Unit,
+    onSkipTask: (ScheduledTask) -> Unit = {},
+    onUndoSkip: (DayLogEntry) -> Unit = {},
+    actualEntries: List<DayLogEntry> = emptyList(),
     onActualAndComparison: (java.time.LocalDate) -> Unit = {},
     onChildQuickLog: () -> Unit = {},
     quickEntryEnabled: Boolean = false,
@@ -199,7 +204,23 @@ fun DailyScheduleScreen(
                                     timeLabel = timelineTime(item.start),
                                     isPast = isPast,
                                     isCurrent = isCurrent,
+                                    recorded = actualEntries.any { !it.deleted && it.source != DayLogSource.SKIP && it.taskId == task.id && it.endMinute != null &&
+                                        it.date == java.time.LocalDate.of(displayCal.get(Calendar.YEAR), displayCal.get(Calendar.MONTH) + 1,
+                                            displayCal.get(Calendar.DAY_OF_MONTH)) },
+                                    completed = actualEntries.any { !it.deleted && it.source == DayLogSource.TIMER_DONE &&
+                                        it.taskId == task.id && it.date == java.time.LocalDate.of(displayCal.get(Calendar.YEAR),
+                                            displayCal.get(Calendar.MONTH) + 1, displayCal.get(Calendar.DAY_OF_MONTH)) },
+                                    inProgress = actualEntries.any { !it.deleted && it.source == DayLogSource.TIMER &&
+                                        it.taskId == task.id && it.endMinute == null &&
+                                        it.date == java.time.LocalDate.of(displayCal.get(Calendar.YEAR), displayCal.get(Calendar.MONTH) + 1,
+                                            displayCal.get(Calendar.DAY_OF_MONTH)) },
+                                    skipEntry = actualEntries.firstOrNull { !it.deleted && it.source == DayLogSource.SKIP &&
+                                        it.taskId == task.id && it.date == java.time.LocalDate.of(displayCal.get(Calendar.YEAR),
+                                            displayCal.get(Calendar.MONTH) + 1, displayCal.get(Calendar.DAY_OF_MONTH)) },
                                     onStart = { onStartTask(task) },
+                                    onSkip = { onSkipTask(task) },
+                                    onUndoSkip = onUndoSkip,
+                                    canSkip = isToday,
                                 )
                             }
                             is ScheduleTimelineItem.Anchor -> {
@@ -291,7 +312,14 @@ private fun TimelineTaskItem(
     timeLabel: String,
     isPast: Boolean,
     isCurrent: Boolean,
+    recorded: Boolean,
+    completed: Boolean,
+    inProgress: Boolean,
+    skipEntry: DayLogEntry?,
     onStart: () -> Unit,
+    onSkip: () -> Unit,
+    onUndoSkip: (DayLogEntry) -> Unit,
+    canSkip: Boolean,
 ) {
     val colors = KidFocusTheme.colors
     val alpha = if (isPast) 0.4f else 1f
@@ -353,6 +381,8 @@ private fun TimelineTaskItem(
                     if (isCurrent) Modifier.border(1.5.dp, colors.primary.copy(alpha = 0.4f), RoundedCornerShape(14.dp))
                     else Modifier
                 )
+                .clickable(onClickLabel = stringResource(R.string.home_focus_task_action, task.name)) { onStart() }
+                .testTag("daily_focus_task_${task.id}")
                 .padding(12.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -360,8 +390,8 @@ private fun TimelineTaskItem(
                     TaskVisual(
                         photoUri = task.photoUri,
                         emoji = task.emoji,
-                        modifier = Modifier.size(40.dp),
-                        emojiSize = 22.sp,
+                        modifier = Modifier.size(48.dp),
+                        emojiSize = 28.sp,
                     )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
@@ -394,23 +424,36 @@ private fun TimelineTaskItem(
                         style = MaterialTheme.typography.bodySmall,
                         color = colors.onBackground.copy(alpha = 0.5f * alpha),
                     )
-                }
-                if (!isPast) {
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(colors.primary.copy(alpha = if (isCurrent) 1f else 0.15f))
-                            .clickable { onStart() },
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Icon(
-                            Icons.Default.PlayArrow,
-                            contentDescription = stringResource(R.string.daily_start),
-                            tint = if (isCurrent) colors.onPrimary else colors.primary,
-                            modifier = Modifier.size(20.dp),
-                        )
+                    if (completed) Text(stringResource(R.string.daily_completed),
+                        style = MaterialTheme.typography.labelSmall, color = colors.primary)
+                    else if (recorded) Text(stringResource(R.string.daily_recorded),
+                        style = MaterialTheme.typography.labelSmall, color = colors.primary)
+                    if (inProgress) Text(stringResource(R.string.daily_in_progress),
+                        style = MaterialTheme.typography.labelSmall, color = colors.primary)
+                    if (skipEntry != null && !recorded && !inProgress) Text(stringResource(R.string.daily_skipped_today),
+                        style = MaterialTheme.typography.labelSmall, color = colors.onBackground)
+                    if (canSkip && !recorded && !inProgress) {
+                        androidx.compose.material3.TextButton(onClick = {
+                            if (skipEntry == null) onSkip() else onUndoSkip(skipEntry)
+                        }, modifier = Modifier.testTag("daily_skip_${task.id}")) {
+                            Text(stringResource(if (skipEntry == null) R.string.daily_skip_today else R.string.smart_undo))
+                        }
                     }
+                }
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(colors.primary.copy(alpha = if (isCurrent) 1f else 0.15f))
+                        .clickable { onStart() },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        Icons.Default.PlayArrow,
+                        contentDescription = stringResource(R.string.daily_start),
+                        tint = if (isCurrent) colors.onPrimary else colors.primary,
+                        modifier = Modifier.size(20.dp),
+                    )
                 }
             }
         }

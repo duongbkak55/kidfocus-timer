@@ -75,6 +75,8 @@ fun TodayRoutinesSection(
                 Text(stringResource(R.string.routine_view_achievements))
             }
         }
+        Text(stringResource(R.string.routine_done_scope), style = MaterialTheme.typography.bodySmall,
+            color = colors.onBackground.copy(alpha = 0.6f))
         Spacer(Modifier.height(10.dp))
         if (routines.any { !it.isCompleted }) {
             Button(

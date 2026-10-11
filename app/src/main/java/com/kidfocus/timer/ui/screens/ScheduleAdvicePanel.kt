@@ -26,11 +26,16 @@ internal fun ScheduleAdvicePanel(current: SmartScheduleUiState, busy: Boolean, a
     var expanded by remember(current.profile.id) { mutableStateOf(false) }
     var confirmRemove by remember(current.profile.id) { mutableStateOf<Set<Int>?>(null) }
     LaunchedEffect(advice.usage) { advice.usage?.let(access::updateUsage) }
-    if (config.scheduleEnabled && config.enabled && current.findings.isNotEmpty()) {
-        Button(onClick = { expanded = !expanded }, enabled = !busy) { Text(stringResource(R.string.advise_title, config.scheduleAdviseCost)) }
+    val hasTimingData = current.timingEvidence
+    if (config.scheduleEnabled && config.enabled && (current.findings.isNotEmpty() || hasTimingData)) {
+        Button(onClick = { expanded = !expanded }, enabled = !busy) {
+            Text(stringResource(if (current.findings.isEmpty()) R.string.advise_timing_title else R.string.advise_title,
+                config.scheduleAdviseCost))
+        }
     }
     if (expanded && config.scheduleEnabled && config.enabled) {
         Text(stringResource(R.string.advise_privacy), style = MaterialTheme.typography.bodySmall)
+        Text(stringResource(R.string.advise_timing_scope), style = MaterialTheme.typography.bodySmall)
         NoteTag.entries.forEach { tag ->
             FilterChip(selected = tag in advice.tags, onClick = { viewModel.toggleTag(tag) }, enabled = !busy,
                 label = { Text(stringResource(tagLabel(tag))) })
@@ -44,7 +49,10 @@ internal fun ScheduleAdvicePanel(current: SmartScheduleUiState, busy: Boolean, a
             // ADVISE uses the shared credit/question budget, not the PARSE-only free cap.
             val available = minOf(config.usage.remainingQuestions, config.usage.remainingCredits / config.scheduleAdviseCost.coerceAtLeast(1))
             Text(stringResource(R.string.advise_usage, available, config.scheduleAdviseCost))
-            Button(onClick = viewModel::requestAdvice, enabled = !busy && current.findings.isNotEmpty() && available > 0) { Text(stringResource(R.string.advise_send)) }
+            Button(onClick = viewModel::requestAdvice,
+                enabled = !busy && (current.findings.isNotEmpty() || hasTimingData) && available > 0) {
+                Text(stringResource(R.string.advise_send))
+            }
         }
     }
     advice.error?.let { error -> Text(stringResource(when (error) {
