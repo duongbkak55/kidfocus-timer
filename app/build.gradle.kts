@@ -61,8 +61,8 @@ android {
         applicationId = "com.kidfocusstudio.timer"
         minSdk = 26
         targetSdk = 36
-        versionCode = 6
-        versionName = "1.0.0-rc.4"
+        versionCode = 7
+        versionName = "1.0.0-rc.5"
         resourceConfigurations += listOf("vi", "en")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
