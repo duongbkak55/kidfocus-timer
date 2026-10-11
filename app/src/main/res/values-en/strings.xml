@@ -57,6 +57,8 @@
     <string name="home_signed_in">☁️ Signed in</string>
     <string name="home_start_focus">Start focusing!</string>
     <string name="focus_choose_activity">Which activity will you do?</string>
+    <string name="focus_planned_activities">Scheduled activities</string>
+    <string name="focus_today_routines">Today’s routines</string>
     <string name="home_focus_task_action">Focus on %1$s</string>
     <string name="focus_custom_activity">Another activity for today</string>
     <string name="focus_activity_name">Activity name</string>
@@ -340,7 +342,9 @@
     <string name="premium_privacy">Privacy</string>
     <string name="premium_terms">Terms</string>
     <string name="routine_today_title">Today’s routines</string>
-    <string name="routine_done_scope">The checkmark marks a routine only. To focus on a scheduled activity, tap Focus and choose it.</string>
+    <string name="routine_done_scope">Tap Focus to start and record time; Done only marks the routine complete.</string>
+    <string name="routine_focus_action">Focus</string>
+    <string name="routine_focus_description">Start focusing on %1$s</string>
     <string name="routine_today_empty">No routines are scheduled for today.</string>
     <string name="routine_view_achievements">Achievements</string>
     <string name="routine_start_playlist">Start step by step</string>

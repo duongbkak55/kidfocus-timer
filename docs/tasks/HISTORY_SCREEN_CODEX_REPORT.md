@@ -39,3 +39,9 @@ The earlier Focus changes were on `codex/focus-task-timing`, separate from this 
 - [Filled](focus-history/screenshots/filled.png)
 
 The Pixel was set to English, so the screenshots show English UI labels. Vietnamese strings are implemented and covered by the resource build.
+
+## Follow-up: Focus from existing routines
+
+On Pixel 9, the user found that the five existing Home items were routines, while the Start Focus picker listed only weekly scheduled tasks. Untimed routine cards offered only Done. The child can now select any unfinished routine in Start Focus, or tap **Focus** on its Home card. Both paths open the duration chooser, start Focus under that routine's name, and leave Done as a distinct manual action. The step-by-step routine screen also offers Focus and Done separately for routines without a preset timer. Finishing the timer marks the linked routine complete; pressing Stop leaves it unfinished.
+
+`RoutineFocusEntryTest` covers a routine with no preset timer: Focus and Done invoke different callbacks, and both the Home picker and the routine card start the selected routine for the chosen duration. The full Android unit suite now passes **353 tests**, 0 failures; `assembleDebug`, `lintDebug`, and `git diff --check` pass. The updated debug APK was installed with `adb install -r` on Pixel 9 and the separate Focus/Done buttons were visually confirmed on Home. No schema, permission, Functions, or production deployment changed. The user's active Focus session was left untouched; end-to-end timer completion for this follow-up remains for hands-on G3.

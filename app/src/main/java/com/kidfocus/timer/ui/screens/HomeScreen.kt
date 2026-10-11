@@ -102,6 +102,7 @@ fun HomeScreen(
     var chooseFocusTime by remember { mutableStateOf(false) }
     var chooseFocusActivity by remember { mutableStateOf(false) }
     var selectedFocusTaskId by remember { mutableStateOf<Long?>(null) }
+    var selectedFocusRoutineId by remember { mutableStateOf<Long?>(null) }
     var customFocusActivity by remember { mutableStateOf(false) }
     var customFocusName by remember { mutableStateOf("") }
     var chosenMinutes by remember(settings?.focusDurationMinutes) {
@@ -344,6 +345,7 @@ fun HomeScreen(
                         preview.forEach { task ->
                             HomeTaskPreviewRow(task) { selectedTask ->
                                 selectedFocusTaskId = selectedTask.id
+                                selectedFocusRoutineId = null
                                 customFocusActivity = false
                                 chosenMinutes = FocusTimePolicy.selection(selectedTask.focusDurationMinutes)
                                 chooseFocusTime = true
@@ -368,16 +370,14 @@ fun HomeScreen(
                 onStartRoutine = onStartRoutine,
                 onOpenProgress = onOpenRoutineProgress,
                 onComplete = routineViewModel::complete,
-                onStartTimer = { todayRoutine ->
-                    todayRoutine.routine.linkedTimerMinutes?.let { minutes ->
-                        timerViewModel.startFocusForRoutine(
-                            routineId = todayRoutine.routine.id,
-                            occurrenceDate = todayRoutine.occurrenceDate,
-                            totalSeconds = minutes * 60,
-                            activityName = todayRoutine.routine.title,
-                        )
-                        onStartFocus()
-                    }
+                onStartFocus = { todayRoutine ->
+                    selectedFocusTaskId = null
+                    selectedFocusRoutineId = todayRoutine.routine.id
+                    customFocusActivity = false
+                    chosenMinutes = FocusTimePolicy.selection(
+                        todayRoutine.routine.linkedTimerMinutes
+                            ?: settings?.focusDurationMinutes ?: TimerSettings.DEFAULT_FOCUS_MINUTES)
+                    chooseFocusTime = true
                 },
             )
 
@@ -399,7 +399,8 @@ fun HomeScreen(
             Button(
                 onClick = {
                     selectedFocusTaskId = null
-                    customFocusActivity = todayTasks.isEmpty()
+                    selectedFocusRoutineId = null
+                    customFocusActivity = todayTasks.isEmpty() && todayRoutines.none { !it.isCompleted }
                     customFocusName = ""
                     chosenMinutes = FocusTimePolicy.selection(settings?.focusDurationMinutes ?: TimerSettings.DEFAULT_FOCUS_MINUTES)
                     chooseFocusActivity = true
@@ -464,10 +465,13 @@ fun HomeScreen(
             title = { Text(stringResource(R.string.focus_choose_activity)) },
             text = {
                 Column(Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState())) {
+                    if (todayTasks.isNotEmpty()) Text(stringResource(R.string.focus_planned_activities),
+                        style = MaterialTheme.typography.labelMedium, color = colors.primary)
                     todayTasks.forEach { task ->
                         Row(
                             modifier = Modifier.fillMaxWidth().clickable {
                                 selectedFocusTaskId = task.id
+                                selectedFocusRoutineId = null
                                 customFocusActivity = false
                                 chosenMinutes = FocusTimePolicy.selection(task.focusDurationMinutes)
                             }.padding(vertical = 6.dp).testTag("focus_task_${task.id}"),
@@ -476,22 +480,51 @@ fun HomeScreen(
                             RadioButton(selected = !customFocusActivity && selectedFocusTaskId == task.id,
                                 onClick = {
                                     selectedFocusTaskId = task.id
+                                    selectedFocusRoutineId = null
                                     customFocusActivity = false
                                     chosenMinutes = FocusTimePolicy.selection(task.focusDurationMinutes)
                                 })
                             Text("${task.emoji} ${task.name}", modifier = Modifier.weight(1f))
                         }
                     }
+                    if (todayRoutines.any { !it.isCompleted }) Text(stringResource(R.string.focus_today_routines),
+                        style = MaterialTheme.typography.labelMedium, color = colors.primary)
+                    todayRoutines.filterNot { it.isCompleted }.forEach { todayRoutine ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth().clickable {
+                                selectedFocusTaskId = null
+                                selectedFocusRoutineId = todayRoutine.routine.id
+                                customFocusActivity = false
+                                chosenMinutes = FocusTimePolicy.selection(
+                                    todayRoutine.routine.linkedTimerMinutes
+                                        ?: settings?.focusDurationMinutes ?: TimerSettings.DEFAULT_FOCUS_MINUTES)
+                            }.padding(vertical = 6.dp).testTag("focus_routine_${todayRoutine.routine.id}"),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            RadioButton(selected = !customFocusActivity && selectedFocusRoutineId == todayRoutine.routine.id,
+                                onClick = {
+                                    selectedFocusTaskId = null
+                                    selectedFocusRoutineId = todayRoutine.routine.id
+                                    customFocusActivity = false
+                                    chosenMinutes = FocusTimePolicy.selection(
+                                        todayRoutine.routine.linkedTimerMinutes
+                                            ?: settings?.focusDurationMinutes ?: TimerSettings.DEFAULT_FOCUS_MINUTES)
+                                })
+                            Text("${todayRoutine.routine.emoji} ${todayRoutine.routine.title}", modifier = Modifier.weight(1f))
+                        }
+                    }
                     Row(
                         modifier = Modifier.fillMaxWidth().clickable {
                             customFocusActivity = true
                             selectedFocusTaskId = null
+                            selectedFocusRoutineId = null
                         }.padding(vertical = 6.dp).testTag("focus_custom_activity"),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         RadioButton(selected = customFocusActivity, onClick = {
                             customFocusActivity = true
                             selectedFocusTaskId = null
+                            selectedFocusRoutineId = null
                         })
                         Text(stringResource(R.string.focus_custom_activity))
                     }
@@ -507,7 +540,8 @@ fun HomeScreen(
             confirmButton = {
                 Button(
                     onClick = { chooseFocusActivity = false; chooseFocusTime = true },
-                    enabled = selectedFocusTaskId != null || (customFocusActivity && customFocusName.isNotBlank()),
+                    enabled = selectedFocusTaskId != null || selectedFocusRoutineId != null ||
+                        (customFocusActivity && customFocusName.isNotBlank()),
                     modifier = Modifier.testTag("focus_activity_next"),
                 ) { Text(stringResource(R.string.next)) }
             },
@@ -516,20 +550,31 @@ fun HomeScreen(
     }
     if (chooseFocusTime) {
         val selectedTask = todayTasks.firstOrNull { it.id == selectedFocusTaskId }
+        val selectedRoutine = todayRoutines.firstOrNull {
+            it.routine.id == selectedFocusRoutineId && !it.isCompleted
+        }
         AlertDialog(
             onDismissRequest = { chooseFocusTime = false },
             title = { Text(stringResource(R.string.focus_choose_duration)) },
             text = { Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(selectedTask?.name ?: customFocusName.trim(), style = MaterialTheme.typography.titleMedium)
+                Text(selectedTask?.name ?: selectedRoutine?.routine?.title ?: customFocusName.trim(),
+                    style = MaterialTheme.typography.titleMedium)
                 FocusDurationDial(chosenMinutes, { chosenMinutes = it }, colors.primary)
             } },
             confirmButton = {
                 Button(onClick = {
                     chooseFocusTime = false
                     if (selectedTask != null) timerViewModel.startFocusForTask(selectedTask, chosenMinutes * 60)
+                    else if (selectedRoutine != null) timerViewModel.startFocusForRoutine(
+                        routineId = selectedRoutine.routine.id,
+                        occurrenceDate = selectedRoutine.occurrenceDate,
+                        totalSeconds = chosenMinutes * 60,
+                        activityName = selectedRoutine.routine.title,
+                    )
                     else timerViewModel.startFocusForActivity(customFocusName, chosenMinutes * 60)
                     onStartFocus()
-                }, enabled = selectedTask != null || (customFocusActivity && customFocusName.isNotBlank()),
+                }, enabled = selectedTask != null || selectedRoutine != null ||
+                    (customFocusActivity && customFocusName.isNotBlank()),
                     modifier = Modifier.testTag("focus_start_selected")) {
                     Text(stringResource(R.string.home_start_focus))
                 }

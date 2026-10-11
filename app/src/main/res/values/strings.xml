@@ -62,6 +62,8 @@
     <string name="home_signed_in">☁️ Đã đăng nhập</string>
     <string name="home_start_focus">Bắt đầu tập trung!</string>
     <string name="focus_choose_activity">Con sẽ làm hoạt động nào?</string>
+    <string name="focus_planned_activities">Việc trong lịch</string>
+    <string name="focus_today_routines">Thói quen hôm nay</string>
     <string name="home_focus_task_action">Tập trung vào %1$s</string>
     <string name="focus_custom_activity">Hoạt động khác cho hôm nay</string>
     <string name="focus_activity_name">Tên hoạt động</string>
@@ -366,7 +368,9 @@
     <string name="premium_privacy">Quyền riêng tư</string>
     <string name="premium_terms">Điều khoản</string>
     <string name="routine_today_title">Thói quen hôm nay</string>
-    <string name="routine_done_scope">Dấu ✓ chỉ đánh dấu thói quen. Muốn tập trung vào một việc trong lịch, bấm Bắt đầu tập trung rồi chọn việc.</string>
+    <string name="routine_done_scope">Bấm Tập trung để bắt đầu làm và ghi thời gian; Đã xong chỉ đánh dấu hoàn thành.</string>
+    <string name="routine_focus_action">Tập trung</string>
+    <string name="routine_focus_description">Bắt đầu tập trung vào %1$s</string>
     <string name="routine_today_empty">Hôm nay chưa có việc được lên lịch.</string>
     <string name="routine_view_achievements">Thành tích</string>
     <string name="routine_start_playlist">Bắt đầu từng bước</string>

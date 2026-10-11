@@ -450,16 +450,14 @@ fun AppNavigation(
                 viewModel = routineViewModel,
                 settingsViewModel = settingsViewModel,
                 onBack = { navController.popBackStack() },
-                onStartTimer = { todayRoutine ->
-                    todayRoutine.routine.linkedTimerMinutes?.let { minutes ->
-                        timerViewModel.startFocusForRoutine(
-                            routineId = todayRoutine.routine.id,
-                            occurrenceDate = todayRoutine.occurrenceDate,
-                            totalSeconds = minutes * 60,
-                            activityName = todayRoutine.routine.title,
-                        )
-                        navController.navigate(NavRoutes.Focus.route)
-                    }
+                onStartTimer = { todayRoutine, minutes ->
+                    timerViewModel.startFocusForRoutine(
+                        routineId = todayRoutine.routine.id,
+                        occurrenceDate = todayRoutine.occurrenceDate,
+                        totalSeconds = minutes * 60,
+                        activityName = todayRoutine.routine.title,
+                    )
+                    navController.navigate(NavRoutes.Focus.route)
                 },
                 onOpenProgress = { navController.navigate(NavRoutes.RoutineProgress.route) },
             )
