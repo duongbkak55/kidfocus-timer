@@ -29,7 +29,7 @@ The earlier Focus changes were on `codex/focus-task-timing`, separate from this 
 - `JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home ./gradlew testDebugUnitTest assembleDebug lintDebug` — PASS: **350 tests**, 0 failures, 0 errors, 0 skipped; debug APK built; lint clean. Includes task-card tap and one-time title tests.
 - `npm --prefix functions test` — PASS: **173 tests**. `npm --prefix functions run lint` — PASS. The worktree first needed `npm ci --prefix functions`; dependencies are ignored, with no manifest or lockfile change.
 - `./gradlew assembleDebugAndroidTest` — PASS.
-- Pixel 9 (Android 17), synthetic screenshot instrumented test — PASS: **1 test** on the history commit. It renders only demo activities for “Bé Na”; no account or stored child data is read. The combined APK is built, but ADB currently lists no connected device and discovers no wireless service, so on-device installation of the combined branch is pending reconnection.
+- Pixel 9 (Android 17), synthetic screenshot instrumented test — PASS: **1 test** on the history commit. It renders only demo activities for “Bé Na”; no account or stored child data is read. On 2026-10-11 the combined debug APK was installed with `adb install -r` over wireless debugging, retaining app data. Package `com.kidfocusstudio.timer.debug` reports versionCode 6 / 1.0.0-rc.4; MainActivity launches and its process remains running, with no startup fatal exception in the recent logcat sample. The newly combined task flows await hands-on G3.
 - `git diff --check` — PASS.
 - The existing session policy prunes records older than 30 days when a new session is recorded; this change leaves that policy intact.
 
