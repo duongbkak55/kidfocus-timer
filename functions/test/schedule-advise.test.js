@@ -76,6 +76,16 @@ for (const fixture of fixtures.cases) {
     assert.ok(evaluateConstraints(input, advice, fixture.constraints));
   });
 }
+test("ADVISE allows a summary-only timing review with out-of-school aggregates but no findings", () => {
+  const input = clone(fixtures.cases[0].input);
+  input.findings = [];
+  input.actualStats = {recordedDays: 2, bedLateDays: 0, tasks: []};
+  const validated = validateInput(input);
+  assert.deepEqual(validateAdvice({summary: "Hai ngày được ghi nhận; cần thêm dữ liệu.", proposals: [], tags: []}, validated).proposals, []);
+  assert.throws(() => validateAdvice({summary: "", proposals: [fixtures.cases[0].expected.proposals[0]], tags: []}, validated),
+      (error) => error.checkName === "NO_FINDINGS_PROPOSALS");
+  assert.throws(() => validateInput({...input, actualStats: {recordedDays: 0, bedLateDays: 0, tasks: []}}));
+});
 test("ADVISE shared quota charges configured credits, uses separate model, never PARSE cap", async () => {
   const h = harness(undefined, {scheduleAdviseCost: 4, scheduleAdviseModel: "mock/advice", scheduleFreeDailyParses: 1});
   const reply = await h.handler(request());

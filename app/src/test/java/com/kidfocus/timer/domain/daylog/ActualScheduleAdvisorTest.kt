@@ -5,6 +5,7 @@ import com.kidfocus.timer.domain.schedule.*
 import org.junit.Test
 import org.junit.Assert.*
 import java.time.*
+import java.util.Calendar
 
 class ActualScheduleAdvisorTest {
     private val today = LocalDate.parse("2026-09-28")
@@ -61,5 +62,31 @@ class ActualScheduleAdvisorTest {
         assertEquals(setOf("recordedDays","bedLateDays","tasks"),payload.keys)
         assertFalse(payload.toString().contains("private"));assertFalse(payload.toString().contains("child"));assertFalse(payload.toString().contains("2026"))
         assertEquals("t0",(payload["tasks"] as List<*>).map { it as Map<*,*> }.single()["taskRef"])
+    }
+    @Test fun schoolOnlyRecordsDoNotCountAsChildTimingOrMissedTasks() {
+        val school = (1L..3L).map { log(today.minusDays(it), 480, 720, DayLogCategory.SCHOOL, null) }
+        val result = ActualScheduleAdvisor.evaluate(listOf(task), anchors, school, today)
+        assertEquals(0, result.stats.recordedDays)
+        assertTrue(result.stats.tasks.isEmpty())
+        assertFalse(result.findings.any { it.ruleId == RuleId.OFTEN_SKIPPED })
+        val withHomework = ActualScheduleAdvisor.evaluate(listOf(task), anchors,
+            school + log(today.minusDays(1)), today)
+        assertEquals(1, withHomework.stats.recordedDays)
+        assertEquals(1, withHomework.stats.tasks.single().completed)
+    }
+    @Test fun studyLoggedDuringSchoolHoursIsExcludedEvenWithoutSchoolCategory() {
+        val friday = today.minusDays(3)
+        val schoolHours = anchors.copy(school = listOf(Block(setOf(DayOfWeek.FRIDAY),
+            LocalTime.of(8, 0), LocalTime.of(12, 0), "School")))
+        val schoolTask = task.copy(id = 77, hour = 9, daysOfWeek = setOf(Calendar.FRIDAY))
+        val atSchool = log(friday, 540, 600, DayLogCategory.STUDY, 77)
+        val schoolOnly = ActualScheduleAdvisor.evaluate(listOf(schoolTask), schoolHours, listOf(atSchool), today)
+        assertEquals(0, schoolOnly.stats.recordedDays)
+        assertFalse(ActualScheduleAdvisor.hasTimingEvidence(schoolHours, listOf(atSchool), today))
+        val withHomework = ActualScheduleAdvisor.evaluate(listOf(task, schoolTask), schoolHours,
+            listOf(atSchool, log(friday)), today)
+        assertEquals(1, withHomework.stats.recordedDays)
+        assertEquals(listOf(42L), withHomework.stats.tasks.map { it.taskId })
+        assertTrue(ActualScheduleAdvisor.hasTimingEvidence(schoolHours, listOf(atSchool, log(friday)), today))
     }
 }

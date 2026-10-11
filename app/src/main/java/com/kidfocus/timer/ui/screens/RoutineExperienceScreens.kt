@@ -18,9 +18,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -33,6 +33,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -46,6 +49,9 @@ import androidx.compose.ui.unit.sp
 import com.kidfocus.timer.R
 import com.kidfocus.timer.domain.model.RoutineWeeklySummary
 import com.kidfocus.timer.domain.model.TodayRoutine
+import com.kidfocus.timer.domain.model.FocusTimePolicy
+import com.kidfocus.timer.domain.model.TimerSettings
+import com.kidfocus.timer.ui.components.FocusDurationDial
 import com.kidfocus.timer.ui.theme.KidFocusTheme
 import com.kidfocus.timer.ui.components.TaskVisual
 import com.kidfocus.timer.ui.viewmodel.RoutineViewModel
@@ -61,7 +67,7 @@ fun RoutineRunnerScreen(
     viewModel: RoutineViewModel,
     settingsViewModel: SettingsViewModel,
     onBack: () -> Unit,
-    onStartTimer: (TodayRoutine) -> Unit,
+    onStartTimer: (TodayRoutine, Int) -> Unit,
     onOpenProgress: () -> Unit,
 ) {
     val colors = KidFocusTheme.colors
@@ -72,6 +78,8 @@ fun RoutineRunnerScreen(
     val completedCount = routines.count { it.isCompleted }
     val progress = if (routines.isEmpty()) 0f else completedCount / routines.size.toFloat()
     val settings by settingsViewModel.settings.collectAsState()
+    var selectedFocusRoutine by remember { mutableStateOf<TodayRoutine?>(null) }
+    var chosenMinutes by remember { mutableIntStateOf(TimerSettings.DEFAULT_FOCUS_MINUTES) }
     val calmMode = settings?.calmModeEnabled ?: false
     val context = LocalContext.current
     val tts = remember(context.applicationContext) {
@@ -154,7 +162,11 @@ fun RoutineRunnerScreen(
                         routine = current,
                         calmMode = calmMode,
                         onComplete = { viewModel.complete(current) },
-                        onStartTimer = { onStartTimer(current) },
+                        onStartTimer = {
+                            selectedFocusRoutine = current
+                            chosenMinutes = FocusTimePolicy.selection(current.routine.linkedTimerMinutes
+                                ?: settings?.focusDurationMinutes ?: TimerSettings.DEFAULT_FOCUS_MINUTES)
+                        },
                     )
                     routines.drop(currentIndex + 1).firstOrNull { !it.isCompleted }?.let { next ->
                         Spacer(Modifier.height(16.dp))
@@ -194,6 +206,23 @@ fun RoutineRunnerScreen(
             }
             Spacer(Modifier.height(24.dp))
         }
+    }
+    selectedFocusRoutine?.let { routine ->
+        AlertDialog(
+            onDismissRequest = { selectedFocusRoutine = null },
+            title = { Text(stringResource(R.string.focus_choose_duration)) },
+            text = { Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(routine.routine.title, style = MaterialTheme.typography.titleMedium)
+                FocusDurationDial(chosenMinutes, { chosenMinutes = it }, colors.primary)
+            } },
+            confirmButton = { Button(onClick = {
+                selectedFocusRoutine = null
+                onStartTimer(routine, chosenMinutes)
+            }) { Text(stringResource(R.string.home_start_focus)) } },
+            dismissButton = { TextButton(onClick = { selectedFocusRoutine = null }) {
+                Text(stringResource(R.string.cancel))
+            } },
+        )
     }
 }
 
@@ -243,21 +272,15 @@ private fun CurrentRoutineCard(
                 color = colors.onSurface.copy(alpha = 0.68f),
             )
             Spacer(Modifier.height(24.dp))
-            Button(
-                onClick = if (routine.routine.linkedTimerMinutes != null) onStartTimer else onComplete,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(16.dp),
-            ) {
-                Icon(
-                    if (routine.routine.linkedTimerMinutes != null) Icons.Default.PlayArrow else Icons.Default.Check,
-                    contentDescription = null,
-                )
+            Button(onClick = onStartTimer,
+                modifier = Modifier.fillMaxWidth().height(56.dp), shape = RoundedCornerShape(16.dp)) {
+                Icon(Icons.Default.PlayArrow, contentDescription = null)
                 Spacer(Modifier.size(8.dp))
-                Text(
-                    routine.routine.linkedTimerMinutes?.let {
-                        stringResource(R.string.routine_start_timer_format, it)
-                    } ?: stringResource(R.string.routine_mark_done),
-                )
+                Text(stringResource(R.string.routine_focus_action))
+            }
+            Spacer(Modifier.height(8.dp))
+            TextButton(onClick = onComplete, modifier = Modifier.fillMaxWidth().height(48.dp)) {
+                Text(stringResource(R.string.routine_mark_done))
             }
         }
     }

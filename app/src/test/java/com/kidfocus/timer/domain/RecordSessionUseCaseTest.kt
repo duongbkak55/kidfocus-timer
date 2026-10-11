@@ -183,6 +183,31 @@ class RecordSessionUseCaseTest {
         assertEquals("child-linh", slot.captured.childProfileId)
     }
 
+    @Test
+    fun `chosen task title and id are saved while free focus stays unnamed`() = runTest {
+        val captured = mutableListOf<SessionEntity>()
+        coEvery { sessionRepository.insertSession(capture(captured)) } returns Unit
+
+        recordSessionUseCase(1500, true, scheduledTaskId = 42, taskTitle = "Đọc sách")
+        recordSessionUseCase(600, true)
+
+        assertEquals("42", captured[0].taskId)
+        assertEquals("Đọc sách", captured[0].taskTitle)
+        assertEquals(null, captured[1].taskId)
+        assertEquals(null, captured[1].taskTitle)
+    }
+
+    @Test
+    fun `natural finish and early stop are distinguishable`() = runTest {
+        val captured = mutableListOf<SessionEntity>()
+        coEvery { sessionRepository.insertSession(capture(captured)) } returns Unit
+        recordSessionUseCase(1500, true, completed = true)
+        recordSessionUseCase(300, true, completed = false)
+        assertTrue(captured[0].completed)
+        assertFalse(captured[1].completed)
+        assertEquals(300, captured[1].durationSeconds)
+    }
+
     // ---- Guard clause: invalid durations ----------------------------------------------------
 
     @Test

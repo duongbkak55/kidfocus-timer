@@ -66,10 +66,11 @@ class DayLogRepository @Inject constructor(
             old.copy(deleted = true, updatedAt = System.currentTimeMillis())
         }
     }
-    suspend fun finishTimer(id: String, endMinute: Int, atMillis: Long) {
+    suspend fun finishTimer(id: String, endMinute: Int, atMillis: Long, completed: Boolean = false) {
         dao.edit(id) { old ->
             if (old.deleted || old.source != DayLogSource.TIMER.name || old.endMinute != null) old
-            else old.copy(endMinute = endMinute, updatedAt = atMillis)
+            else old.copy(endMinute = endMinute, source = if (completed) DayLogSource.TIMER_DONE.name else old.source,
+                updatedAt = atMillis)
         }
     }
 }

@@ -15,7 +15,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         ChildProfileEntity::class,
         DayLogEntryEntity::class,
     ],
-    version = 6,
+    version = 7,
     exportSchema = true,
 )
 abstract class SessionDatabase : RoomDatabase() {
@@ -141,6 +141,15 @@ abstract class SessionDatabase : RoomDatabase() {
                     )
                 """.trimIndent())
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_day_log_entries_profile_id_date ON day_log_entries(profile_id, date)")
+            }
+        }
+
+        // v6 already belongs to day logs; keep that migration untouched for installed users.
+        val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE sessions ADD COLUMN task_id TEXT")
+                db.execSQL("ALTER TABLE sessions ADD COLUMN task_title TEXT")
+                db.execSQL("ALTER TABLE sessions ADD COLUMN completed INTEGER NOT NULL DEFAULT 1")
             }
         }
 

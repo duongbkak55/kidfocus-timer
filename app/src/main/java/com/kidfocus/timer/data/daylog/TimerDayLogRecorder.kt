@@ -11,7 +11,7 @@ import java.time.ZoneId
 import javax.inject.Inject
 import javax.inject.Singleton
 
-data class TimerLogContext(val profileId: String?, val taskId: Long?, val logId: String? = null)
+data class TimerLogContext(val profileId: String?, val taskId: Long?, val logId: String? = null, val taskTitle: String? = null)
 
 /** Owned by the existing timer service, so notification Stop and background completion also close logs. */
 @Singleton
@@ -19,26 +19,28 @@ class TimerDayLogRecorder @Inject constructor(private val logs: DayLogRepository
     private val mutex = Mutex()
     private var activeId: String? = null
     suspend fun start(taskId: Long?, freeName: String, atMillis: Long = System.currentTimeMillis(),
-        zone: ZoneId = ZoneId.systemDefault(), record: Boolean = true): TimerLogContext = mutex.withLock {
+        zone: ZoneId = ZoneId.systemDefault(), record: Boolean = true,
+        freeCategory: DayLogCategory = DayLogCategory.OTHER): TimerLogContext = mutex.withLock {
         finishLocked(atMillis, zone)
         val profileId = logs.activeProfileId() ?: return@withLock TimerLogContext(null, null)
         if (!record) return@withLock TimerLogContext(profileId, null)
         val task = taskId?.let { id -> tasks.allTasks.first().firstOrNull { it.id == id && it.childProfileId == profileId } }
         val now = Instant.ofEpochMilli(atMillis).atZone(zone)
         val entry = DayLogEntry(profileId = profileId, date = now.toLocalDate(), taskId = task?.id,
-            name = task?.name ?: freeName, category = task?.taskType?.category?.name?.let(DayLogCategory::valueOf) ?: DayLogCategory.STUDY,
+            name = task?.name ?: freeName, category = task?.taskType?.category?.name?.let(DayLogCategory::valueOf) ?: freeCategory,
             startMinute = now.hour * 60 + now.minute, source = DayLogSource.TIMER, createdAt = atMillis)
         logs.add(entry)
         activeId = entry.id
-        TimerLogContext(profileId, task?.id, entry.id)
+        TimerLogContext(profileId, task?.id, entry.id, entry.name)
     }
-    suspend fun finish(atMillis: Long = System.currentTimeMillis(), zone: ZoneId = ZoneId.systemDefault()) = mutex.withLock {
-        finishLocked(atMillis, zone)
+    suspend fun finish(atMillis: Long = System.currentTimeMillis(), zone: ZoneId = ZoneId.systemDefault(),
+        completed: Boolean = false) = mutex.withLock {
+        finishLocked(atMillis, zone, completed)
     }
-    private suspend fun finishLocked(atMillis: Long, zone: ZoneId) {
+    private suspend fun finishLocked(atMillis: Long, zone: ZoneId, completed: Boolean = false) {
         val id = activeId ?: return
         val now = Instant.ofEpochMilli(atMillis).atZone(zone)
-        logs.finishTimer(id, now.hour * 60 + now.minute, atMillis)
+        logs.finishTimer(id, now.hour * 60 + now.minute, atMillis, completed)
         activeId = null
     }
 }

@@ -40,6 +40,12 @@ interface SessionDao {
     )
     fun getSessionsSince(sinceMillis: Long): Flow<List<SessionEntity>>
 
+    @Query("DELETE FROM sessions WHERE id = :id AND child_profile_id = :profileId")
+    suspend fun deleteForProfile(id: Long, profileId: String)
+
+    @Query("DELETE FROM sessions WHERE child_profile_id = :profileId")
+    suspend fun deleteAllForProfile(profileId: String)
+
     /**
      * Returns all focus sessions with [timestampMillis] >= [sinceMillis].
      */

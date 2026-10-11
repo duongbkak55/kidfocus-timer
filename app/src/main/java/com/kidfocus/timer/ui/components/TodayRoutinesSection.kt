@@ -3,7 +3,6 @@ package com.kidfocus.timer.ui.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -23,10 +21,8 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.WarningAmber
-import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -39,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
@@ -54,7 +51,7 @@ import com.kidfocus.timer.ui.theme.KidFocusTheme
 fun TodayRoutinesSection(
     routines: List<TodayRoutine>,
     onComplete: (TodayRoutine) -> Unit,
-    onStartTimer: (TodayRoutine) -> Unit,
+    onStartFocus: (TodayRoutine) -> Unit,
     onStartRoutine: () -> Unit,
     onOpenProgress: () -> Unit,
 ) {
@@ -75,6 +72,8 @@ fun TodayRoutinesSection(
                 Text(stringResource(R.string.routine_view_achievements))
             }
         }
+        Text(stringResource(R.string.routine_done_scope), style = MaterialTheme.typography.bodySmall,
+            color = colors.onBackground.copy(alpha = 0.6f))
         Spacer(Modifier.height(10.dp))
         if (routines.any { !it.isCompleted }) {
             Button(
@@ -105,17 +104,17 @@ fun TodayRoutinesSection(
             }
         }
         routines.forEach { routine ->
-            TodayRoutineCard(routine, onComplete, onStartTimer)
+            TodayRoutineCard(routine, onComplete, onStartFocus)
             Spacer(Modifier.height(8.dp))
         }
     }
 }
 
 @Composable
-private fun TodayRoutineCard(
+internal fun TodayRoutineCard(
     todayRoutine: TodayRoutine,
     onComplete: (TodayRoutine) -> Unit,
-    onStartTimer: (TodayRoutine) -> Unit,
+    onStartFocus: (TodayRoutine) -> Unit,
 ) {
     val colors = KidFocusTheme.colors
     val statusText = when (todayRoutine.status) {
@@ -146,72 +145,62 @@ private fun TodayRoutineCard(
         todayRoutine.routine.title,
     )
     val completedStateDescription = stringResource(R.string.routine_completed_description)
-    val notCompletedDescription = stringResource(R.string.routine_not_completed_description)
+    val focusDescription = stringResource(R.string.routine_focus_description, todayRoutine.routine.title)
     val completedItemDescription = stringResource(
         R.string.routine_completed_item_description,
         todayRoutine.routine.title,
     )
-    val timerMinutes = todayRoutine.routine.linkedTimerMinutes
-    val startTimerDescription = timerMinutes?.let {
-        stringResource(
-            R.string.routine_start_timer_description,
-            it,
-            todayRoutine.routine.title,
-        )
-    }
-
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = colors.surface,
         tonalElevation = 1.dp,
         modifier = Modifier.fillMaxWidth(),
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .heightIn(min = 64.dp)
                 .padding(horizontal = 12.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
         ) {
-            TaskVisual(
-                photoUri = todayRoutine.routine.photoUri,
-                emoji = todayRoutine.routine.emoji,
-                modifier = Modifier.width(44.dp).height(44.dp),
-            )
-            Spacer(Modifier.width(10.dp))
-            Column(
-                Modifier
-                    .weight(1f)
-                    .semantics(mergeDescendants = true) {},
-            ) {
-                Text(
-                    todayRoutine.routine.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = colors.onSurface,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                TaskVisual(
+                    photoUri = todayRoutine.routine.photoUri,
+                    emoji = todayRoutine.routine.emoji,
+                    modifier = Modifier.width(44.dp).height(44.dp),
                 )
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        statusIcon,
-                        contentDescription = null,
-                        tint = statusColor,
-                        modifier = Modifier.size(14.dp),
-                    )
-                    Spacer(Modifier.width(4.dp))
+                Spacer(Modifier.width(10.dp))
+                Column(
+                    Modifier
+                        .weight(1f)
+                        .semantics(mergeDescendants = true) {},
+                ) {
                     Text(
-                        statusText,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = statusColor,
-                        maxLines = 1,
+                        todayRoutine.routine.title,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = colors.onSurface,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            statusIcon,
+                            contentDescription = null,
+                            tint = statusColor,
+                            modifier = Modifier.size(14.dp),
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            statusText,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = statusColor,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
                 }
-            }
-            Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(8.dp))
 
-            when {
-                todayRoutine.isCompleted -> {
+                if (todayRoutine.isCompleted) {
                     Surface(
                         modifier = Modifier
                             .width(48.dp)
@@ -233,44 +222,26 @@ private fun TodayRoutineCard(
                         }
                     }
                 }
-                timerMinutes != null -> {
-                    Button(
-                        onClick = { onStartTimer(todayRoutine) },
-                        modifier = Modifier
-                            .height(48.dp)
-                            .widthIn(min = 72.dp)
-                            .semantics { contentDescription = startTimerDescription.orEmpty() },
-                        shape = RoundedCornerShape(12.dp),
-                        contentPadding = PaddingValues(horizontal = 10.dp),
-                    ) {
-                        Icon(
-                            Icons.Default.PlayArrow,
-                            contentDescription = null,
-                        )
-                        Spacer(Modifier.width(2.dp))
-                        Text("$timerMinutes′")
+            }
+            if (!todayRoutine.isCompleted) {
+                Spacer(Modifier.height(8.dp))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically) {
+                    Button(onClick = { onStartFocus(todayRoutine) },
+                        modifier = Modifier.height(48.dp)
+                            .testTag("routine_focus_${todayRoutine.routine.id}")
+                            .semantics { contentDescription = focusDescription },
+                        shape = RoundedCornerShape(12.dp)) {
+                        Icon(Icons.Default.PlayArrow, contentDescription = null)
+                        Spacer(Modifier.width(4.dp))
+                        Text(stringResource(R.string.routine_focus_action))
                     }
-                }
-                else -> {
-                    IconToggleButton(
-                        checked = false,
-                        onCheckedChange = { checked ->
-                            if (checked) onComplete(todayRoutine)
-                        },
-                        modifier = Modifier
-                            .size(48.dp)
-                            .semantics {
-                                role = Role.Checkbox
-                                stateDescription = notCompletedDescription
-                                contentDescription = markDoneDescription
-                            },
-                    ) {
-                        Icon(
-                            Icons.Outlined.CheckCircle,
-                            contentDescription = null,
-                            tint = colors.primary,
-                            modifier = Modifier.size(28.dp),
-                        )
+                    Spacer(Modifier.width(8.dp))
+                    TextButton(onClick = { onComplete(todayRoutine) },
+                        modifier = Modifier.height(48.dp)
+                            .testTag("routine_done_${todayRoutine.routine.id}")
+                            .semantics { contentDescription = markDoneDescription }) {
+                        Text(stringResource(R.string.routine_mark_done))
                     }
                 }
             }

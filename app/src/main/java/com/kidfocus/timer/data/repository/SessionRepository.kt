@@ -25,6 +25,10 @@ class SessionRepository @Inject constructor(
     fun getSessionsSince(sinceMillis: Long): Flow<List<SessionEntity>> =
         sessionDao.getSessionsSince(sinceMillis)
 
+    suspend fun deleteForProfile(id: Long, profileId: String) = sessionDao.deleteForProfile(id, profileId)
+
+    suspend fun deleteAllForProfile(profileId: String) = sessionDao.deleteAllForProfile(profileId)
+
     /**
      * Returns a [Flow] of focus-only sessions since [sinceMillis].
      */

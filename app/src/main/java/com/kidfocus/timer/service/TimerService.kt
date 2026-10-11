@@ -24,6 +24,7 @@ import com.kidfocus.timer.R
 import com.kidfocus.timer.data.datastore.SettingsDataStore
 import com.kidfocus.timer.domain.model.TimerPhase
 import com.kidfocus.timer.domain.model.FocusTimePolicy
+import com.kidfocus.timer.domain.model.EarlyFocusCompletion
 import com.kidfocus.timer.domain.model.TimerState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -74,10 +75,13 @@ class TimerService : Service() {
         /** Returns the [StateFlow] of [TimerState] for UI observation. */
         val timerState: StateFlow<TimerState> get() = this@TimerService.timerState
 
-        fun startFocus(totalSeconds: Int, taskId: Long? = null) = this@TimerService.startCountdown(
+        fun startFocus(totalSeconds: Int, taskId: Long? = null, activityName: String? = null,
+            category: com.kidfocus.timer.domain.daylog.DayLogCategory = com.kidfocus.timer.domain.daylog.DayLogCategory.OTHER) = this@TimerService.startCountdown(
             phase = TimerPhase.Focus,
             totalSeconds = totalSeconds,
             taskId = taskId,
+            activityName = activityName,
+            activityCategory = category,
         )
 
         fun startBreak(totalSeconds: Int) = this@TimerService.startCountdown(
@@ -88,6 +92,7 @@ class TimerService : Service() {
         fun pause() = this@TimerService.pauseTimer()
         fun resume() = this@TimerService.resumeTimer()
         fun extendFocus(minutes: Int) = this@TimerService.extendFocus(minutes)
+        fun completeEarly() = this@TimerService.completeEarly()
         fun stop() = this@TimerService.stopTimer()
     }
 
@@ -125,7 +130,12 @@ class TimerService : Service() {
                 val seconds = intent.getIntExtra(EXTRA_TOTAL_SECONDS, DEFAULT_FOCUS_SECONDS)
                 serviceScope.launch {
                     restoreCompletedSessionsIfNeeded()
-                    startCountdown(TimerPhase.Focus, seconds, taskId = intent.getLongExtra(EXTRA_TASK_ID, 0L).takeIf { it > 0 })
+                    startCountdown(TimerPhase.Focus, seconds,
+                        taskId = intent.getLongExtra(EXTRA_TASK_ID, 0L).takeIf { it > 0 },
+                        activityName = intent.getStringExtra(EXTRA_ACTIVITY_NAME),
+                        activityCategory = intent.getStringExtra(EXTRA_ACTIVITY_CATEGORY)
+                            ?.let { value -> com.kidfocus.timer.domain.daylog.DayLogCategory.entries.firstOrNull { it.name == value } }
+                            ?: com.kidfocus.timer.domain.daylog.DayLogCategory.OTHER)
                 }
             }
             ACTION_START_BREAK -> {
@@ -138,6 +148,7 @@ class TimerService : Service() {
             ACTION_PAUSE -> pauseTimer()
             ACTION_RESUME -> resumeTimer()
             ACTION_EXTEND_FOCUS -> extendFocus(intent.getIntExtra(EXTRA_EXTEND_MINUTES, 0))
+            ACTION_COMPLETE_EARLY -> completeEarly()
             ACTION_STOP -> stopTimer()
         }
         return START_STICKY
@@ -166,14 +177,18 @@ class TimerService : Service() {
 
     // ---- Timer logic ----------------------------------------------------------------------------
 
-    private fun startCountdown(phase: TimerPhase, totalSeconds: Int, remainingSeconds: Int = totalSeconds, isResume: Boolean = false, taskId: Long? = null) {
-        commands.trySend { beginCountdown(phase, totalSeconds, remainingSeconds, isResume, taskId) }
+    private fun startCountdown(phase: TimerPhase, totalSeconds: Int, remainingSeconds: Int = totalSeconds, isResume: Boolean = false, taskId: Long? = null, activityName: String? = null,
+        activityCategory: com.kidfocus.timer.domain.daylog.DayLogCategory = com.kidfocus.timer.domain.daylog.DayLogCategory.OTHER) {
+        commands.trySend { beginCountdown(phase, totalSeconds, remainingSeconds, isResume, taskId, activityName, activityCategory) }
     }
 
-    private suspend fun beginCountdown(phase: TimerPhase, totalSeconds: Int, remainingSeconds: Int, isResume: Boolean, taskId: Long?, extendedMinutes: Int = 0) {
+    private suspend fun beginCountdown(phase: TimerPhase, totalSeconds: Int, remainingSeconds: Int, isResume: Boolean, taskId: Long?, activityName: String? = null,
+        activityCategory: com.kidfocus.timer.domain.daylog.DayLogCategory = com.kidfocus.timer.domain.daylog.DayLogCategory.OTHER,
+        extendedMinutes: Int = 0) {
         countdownJob?.cancel()
         val generation = ++countdownGeneration
-        if (!isResume) logContext = safeStartLog(taskId, phase.isFocus)
+        val safeName = activityName?.trim()?.take(80)?.takeIf { it.isNotEmpty() }
+        if (!isResume) logContext = safeStartLog(taskId, phase.isFocus, safeName, activityCategory)
 
         val completedSessions = _timerState.value.completedFocusSessions
 
@@ -186,6 +201,7 @@ class TimerService : Service() {
                 isPaused = false,
                 completedFocusSessions = completedSessions,
                 extendedMinutes = extendedMinutes,
+                activityName = if (phase.isFocus) safeName else null,
             )
         }
 
@@ -223,6 +239,7 @@ class TimerService : Service() {
             remainingSeconds = state.remainingSeconds,
             isResume = true,
             taskId = logContext.taskId,
+            activityName = state.activityName,
             extendedMinutes = state.extendedMinutes,
         )
     } }
@@ -234,7 +251,8 @@ class TimerService : Service() {
         // Persist against the actual log ID, never a guessed task occurrence or Room schema.
         if (logContext.taskId != null) logContext.logId?.let { settingsDataStore.addFocusExtension(it, minutes) }
         if (next.isRunning) beginCountdown(next.phase, next.totalSeconds, next.remainingSeconds,
-            isResume = true, taskId = logContext.taskId, extendedMinutes = next.extendedMinutes)
+            isResume = true, taskId = logContext.taskId, activityName = next.activityName,
+            extendedMinutes = next.extendedMinutes)
         else {
             _timerState.value = next
             updateNotification(next.remainingSeconds, next.phase)
@@ -245,23 +263,51 @@ class TimerService : Service() {
         countdownJob?.cancel()
         countdownJob = null
         countdownGeneration++
+        val stopped = _timerState.value
+        val context = logContext
         safeFinishLog()
+        val elapsed = (stopped.totalSeconds - stopped.remainingSeconds).coerceAtLeast(0)
+        if (context.profileId != null && elapsed > 0 && stopped.phase != TimerPhase.Idle) {
+            try {
+                recordSession(elapsed, stopped.phase.isFocus, scheduledTaskId = context.taskId,
+                    profileId = context.profileId, taskTitle = context.taskTitle, completed = false)
+            } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                android.util.Log.w("KidFocusTimer", "SESSION_RECORD_FAILED")
+            }
+        }
+        logContext = com.kidfocus.timer.data.daylog.TimerLogContext(null, null)
         _timerState.update { TimerState.IDLE.copy(completedFocusSessions = it.completedFocusSessions) }
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     } }
 
-    private suspend fun onPhaseCompleted(phase: TimerPhase, previousCompletedSessions: Int) {
-        safeFinishLog()
+    private fun completeEarly() { commands.trySend {
+        val state = _timerState.value
+        val elapsed = EarlyFocusCompletion.elapsedSeconds(state) ?: return@trySend
+        countdownJob?.cancel()
+        countdownJob = null
+        countdownGeneration++
+        onPhaseCompleted(TimerPhase.Focus, state.completedFocusSessions, elapsed)
+    } }
+
+    private suspend fun onPhaseCompleted(phase: TimerPhase, previousCompletedSessions: Int,
+        actualDurationSeconds: Int? = null) {
+        safeFinishLog(completed = phase.isFocus)
+        val durationSeconds = actualDurationSeconds ?: _timerState.value.totalSeconds
         try {
-            if (logContext.profileId != null) recordSession(_timerState.value.totalSeconds, phase.isFocus, scheduledTaskId = logContext.taskId, profileId = logContext.profileId)
+            if (logContext.profileId != null) recordSession(durationSeconds, phase.isFocus,
+                scheduledTaskId = logContext.taskId, profileId = logContext.profileId,
+                taskTitle = logContext.taskTitle, completed = true)
         } catch (e: Exception) { if (e is kotlinx.coroutines.CancellationException) throw e; android.util.Log.w("KidFocusTimer", "SESSION_RECORD_FAILED") }
+        logContext = com.kidfocus.timer.data.daylog.TimerLogContext(null, null)
         val newCompletedCount = if (phase.isFocus) previousCompletedSessions + 1
         else previousCompletedSessions
 
         _timerState.update {
             it.copy(
                 remainingSeconds = 0,
+                totalSeconds = durationSeconds,
                 isRunning = false,
                 isPaused = false,
                 completedFocusSessions = newCompletedCount,
@@ -283,16 +329,17 @@ class TimerService : Service() {
         stopSelf()
     }
 
-    private suspend fun safeStartLog(taskId: Long?, record: Boolean): com.kidfocus.timer.data.daylog.TimerLogContext = try {
-        dayLogRecorder.start(taskId, getString(R.string.daylog_free_timer), record = record)
+    private suspend fun safeStartLog(taskId: Long?, record: Boolean, activityName: String?,
+        category: com.kidfocus.timer.domain.daylog.DayLogCategory): com.kidfocus.timer.data.daylog.TimerLogContext = try {
+        dayLogRecorder.start(taskId, activityName ?: getString(R.string.daylog_free_timer), record = record, freeCategory = category)
     } catch (e: Exception) {
         if (e is kotlinx.coroutines.CancellationException) throw e
         android.util.Log.w("KidFocusTimer", "DAY_LOG_START_FAILED")
         com.kidfocus.timer.data.daylog.TimerLogContext(null, null)
     }
 
-    private suspend fun safeFinishLog() {
-        try { dayLogRecorder.finish() }
+    private suspend fun safeFinishLog(completed: Boolean = false) {
+        try { dayLogRecorder.finish(completed = completed) }
         catch (e: Exception) { if (e is kotlinx.coroutines.CancellationException) throw e; android.util.Log.w("KidFocusTimer", "DAY_LOG_END_FAILED") }
     }
 
@@ -437,8 +484,11 @@ class TimerService : Service() {
         const val ACTION_PAUSE = "com.kidfocus.timer.ACTION_PAUSE"
         const val ACTION_RESUME = "com.kidfocus.timer.ACTION_RESUME"
         const val ACTION_EXTEND_FOCUS = "com.kidfocus.timer.ACTION_EXTEND_FOCUS"
+        const val ACTION_COMPLETE_EARLY = "com.kidfocus.timer.ACTION_COMPLETE_EARLY"
         const val ACTION_STOP = "com.kidfocus.timer.ACTION_STOP"
         const val EXTRA_TASK_ID = "extra_scheduled_task_id"
+        const val EXTRA_ACTIVITY_NAME = "extra_activity_name"
+        const val EXTRA_ACTIVITY_CATEGORY = "extra_activity_category"
         const val EXTRA_TOTAL_SECONDS = "extra_total_seconds"
         const val EXTRA_EXTEND_MINUTES = "extra_extend_minutes"
 
