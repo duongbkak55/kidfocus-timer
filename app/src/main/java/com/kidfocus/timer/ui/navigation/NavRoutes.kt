@@ -16,6 +16,8 @@ sealed class NavRoutes(val route: String) {
 
     /** Main home screen showing today's stats and start button. */
     data object Home : NavRoutes("home")
+    data object FocusHistory : NavRoutes("focus_history")
+    data object ParentFocusHistory : NavRoutes("parent_focus_history")
 
     /** Active focus countdown screen. */
     data object Focus : NavRoutes("focus")

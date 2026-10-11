@@ -49,6 +49,7 @@ object DataModule {
             SessionDatabase.MIGRATION_3_4,
             SessionDatabase.MIGRATION_4_5,
             SessionDatabase.MIGRATION_5_6,
+            SessionDatabase.MIGRATION_6_7,
         )
         .build()
 

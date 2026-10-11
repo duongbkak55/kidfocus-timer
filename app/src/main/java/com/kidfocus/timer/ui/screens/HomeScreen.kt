@@ -90,6 +90,7 @@ fun HomeScreen(
     routineViewModel: RoutineViewModel = hiltViewModel(),
     childProfile: ChildProfileEntity = ChildProfileEntity.default(),
     onOpenProfilePicker: () -> Unit = {},
+    onOpenFocusHistory: () -> Unit = {},
 ) {
     val colors = KidFocusTheme.colors
     val activeChildName = childProfileName(childProfile)
@@ -291,69 +292,7 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Stats cards
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                StatCard(
-                    label = stringResource(R.string.home_today_focus_minutes),
-                    value = "$focusMinutes",
-                    modifier = Modifier.weight(1f),
-                )
-                StatCard(
-                    label = stringResource(R.string.home_today_sessions),
-                    value = "$focusCount",
-                    modifier = Modifier.weight(1f),
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Daily goal progress bar
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = colors.surface,
-                tonalElevation = 1.dp,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Text(
-                            text = stringResource(R.string.home_daily_goal),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = colors.onSurface,
-                        )
-                        Text(
-                            text = "${(goalProgress * 100).toInt()}%",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = colors.primary,
-                            fontWeight = FontWeight.Bold,
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(8.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(colors.primary.copy(alpha = 0.15f)),
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(goalProgress)
-                                .height(8.dp)
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(colors.primary),
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
+            HistoryEntryPoints(focusMinutes, focusCount, goalProgress, onOpenFocusHistory)
 
             // Today's schedule preview
             if (todayTasks.isNotEmpty()) {
@@ -545,13 +484,15 @@ private fun StatCard(
     label: String,
     value: String,
     modifier: Modifier = Modifier,
+    onClick: () -> Unit = {},
+    tag: String = "",
 ) {
     val colors = KidFocusTheme.colors
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = colors.surface,
         tonalElevation = 1.dp,
-        modifier = modifier,
+        modifier = modifier.clickable(onClick = onClick).testTag(tag),
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -570,5 +511,90 @@ private fun StatCard(
                 color = colors.onSurface.copy(alpha = 0.6f),
             )
         }
+    }
+}
+
+@Composable
+internal fun HistoryEntryPoints(
+    focusMinutes: Int,
+    focusCount: Int,
+    goalProgress: Float,
+    onOpenFocusHistory: () -> Unit,
+) {
+    val colors = KidFocusTheme.colors
+    Column {
+        // Stats cards
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            StatCard(
+                label = stringResource(R.string.home_today_focus_minutes),
+                value = "$focusMinutes",
+                modifier = Modifier.weight(1f),
+                onClick = onOpenFocusHistory,
+                tag = "history_focus_minutes",
+            )
+            StatCard(
+                label = stringResource(R.string.home_today_sessions),
+                value = "$focusCount",
+                modifier = Modifier.weight(1f),
+                onClick = onOpenFocusHistory,
+                tag = "history_sessions_today",
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Daily goal progress bar
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = colors.surface,
+            tonalElevation = 1.dp,
+            modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenFocusHistory)
+                .testTag("history_daily_goal"),
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        text = stringResource(R.string.home_daily_goal),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = colors.onSurface,
+                    )
+                    Text(
+                        text = "${(goalProgress * 100).toInt()}%",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = colors.primary,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(colors.primary.copy(alpha = 0.15f)),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(goalProgress)
+                            .height(8.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(colors.primary),
+                    )
+                }
+                TextButton(onClick = onOpenFocusHistory,
+                    modifier = Modifier.align(Alignment.End).testTag("history_view_again")) {
+                    Text(stringResource(R.string.history_view_again), color = colors.primary)
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
     }
 }

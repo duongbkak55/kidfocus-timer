@@ -58,6 +58,7 @@ fun ParentSettingsScreen(
     onOpenCloudSync: () -> Unit = {},
     onOpenSubscription: () -> Unit = {},
     onOpenChildProfiles: () -> Unit = {},
+    onOpenFocusHistory: () -> Unit = {},
     cloudAccount: CloudAccount = CloudAccount(configured = false),
     cloudSyncStatus: CloudSyncStatus = CloudSyncStatus.LocalOnly,
 ) {
@@ -159,6 +160,11 @@ fun ParentSettingsScreen(
 
             // Section: Timer durations
             SectionHeader(text = stringResource(R.string.parent_section_timer))
+            Spacer(modifier = Modifier.height(12.dp))
+            SettingRow(icon = "📚", title = stringResource(R.string.history_manage),
+                subtitle = stringResource(R.string.history_clear_all),
+                onClick = onOpenFocusHistory,
+                trailingContent = { Text("›", style = MaterialTheme.typography.headlineSmall) })
             Spacer(modifier = Modifier.height(12.dp))
 
             SettingSliderRow(

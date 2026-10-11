@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 /**
- * Room entity representing one completed timer session.
+ * Room entity representing one finished or manually stopped timer session.
  *
  * @property id Auto-generated primary key.
  * @property durationSeconds How many seconds the session lasted.
@@ -31,6 +31,12 @@ data class SessionEntity(
     val childProfileId: String = ChildProfileEntity.DEFAULT_ID,
     @ColumnInfo(name = "scheduled_task_id")
     val scheduledTaskId: Long? = null,
+    @ColumnInfo(name = "task_id")
+    val taskId: String? = null,
+    @ColumnInfo(name = "task_title")
+    val taskTitle: String? = null,
+    @ColumnInfo(name = "completed", defaultValue = "1")
+    val completed: Boolean = true,
 ) {
     /** Duration expressed as whole minutes, rounded down. */
     val durationMinutes: Int get() = durationSeconds / 60

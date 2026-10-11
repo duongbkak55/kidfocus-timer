@@ -1,5 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="history_title">Completed</string>
+    <string name="history_this_week">This week</string>
+    <string name="history_week_totals">%1$d focus minutes · %2$d sessions</string>
+    <string name="history_mon">Mon</string><string name="history_tue">Tue</string>
+    <string name="history_wed">Wed</string><string name="history_thu">Thu</string>
+    <string name="history_fri">Fri</string><string name="history_sat">Sat</string>
+    <string name="history_sun">Sun</string>
+    <string name="history_today">Today</string>
+    <string name="history_yesterday">Yesterday</string>
+    <string name="history_empty">No sessions yet – tap Start focusing!</string>
+    <string name="history_free_focus">Free focus</string>
+    <string name="history_duration">%1$d min</string>
+    <string name="history_routine_done">Routine completed</string>
+    <string name="history_stopped_early">Stopped early</string>
+    <string name="history_view_again">Review ›</string>
+    <string name="history_view">View history</string>
+    <string name="history_manage">Manage focus history</string>
+    <string name="history_clear_all">Clear this child’s focus sessions</string>
+    <string name="history_delete_confirm">Confirm deletion</string>
+    <string name="history_delete_one_confirm">Delete this focus session?</string>
+    <string name="history_clear_all_confirm">Delete all focus sessions for the selected child?</string>
     <string name="app_name">KidFocus</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>

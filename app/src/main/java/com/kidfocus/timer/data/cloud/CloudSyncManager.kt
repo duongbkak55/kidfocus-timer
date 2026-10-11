@@ -258,8 +258,13 @@ class CloudSyncManager @Inject constructor(
         _status.value = CloudSyncStatus.Syncing
         try {
             val localSessions = sessionDao.getAllForSync().associateBy { it.id }
-            val sessions = snapshot.mapList("sessions").mapNotNull(::sessionFromCloud).map { remote ->
-                remote.copy(scheduledTaskId = localSessions[remote.id]?.scheduledTaskId)
+            val sessions = snapshot.mapList("sessions").mapNotNull { map ->
+                val remote = sessionFromCloud(map) ?: return@mapNotNull null
+                val local = localSessions[remote.id]
+                remote.copy(scheduledTaskId = local?.scheduledTaskId,
+                    taskId = remote.taskId ?: local?.taskId,
+                    taskTitle = remote.taskTitle ?: local?.taskTitle,
+                    completed = if (map.containsKey("completed")) remote.completed else local?.completed ?: true)
             }
             val localTasks = scheduledTaskDao.getAllForSync().associateBy { it.id }
             val tasks = snapshot.mapList("scheduledTasks").mapNotNull(::taskFromCloud).map { remote ->
@@ -373,6 +378,7 @@ private fun SessionEntity.toCloudMap() = mapOf(
     "id" to id, "durationSeconds" to durationSeconds,
     "isFocus" to isFocus, "timestampMillis" to timestampMillis,
     "childProfileId" to childProfileId,
+    "taskId" to taskId, "taskTitle" to taskTitle, "completed" to completed,
 )
 
 private fun ScheduledTaskEntity.toCloudMap() = mapOf(
@@ -456,6 +462,9 @@ private fun sessionFromCloud(map: Map<*, *>): SessionEntity? = runCatching {
         isFocus = map.bool("isFocus"),
         timestampMillis = map.long("timestampMillis"),
         childProfileId = map.string("childProfileId", ChildProfileEntity.DEFAULT_ID),
+        taskId = (map["taskId"] as? String)?.takeIf { it.isNotBlank() },
+        taskTitle = (map["taskTitle"] as? String)?.takeIf { it.isNotBlank() },
+        completed = map.bool("completed", true),
     )
 }.getOrNull()?.takeIf { it.id > 0 && it.timestampMillis > 0 }
 

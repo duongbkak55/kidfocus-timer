@@ -245,7 +245,20 @@ class TimerService : Service() {
         countdownJob?.cancel()
         countdownJob = null
         countdownGeneration++
+        val stopped = _timerState.value
+        val context = logContext
         safeFinishLog()
+        val elapsed = (stopped.totalSeconds - stopped.remainingSeconds).coerceAtLeast(0)
+        if (context.profileId != null && elapsed > 0 && stopped.phase != TimerPhase.Idle) {
+            try {
+                recordSession(elapsed, stopped.phase.isFocus, scheduledTaskId = context.taskId,
+                    profileId = context.profileId, taskTitle = context.taskTitle, completed = false)
+            } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                android.util.Log.w("KidFocusTimer", "SESSION_RECORD_FAILED")
+            }
+        }
+        logContext = com.kidfocus.timer.data.daylog.TimerLogContext(null, null)
         _timerState.update { TimerState.IDLE.copy(completedFocusSessions = it.completedFocusSessions) }
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
@@ -254,8 +267,11 @@ class TimerService : Service() {
     private suspend fun onPhaseCompleted(phase: TimerPhase, previousCompletedSessions: Int) {
         safeFinishLog()
         try {
-            if (logContext.profileId != null) recordSession(_timerState.value.totalSeconds, phase.isFocus, scheduledTaskId = logContext.taskId, profileId = logContext.profileId)
+            if (logContext.profileId != null) recordSession(_timerState.value.totalSeconds, phase.isFocus,
+                scheduledTaskId = logContext.taskId, profileId = logContext.profileId,
+                taskTitle = logContext.taskTitle, completed = true)
         } catch (e: Exception) { if (e is kotlinx.coroutines.CancellationException) throw e; android.util.Log.w("KidFocusTimer", "SESSION_RECORD_FAILED") }
+        logContext = com.kidfocus.timer.data.daylog.TimerLogContext(null, null)
         val newCompletedCount = if (phase.isFocus) previousCompletedSessions + 1
         else previousCompletedSessions
 

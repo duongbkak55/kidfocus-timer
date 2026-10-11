@@ -44,6 +44,7 @@ fun CelebrationScreen(
     settingsViewModel: SettingsViewModel,
     onStartBreak: () -> Unit,
     onGoHome: () -> Unit,
+    onOpenFocusHistory: () -> Unit = {},
 ) {
     val colors = KidFocusTheme.colors
     val settings by settingsViewModel.settings.collectAsState()
@@ -135,6 +136,11 @@ fun CelebrationScreen(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium,
                 )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            OutlinedButton(onClick = onOpenFocusHistory,
+                modifier = Modifier.fillMaxWidth().height(52.dp)) {
+                Text(stringResource(R.string.history_view))
             }
         }
     }

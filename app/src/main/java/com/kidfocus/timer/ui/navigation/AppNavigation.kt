@@ -20,6 +20,7 @@ import com.kidfocus.timer.ui.screens.BreakScreen
 import com.kidfocus.timer.ui.screens.CelebrationScreen
 import com.kidfocus.timer.ui.screens.CloudSyncScreen
 import com.kidfocus.timer.ui.screens.FocusScreen
+import com.kidfocus.timer.ui.screens.FocusHistoryScreen
 import com.kidfocus.timer.ui.screens.HomeScreen
 import com.kidfocus.timer.ui.screens.LearningHubScreen
 import com.kidfocus.timer.ui.screens.LearningProgressScreen
@@ -45,6 +46,7 @@ import com.kidfocus.timer.ui.viewmodel.ScheduleViewModel
 import com.kidfocus.timer.ui.viewmodel.SettingsViewModel
 import com.kidfocus.timer.ui.viewmodel.TimerViewModel
 import com.kidfocus.timer.ui.viewmodel.ChildProfileViewModel
+import com.kidfocus.timer.ui.viewmodel.FocusHistoryViewModel
 import com.kidfocus.timer.ui.screens.ChildProfilePickerScreen
 import com.kidfocus.timer.ui.screens.ChildProfileSettingsScreen
 
@@ -157,7 +159,14 @@ fun AppNavigation(
                 cloudSyncStatus = cloudSyncStatus,
                 childProfile = activeChildProfile,
                 onOpenProfilePicker = { navController.navigate(NavRoutes.ChildProfilePicker.route) },
+                onOpenFocusHistory = { navController.navigate(NavRoutes.FocusHistory.route) },
             )
+        }
+
+        composable(NavRoutes.FocusHistory.route) {
+            val historyViewModel: FocusHistoryViewModel = hiltViewModel()
+            val history by historyViewModel.history.collectAsState()
+            FocusHistoryScreen(history = history, onBack = { navController.popBackStack() })
         }
 
         // ---- Focus ----------------------------------------------------------------------------
@@ -217,6 +226,7 @@ fun AppNavigation(
                         popUpTo(NavRoutes.Celebration.route) { inclusive = true }
                     }
                 },
+                onOpenFocusHistory = { navController.navigate(NavRoutes.FocusHistory.route) },
             )
         }
 
@@ -250,9 +260,17 @@ fun AppNavigation(
                 onOpenCloudSync = { navController.navigate(NavRoutes.CloudSync.route) },
                 onOpenSubscription = { navController.navigate(NavRoutes.Subscription.route) },
                 onOpenChildProfiles = { navController.navigate(NavRoutes.ChildProfileSettings.route) },
+                onOpenFocusHistory = { navController.navigate(NavRoutes.ParentFocusHistory.route) },
                 cloudAccount = cloudAccount,
                 cloudSyncStatus = cloudSyncStatus,
             )
+        }
+
+        parentScheduleDestination(NavRoutes.ParentFocusHistory.route, navController, settingsViewModel) {
+            val historyViewModel: FocusHistoryViewModel = hiltViewModel()
+            val history by historyViewModel.history.collectAsState()
+            FocusHistoryScreen(history = history, onBack = { navController.popBackStack() },
+                onDeleteOne = historyViewModel::deleteOne, onDeleteAll = historyViewModel::deleteAll)
         }
 
         composable(NavRoutes.CloudSync.route) {
