@@ -12,10 +12,10 @@ const SYSTEM_PROMPT = `RÀNG BUỘC CỨNG — kiểm từng đề xuất trư�
 2. Không REMOVE nhóm học tập (${[...STUDY_TYPES].join(", ")}; không có thông tin nguồn gốc trường). Không thêm hoạt động mới.
 3. MOVE cần start, RESIZE cần durationMin 1..120, REMOVE không có giờ/thời lượng; SET_BED/SET_WAKE cần start và không taskRef.
 4. SET_BED/SET_WAKE phải là GIỜ ĐÍCH đủ để giải quyết finding, kể cả khi cách giờ hiện tại hơn 30 phút. Không trả một bước trung gian chưa giải quyết finding: nút "Áp dụng dần" của app tự chia từ giờ hiện tại đến giờ đích thành bước 15 phút mỗi 3 ngày; phụ huynh duyệt từng bước. Không tự áp dụng.
-5. Với FOCUS_TOO_LONG, RESIZE về đúng ngưỡng tối đa theo ageBand: 2-3=15 phút, 4-5=20, l1=30, l2/l3=40; đừng chỉ giảm một phần mà vẫn để finding tồn tại. TEST_PRACTICE được miễn rule này.
+5. Với FOCUS_TOO_LONG, RESIZE về đúng ngưỡng tối đa theo ageBand: 2-3=15 phút, 4-5/5-6=20, l1=30, l2/l3=40; đừng chỉ giảm một phần mà vẫn để finding tồn tại. TEST_PRACTICE được miễn rule này.
 6. Chỉ dùng finding được cung cấp; fixes phải là ruleId của finding. Nếu findings=[] thì chỉ nhận xét ngắn trong summary, proposals=[]; không tự tạo finding. Không chẩn đoán, kê thuốc hoặc hứa chữa bệnh.
 TÍNH GIỜ ĐÍCH từ dữ liệu trước khi xuất proposal, không dừng ở thay đổi nhỏ chưa xóa finding:
-- SLEEP_SHORT: chọn SET_BED sao cho từ giờ ngủ đến giờ thức kế tiếp >= nhu cầu tối thiểu theo ageBand: 2-3=660 phút, 4-5=600, l1/l2/l3=540. Ví dụ thức 06:15, l1 cần giờ ngủ không muộn hơn 21:15.
+- SLEEP_SHORT: chọn SET_BED sao cho từ giờ ngủ đến giờ thức kế tiếp >= nhu cầu tối thiểu theo ageBand: 2-3=660 phút, 4-5/5-6=600, l1/l2/l3=540. Ví dụ thức 06:15, l1 cần giờ ngủ không muộn hơn 21:15.
 - LATE_HOMEWORK: MOVE để task KẾT THÚC ít nhất 60 phút trước giờ ngủ; start <= bed - 60 phút - durationMin. Ví dụ ngủ 21:00, bài 30 phút thì start <=19:30, không phải 20:00.
 - SCREEN_BEFORE_BED: MOVE GAME_TIME/TV_TIME/LEARNING_GAMES để KẾT THÚC ít nhất 60 phút trước giờ ngủ, cùng công thức start <= bed - 60 phút - durationMin. Ví dụ ngủ 21:00, màn hình 30 phút thì start <=19:30; 20:00 vẫn còn finding. Nếu không có giờ an toàn để dời, có thể REMOVE hoạt động màn hình (không phải nhóm học tập).
 - SOCIAL_JETLAG: so sánh TRUNG BÌNH giờ ngủ SAT+SUN với ngày thường; nếu cả SAT và SUN cùng ngủ muộn, SET_BED phải chọn days=[SAT,SUN], không chỉ sửa một ngày. Chọn giờ đích để chênh lệch trung bình <=60 phút (vd ngày thường 21:00, SAT/SUN 23:00 thì cả hai về 22:00 hoặc sớm hơn); đừng chỉ đổi giờ thức nếu giờ ngủ vẫn lệch.
@@ -57,7 +57,7 @@ function validateInput(raw) {
   shape(raw, ["mode", "requestId", "ageBand", "today", "locale", "tasks", "anchors", "findings", "routineStats", "note", "noteTags", "actualStats"]);
   check(raw.mode === "ADVISE");
   const requestId = text(raw.requestId, 80, 1); check(/^[a-zA-Z0-9-]+$/.test(requestId));
-  check(["2-3", "4-5", "l1", "l2", "l3"].includes(raw.ageBand));
+  check(["2-3", "4-5", "5-6", "l1", "l2", "l3"].includes(raw.ageBand));
   check(typeof raw.today === "string" && /^\d{4}-\d{2}-\d{2}$/.test(raw.today) && new Date(`${raw.today}T00:00:00Z`).toISOString().slice(0, 10) === raw.today);
   check(typeof raw.locale === "string" && /^[a-z]{2,3}(-[a-zA-Z]{2,4})?$/.test(raw.locale));
   check(Array.isArray(raw.tasks) && raw.tasks.length <= 60);

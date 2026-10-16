@@ -1,5 +1,7 @@
 package com.kidfocus.timer.ui.viewmodel
 
+import com.kidfocus.timer.domain.model.AgeBand
+
 import android.os.SystemClock
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -32,7 +34,7 @@ import kotlinx.coroutines.launch
 data class ChildLogContext(
     val profileId: String? = null,
     val avatar: String = "🐣",
-    val ageBand: String = "4-5",
+    val ageBand: String = AgeBand.DEFAULT_ID,
     val tasks: List<ScheduledTask> = emptyList(),
     val anchors: ScheduleAnchors = ScheduleAnchors(),
     val lockScreenAllowed: Boolean = true,
@@ -64,7 +66,7 @@ class ChildQuickLogViewModel @Inject constructor(
     // An invalid/missing active ID never silently selects another child on the lock screen.
     val context = combine(profiles.profiles, settings.settingsFlow, tasks.allTasks, anchors.all) { children, prefs, rows, hours ->
         val child = children.firstOrNull { it.id == prefs.activeChildProfileId }
-        ChildLogContext(child?.id, child?.avatarEmoji ?: "🐣", child?.ageBand ?: "4-5",
+        ChildLogContext(child?.id, child?.avatarEmoji ?: "🐣", child?.ageBand ?: AgeBand.DEFAULT_ID,
             rows.filter { it.childProfileId == child?.id }, child?.id?.let(hours::get) ?: ScheduleAnchors(),
             prefs.allowLockScreenChildLog)
     }.stateIn(viewModelScope, SharingStarted.Eagerly, ChildLogContext())

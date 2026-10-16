@@ -1,6 +1,7 @@
 package com.kidfocus.timer.domain.schedule
 
 import com.kidfocus.timer.domain.model.ScheduledTask
+import com.kidfocus.timer.domain.model.AgeBand
 import com.kidfocus.timer.domain.model.TaskCategory
 import com.kidfocus.timer.domain.model.TaskType
 import java.time.DayOfWeek
@@ -69,8 +70,9 @@ class ScheduleAdvisor {
         extendedMinutesByLogId: Map<String, Int> = emptyMap(),
     ): List<Finding> {
         val findings = mutableListOf<Finding>()
-        val minSleep = ScheduleThresholds.sleepMinutes.getOrElse(ageBand) { ScheduleThresholds.sleepMinutes.getValue("4-5") }
-        val maxFocus = ScheduleThresholds.focusMinutes.getOrElse(ageBand) { ScheduleThresholds.focusMinutes.getValue("4-5") }
+        val thresholds = AgeBand.fromId(ageBand) ?: AgeBand.AGE_4_5
+        val minSleep = thresholds.minimumSleepMinutes
+        val maxFocus = thresholds.maximumFocusMinutes
         val enabled = tasks.filter { it.enabled }
         DayOfWeek.entries.forEach { day ->
             val bed = anchors.bedMinute(day)

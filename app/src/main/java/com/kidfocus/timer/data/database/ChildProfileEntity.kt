@@ -3,6 +3,7 @@ package com.kidfocus.timer.data.database
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.kidfocus.timer.domain.model.AgeBand
 
 @Entity(tableName = "child_profiles")
 data class ChildProfileEntity(
@@ -24,7 +25,7 @@ data class ChildProfileEntity(
             id = DEFAULT_ID,
             name = "Bé",
             avatarEmoji = "🐣",
-            ageBand = "4-5",
+            ageBand = AgeBand.DEFAULT_ID,
             createdAtMillis = 0L,
         )
     }

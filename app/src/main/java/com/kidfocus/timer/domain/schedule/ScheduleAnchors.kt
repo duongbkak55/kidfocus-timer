@@ -2,6 +2,7 @@ package com.kidfocus.timer.domain.schedule
 
 import java.time.DayOfWeek
 import java.time.LocalTime
+import com.kidfocus.timer.domain.model.AgeBand
 
 data class ScheduleAnchors(
     val wake: Map<DayOfWeek, LocalTime> = emptyMap(),
@@ -33,8 +34,8 @@ fun LocalTime.minutes(): Int = hour * 60 + minute
 fun timeAtMinute(minute: Int): LocalTime = LocalTime.ofSecondOfDay(Math.floorMod(minute, 1440) * 60L)
 
 object ScheduleThresholds {
-    val sleepMinutes = mapOf("2-3" to 660, "4-5" to 600, "l1" to 540, "l2" to 540, "l3" to 540)
-    val focusMinutes = mapOf("2-3" to 15, "4-5" to 20, "l1" to 30, "l2" to 40, "l3" to 40)
+    val sleepMinutes = AgeBand.entries.associate { it.id to it.minimumSleepMinutes }
+    val focusMinutes = AgeBand.entries.associate { it.id to it.maximumFocusMinutes }
     const val SOCIAL_JETLAG_MINUTES = 60
     const val BEFORE_BED_MINUTES = 60
     const val HOMEWORK_START_LEAD_MINUTES = 90

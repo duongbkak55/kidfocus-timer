@@ -9,6 +9,7 @@ import com.kidfocus.timer.data.repository.LearningProgress
 import com.kidfocus.timer.data.repository.LearningRepository
 import com.kidfocus.timer.data.repository.LearningResult
 import com.kidfocus.timer.domain.model.TimerSettings
+import com.kidfocus.timer.domain.model.AgeBand
 import com.kidfocus.timer.data.repository.ChildProfileRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -66,13 +67,10 @@ class LearningViewModel @Inject constructor(
     }
 
     fun setAgeBand(ageBand: String) {
-        if (ageBand !in VALID_AGE_BANDS || ageBand == config.value.ageBand) return
+        if (!AgeBand.isValid(ageBand) || ageBand == config.value.ageBand) return
         viewModelScope.launch { childProfileRepository.updateActiveAgeBand(ageBand) }
     }
 
     fun syncNow() = repository.syncNow()
 
-    private companion object {
-        val VALID_AGE_BANDS = setOf("2-3", "4-5", "l1", "l2", "l3")
-    }
 }

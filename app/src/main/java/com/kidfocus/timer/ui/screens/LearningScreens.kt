@@ -1,5 +1,7 @@
 package com.kidfocus.timer.ui.screens
 
+import com.kidfocus.timer.domain.model.AgeBand
+
 import android.annotation.SuppressLint
 import android.graphics.Color
 import android.net.Uri
@@ -247,7 +249,7 @@ private fun handleLearningMessage(
             onResult(
                 LearningResult(
                     gameId = payload.optString("gameId", "unknown"),
-                    ageBand = payload.optString("ageBand", "4-5"),
+                    ageBand = payload.optString("ageBand", AgeBand.DEFAULT_ID),
                     score = payload.nullableInt("score"),
                     totalQuestions = total,
                     durationMillis = payload.optLong("durationMillis", 0L),

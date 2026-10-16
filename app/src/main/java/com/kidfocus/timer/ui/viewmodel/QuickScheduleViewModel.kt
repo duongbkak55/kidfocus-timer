@@ -1,5 +1,7 @@
 package com.kidfocus.timer.ui.viewmodel
 
+import com.kidfocus.timer.domain.model.AgeBand
+
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -30,7 +32,7 @@ enum class QuickScheduleError { NETWORK, QUOTA, PARSE, SIGN_IN, APP_VERIFY, DISA
 data class QuickScheduleState(
     val text: String = "", val draft: ScheduleDraft? = null, val busy: Boolean = false,
     val error: QuickScheduleError? = null, val usage: AiUsage? = null,
-    val expected: ScheduleState? = null, val profileId: String? = null, val ageBand: String = "4-5",
+    val expected: ScheduleState? = null, val profileId: String? = null, val ageBand: String = AgeBand.DEFAULT_ID,
     val saved: Boolean = false, val image: ScheduleImage? = null, val imageConfirmed: Boolean = false,
 )
 

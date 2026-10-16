@@ -19,8 +19,8 @@ function apply(input, advice) {
 function findings(state) {
   const found = [];
   const add = (rule, day, high = false) => found.push({rule, day, high});
-  const minSleep = {"2-3": 660, "4-5": 600, l1: 540, l2: 540, l3: 540}[state.ageBand];
-  const maxFocus = {"2-3": 15, "4-5": 20, l1: 30, l2: 40, l3: 40}[state.ageBand];
+  const minSleep = {"2-3": 660, "4-5": 600, "5-6": 600, l1: 540, l2: 540, l3: 540}[state.ageBand];
+  const maxFocus = {"2-3": 15, "4-5": 20, "5-6": 20, l1: 30, l2: 40, l3: 40}[state.ageBand];
   const beds = {};
   for (const [i, day] of DAYS.entries()) {
     const wake = state.anchors.wake[day] ? mins(state.anchors.wake[day]) : null;

@@ -19,6 +19,7 @@ import com.kidfocus.timer.data.database.ChildProfileDao
 import com.kidfocus.timer.data.database.ChildProfileEntity
 import com.kidfocus.timer.data.datastore.SettingsDataStore
 import com.kidfocus.timer.domain.model.AppTheme
+import com.kidfocus.timer.domain.model.AgeBand
 import com.kidfocus.timer.service.RoutineAlarmScheduler
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.UUID
@@ -312,7 +313,7 @@ class CloudSyncManager @Inject constructor(
                         soundEnabled = cloudSettings.bool("soundEnabled", local.soundEnabled),
                         vibrationEnabled = cloudSettings.bool("vibrationEnabled", local.vibrationEnabled),
                         learningAgeBand = cloudSettings.string("learningAgeBand", local.learningAgeBand)
-                            .takeIf { it in setOf("2-3", "4-5", "l1", "l2", "l3") }
+                            .takeIf(AgeBand::isValid)
                             ?: local.learningAgeBand,
                         calmModeEnabled = cloudSettings.bool("calmModeEnabled", local.calmModeEnabled),
                         allowChildExtendFocus = cloudSettings.bool("allowChildExtendFocus", local.allowChildExtendFocus),
@@ -398,7 +399,7 @@ private fun RoutineEntity.toCloudMap() = mapOf(
     "childProfileId" to childProfileId,
 )
 
-private fun ChildProfileEntity.toCloudMap() = mapOf(
+internal fun ChildProfileEntity.toCloudMap() = mapOf(
     "id" to id,
     "name" to name,
     "avatarEmoji" to avatarEmoji,
@@ -494,14 +495,12 @@ private fun routineFromCloud(map: Map<*, *>): RoutineEntity? = runCatching {
     )
 }.getOrNull()?.takeIf { it.id > 0 && it.title.isNotBlank() }
 
-private fun profileFromCloud(map: Map<*, *>): ChildProfileEntity? = runCatching {
+internal fun profileFromCloud(map: Map<*, *>): ChildProfileEntity? = runCatching {
     ChildProfileEntity(
         id = map.string("id").take(64),
         name = map.string("name").trim().take(40),
         avatarEmoji = map.string("avatarEmoji", "🐣").take(8),
-        ageBand = map.string("ageBand", "4-5").takeIf {
-            it in setOf("2-3", "4-5", "l1", "l2", "l3")
-        } ?: "4-5",
+        ageBand = AgeBand.normalize(map.string("ageBand", AgeBand.DEFAULT_ID)),
         createdAtMillis = map.long("createdAtMillis", System.currentTimeMillis()),
         archived = map.bool("archived"),
     )

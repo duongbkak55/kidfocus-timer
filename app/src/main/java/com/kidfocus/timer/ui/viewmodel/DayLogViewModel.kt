@@ -1,5 +1,7 @@
 package com.kidfocus.timer.ui.viewmodel
 
+import com.kidfocus.timer.domain.model.AgeBand
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kidfocus.timer.data.repository.*
@@ -19,7 +21,7 @@ import java.time.temporal.TemporalAdjusters
 import javax.inject.Inject
 
 data class DayLogData(val profileId: String? = null, val tasks: List<ScheduledTask> = emptyList(),
-    val anchors: ScheduleAnchors = ScheduleAnchors(), val entries: List<DayLogEntry> = emptyList(), val ageBand: String = "4-5")
+    val anchors: ScheduleAnchors = ScheduleAnchors(), val entries: List<DayLogEntry> = emptyList(), val ageBand: String = AgeBand.DEFAULT_ID)
 enum class DayLogError { INVALID, NO_PROFILE, PROFILE_CHANGED, STORAGE }
 
 @HiltViewModel

@@ -3,6 +3,7 @@ package com.kidfocus.timer.data.remote
 import com.google.firebase.functions.FirebaseFunctions
 import com.google.firebase.functions.HttpsCallableReference
 import com.kidfocus.timer.data.cloud.FirebaseAccountRepository
+import com.kidfocus.timer.domain.model.AgeBand
 import com.kidfocus.timer.domain.schedule.*
 import java.time.LocalDate
 import java.util.Locale
@@ -75,7 +76,7 @@ class ScheduleAiApi @Inject constructor(private val account: FirebaseAccountRepo
         require((text.isNotBlank() || image != null) && text.length <= 2000)
         require(image == null || image.length in 1..1_400_000)
         val payload = mapOf("requestId" to UUID.randomUUID().toString(), "text" to text,
-                "ageBand" to (ageBand.takeIf { it in ScheduleThresholds.sleepMinutes } ?: "4-5"),
+                "ageBand" to AgeBand.normalize(ageBand),
                 "today" to LocalDate.now().toString(), "locale" to Locale.getDefault().let { locale -> locale.language + (locale.country.takeIf { it.length == 2 }?.let { "-$it" } ?: "") },
                 "current" to current.tasks.take(60).map { task -> mapOf(
                     "name" to task.name.take(60), "days" to DayCodec.fromCalendar(task.daysOfWeek).sortedBy { it.value }.map { it.name.take(3) },

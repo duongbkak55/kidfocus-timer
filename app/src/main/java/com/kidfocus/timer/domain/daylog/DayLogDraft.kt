@@ -1,6 +1,6 @@
 package com.kidfocus.timer.domain.daylog
 
-import com.kidfocus.timer.domain.schedule.ScheduleThresholds
+import com.kidfocus.timer.domain.model.AgeBand
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -21,7 +21,7 @@ object DayLogDraft {
         val plans = dates.flatMap { planForDate(it, tasks, anchors) }.take(180).mapIndexed { i, p -> "p$i" to p }.toMap()
         fun time(minute: Int) = "%02d:%02d".format(Locale.ROOT, minute / 60, minute % 60)
         return DayLogRequest(mapOf("mode" to "LOG", "requestId" to requestId, "text" to text, "date" to date.toString(),
-            "ageBand" to (ageBand.takeIf { it in ScheduleThresholds.sleepMinutes } ?: "4-5"),
+            "ageBand" to AgeBand.normalize(ageBand),
             "locale" to Locale.getDefault().let { it.language + (it.country.takeIf { c -> c.length == 2 }?.let { c -> "-$c" } ?: "") },
             "plans" to plans.map { (ref, p) -> mapOf("ref" to ref, "date" to p.date.toString(), "name" to p.name.take(60),
                 "category" to p.category.name, "start" to time(p.startMinute), "durationMin" to p.durationMinutes) }), plans)

@@ -50,7 +50,7 @@ data class TimerSettings(
         const val DEFAULT_DAILY_GOAL_MINUTES = 120
         const val MIN_DAILY_GOAL_MINUTES = 30
         const val MAX_DAILY_GOAL_MINUTES = 240
-        const val DEFAULT_LEARNING_AGE_BAND = "4-5"
+        const val DEFAULT_LEARNING_AGE_BAND = AgeBand.DEFAULT_ID
         const val DEFAULT_CHILD_PROFILE_ID = "default"
     }
 }

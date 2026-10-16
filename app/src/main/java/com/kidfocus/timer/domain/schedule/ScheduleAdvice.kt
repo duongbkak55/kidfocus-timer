@@ -1,6 +1,7 @@
 package com.kidfocus.timer.domain.schedule
 
 import com.kidfocus.timer.domain.model.ScheduledTask
+import com.kidfocus.timer.domain.model.AgeBand
 import java.time.DayOfWeek
 import java.time.LocalTime
 import java.util.Locale
@@ -112,7 +113,7 @@ object ScheduleAdvicePayload {
         require(note.length <= 500)
         val taskRefs = refs.flatMap { (ref, days) -> days.values.map { it to ref } }.toMap()
         fun days(value: Set<DayOfWeek>) = value.sortedBy { it.value }.map { it.name.take(3) }
-        return mapOf("mode" to "ADVISE", "requestId" to requestId, "ageBand" to (ageBand.takeIf { it in ScheduleThresholds.sleepMinutes } ?: "4-5"), "today" to today, "locale" to locale,
+        return mapOf("mode" to "ADVISE", "requestId" to requestId, "ageBand" to AgeBand.normalize(ageBand), "today" to today, "locale" to locale,
             "tasks" to refs.map { (ref, ids) ->
                 val task = state.tasks.single { it.id == ids.values.first() }
                 mapOf("ref" to ref, "name" to task.name.take(60), "taskType" to task.taskType.name, "days" to days(ids.keys),

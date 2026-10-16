@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kidfocus.timer.R
 import com.kidfocus.timer.data.database.ChildProfileEntity
+import com.kidfocus.timer.domain.model.AgeBand
 import com.kidfocus.timer.ui.theme.KidFocusTheme
 import com.kidfocus.timer.ui.viewmodel.ChildProfileViewModel
 import com.kidfocus.timer.ui.components.childProfileName
@@ -234,7 +235,7 @@ private fun ChildProfileEditorDialog(
     val initialName = existing?.let { childProfileName(it) }.orEmpty()
     var name by remember(existing?.id) { mutableStateOf(initialName) }
     var emoji by remember(existing?.id) { mutableStateOf(existing?.avatarEmoji ?: "🐣") }
-    var ageBand by remember(existing?.id) { mutableStateOf(existing?.ageBand ?: "4-5") }
+    var ageBand by remember(existing?.id) { mutableStateOf(AgeBand.normalize(existing?.ageBand)) }
     val emojis = listOf("🐣", "🐼", "🦊", "🐰", "🐯", "🐬")
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -262,7 +263,7 @@ private fun ChildProfileEditorDialog(
                     }
                 }
                 Text(stringResource(R.string.profile_age_level), fontWeight = FontWeight.Bold)
-                listOf("2-3", "4-5", "l1", "l2", "l3").chunked(3).forEach { row ->
+                AgeBand.orderedIds.chunked(3).forEach { row ->
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         row.forEach { option ->
                             FilterChip(
@@ -287,13 +288,8 @@ private fun ChildProfileEditorDialog(
 }
 
 @Composable
-private fun profileAgeLabel(ageBand: String): String = when (ageBand) {
-    "2-3" -> stringResource(R.string.profile_age_2_3)
-    "4-5" -> stringResource(R.string.profile_age_4_5)
-    "l1" -> stringResource(R.string.profile_grade_1)
-    "l2" -> stringResource(R.string.profile_grade_2)
-    else -> stringResource(R.string.profile_grade_3)
-}
+private fun profileAgeLabel(ageBand: String): String =
+    stringResource((AgeBand.fromId(ageBand) ?: AgeBand.AGE_4_5).labelRes)
 
 @Composable
 private fun ProfileScreenLayout(

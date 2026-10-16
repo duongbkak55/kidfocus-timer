@@ -102,7 +102,7 @@ function validateInput(raw) {
   check(isObject(raw) && Object.keys(raw).every((key) => ["requestId", "text", "ageBand", "today", "locale", "current", "currentSchool", "image", "guestId"].includes(key)));
   const requestId = text(raw.requestId, 1, 80);
   check(/^[a-zA-Z0-9-]+$/.test(requestId));
-  check(["2-3", "4-5", "l1", "l2", "l3"].includes(raw.ageBand));
+  check(["2-3", "4-5", "5-6", "l1", "l2", "l3"].includes(raw.ageBand));
   check(typeof raw.today === "string" && /^\d{4}-\d{2}-\d{2}$/.test(raw.today));
   check(new Date(`${raw.today}T00:00:00Z`).toISOString().slice(0, 10) === raw.today);
   check(typeof raw.locale === "string" && /^[a-z]{2,3}(-[a-zA-Z]{2,4})?$/.test(raw.locale));

@@ -6,6 +6,7 @@ import com.google.firebase.firestore.Query
 import com.kidfocus.timer.data.cloud.FirebaseAccountRepository
 import com.kidfocus.timer.data.database.LearningAttemptDao
 import com.kidfocus.timer.data.database.LearningAttemptEntity
+import com.kidfocus.timer.domain.model.AgeBand
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -92,7 +93,7 @@ class LearningRepository @Inject constructor(
                 id = UUID.randomUUID().toString(),
                 ownerUid = uid,
                 gameId = result.gameId.trim().take(48).ifBlank { "unknown" },
-                ageBand = result.ageBand.takeIf(VALID_AGE_BANDS::contains) ?: "4-5",
+                ageBand = AgeBand.normalize(result.ageBand),
                 score = score,
                 totalQuestions = total,
                 durationMillis = result.durationMillis.coerceIn(0L, MAX_DURATION_MILLIS),
@@ -151,7 +152,6 @@ class LearningRepository @Inject constructor(
         const val COLLECTION = "learningAttempts"
         const val MAX_REMOTE_ATTEMPTS = 5_000L
         const val MAX_DURATION_MILLIS = 4 * 60 * 60 * 1_000L
-        val VALID_AGE_BANDS = setOf("2-3", "4-5", "l1", "l2", "l3")
     }
 }
 
@@ -185,16 +185,14 @@ private fun LearningAttemptEntity.toCloudMap(): Map<String, Any> = buildMap {
     put("childProfileId", childProfileId)
 }
 
-private fun DocumentSnapshot.toLearningAttempt(ownerUid: String): LearningAttemptEntity? = runCatching {
+internal fun DocumentSnapshot.toLearningAttempt(ownerUid: String): LearningAttemptEntity? = runCatching {
     val gameId = getString("gameId").orEmpty().take(48)
     val total = (get("totalQuestions") as? Number)?.toInt()?.coerceIn(1, 200)
     LearningAttemptEntity(
         id = id,
         ownerUid = ownerUid,
         gameId = gameId,
-        ageBand = getString("ageBand").orEmpty().takeIf {
-            it in setOf("2-3", "4-5", "l1", "l2", "l3")
-        } ?: "4-5",
+        ageBand = AgeBand.normalize(getString("ageBand")),
         score = (get("score") as? Number)?.toInt()?.coerceIn(0, total ?: 200),
         totalQuestions = total,
         durationMillis = (get("durationMillis") as? Number)?.toLong()

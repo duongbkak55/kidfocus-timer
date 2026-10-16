@@ -3,6 +3,7 @@ package com.kidfocus.timer.data.repository
 import com.kidfocus.timer.data.database.ChildProfileDao
 import com.kidfocus.timer.data.database.ChildProfileEntity
 import com.kidfocus.timer.data.datastore.SettingsDataStore
+import com.kidfocus.timer.domain.model.AgeBand
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -66,7 +67,7 @@ class ChildProfileRepository @Inject constructor(
         ageBand: String,
     ): ChildProfileEntity {
         require(name.isNotBlank()) { "Profile name cannot be blank" }
-        require(ageBand in VALID_AGE_BANDS) { "Unsupported age band" }
+        require(AgeBand.isValid(ageBand)) { "Unsupported age band" }
         val existing = id?.let { dao.getById(it) }
         val profile = ChildProfileEntity(
             id = existing?.id ?: UUID.randomUUID().toString(),
@@ -81,7 +82,7 @@ class ChildProfileRepository @Inject constructor(
     }
 
     suspend fun updateActiveAgeBand(ageBand: String) {
-        if (ageBand !in VALID_AGE_BANDS) return
+        if (!AgeBand.isValid(ageBand)) return
         val current = activeProfile.first()
         dao.upsert(current.copy(ageBand = ageBand))
     }
@@ -96,7 +97,4 @@ class ChildProfileRepository @Inject constructor(
         return true
     }
 
-    private companion object {
-        val VALID_AGE_BANDS = setOf("2-3", "4-5", "l1", "l2", "l3")
-    }
 }

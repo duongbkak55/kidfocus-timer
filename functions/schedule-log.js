@@ -49,7 +49,7 @@ function time(v) { check(typeof v === "string" && TIME.test(v)); return v; }
 function nearby(d, base) { return Math.abs(Date.parse(d) - Date.parse(base)) <= 86400000; }
 function validateInput(raw) {
   shape(raw, ["mode", "requestId", "text", "date", "plans", "ageBand", "locale"], ["guestId"]);
-  check(raw.mode === "LOG" && ["2-3", "4-5", "l1", "l2", "l3"].includes(raw.ageBand));
+  check(raw.mode === "LOG" && ["2-3", "4-5", "5-6", "l1", "l2", "l3"].includes(raw.ageBand));
   const requestId = text(raw.requestId, 80); check(/^[a-zA-Z0-9-]+$/.test(requestId));
   check(typeof raw.locale === "string" && /^[a-z]{2,3}(-[a-zA-Z]{2,4})?$/.test(raw.locale));
   const referenceDate = date(raw.date);
