@@ -189,3 +189,24 @@ test('tuduy is shown from 5–6 tuổi upward and never to 2–3 or 4–5', () =
     assert.equal(/'tuduy'/.test(list), shouldShow, `band ${band} tuduy visibility`);
   }
 });
+
+test('hints (first explanation line) never reveal an answer', () => {
+  for (const type of T.TYPES) for (const level of [2, 3]) {
+    forEachItem(type, level, (item, i) => {
+      if (type === 'sequence') {
+        assert.equal(item.explain[0], 'Xem các số thay đổi thế nào từ ô này sang ô bên cạnh.', `sequence hint must be a nudge, not the rule (#${i})`);
+      }
+    });
+  }
+});
+
+test('grid figures fit inside the 300×200 drawing area', () => {
+  const ui = fs.readFileSync(path.join(WWW, 'tuduy', 'tuduy-ui.js'), 'utf8');
+  const src = ui.match(/function gridGeom\(v\) \{[\s\S]*?\n/)[0];
+  const gridGeom = new Function('v', src.replace(/^function gridGeom\(v\) \{/, '').replace(/\}\s*$/, ''));
+  for (const w of [1, 2, 3, 4, 5]) for (const h of [1, 2]) for (const aspect of [1, 1.6]) {
+    const g = gridGeom({ w, h, aspect });
+    assert.ok(g.ox >= 0 && g.ox + g.W <= 300 && g.oy >= 0 && g.oy + g.H <= 200, `w${w} h${h} a${aspect}: ${JSON.stringify(g)}`);
+    assert.ok(Math.abs(g.cw / g.chh - aspect) < 1e-9, 'cell aspect preserved');
+  }
+});

@@ -278,7 +278,7 @@
         prompt: 'Tìm quy luật rồi điền số còn thiếu.',
         visual: { kind: 'sequence', values: shown },
         blanks: blanks.map((i) => ({ id: 's' + i, cell: i, answer: seq[i] })),
-        explain: [why, ...blanks.map((i) => `Ô thứ ${i + 1} là ${seq[i]}.`)],
+        explain: ['Xem các số thay đổi thế nào từ ô này sang ô bên cạnh.', why, ...blanks.map((i) => `Ô thứ ${i + 1} là ${seq[i]}.`)],
         anim: { kind: 'sequence', values: seq, order: blanks },
         rule: kind,
       };

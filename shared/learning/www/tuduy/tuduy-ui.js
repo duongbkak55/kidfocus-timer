@@ -93,7 +93,7 @@
 
   /* SVG geometry shared by the figure and the counting animation */
   function fanGeom(n) { const ax = 150, ay = 12, by = 188, x0 = 14, x1 = 286; const xs = Array.from({ length: n + 1 }, (_, i) => x0 + ((x1 - x0) * i) / n); return { ax, ay, by, xs }; }
-  function gridGeom(v) { const cw = v.aspect === 1 ? 90 : 120, chh = v.aspect === 1 ? 90 : 75; const W = cw * v.w, H = chh * v.h; return { cw, chh, W, H, ox: (300 - W) / 2, oy: (200 - H) / 2 }; }
+  function gridGeom(v) { const aspect = v.aspect || 1; const cw = Math.min(aspect === 1 ? 90 : 120, 280 / v.w, (180 / v.h) * aspect); const chh = cw / aspect; const W = cw * v.w, H = chh * v.h; return { cw, chh, W, H, ox: (300 - W) / 2, oy: (200 - H) / 2 }; }
   function figureSvg(v) {
     if (v.kind === 'fan') {
       const g = fanGeom(v.segments);
