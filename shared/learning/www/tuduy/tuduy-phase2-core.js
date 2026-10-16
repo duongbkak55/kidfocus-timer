@@ -166,8 +166,10 @@
       ['So từng hình theo hình dạng và màu sắc.', `Hình thứ ${answer + 1} khác ở ${attribute === 'shape' ? 'hình dạng' : 'màu sắc'}.`],
       { choices: range(4) });
   }
-  const CIRCLE = { x: 120, y: 120, r: 70 }, RECT = { x: 110, y: 70, w: 110, h: 110 };
-  const POINTS = [{ x: 80, y: 120 }, { x: 205, y: 120 }, { x: 150, y: 120 }, { x: 45, y: 30 }];
+  // Each centre clears both borders by at least 25 SVG units: 14 for the
+  // 27px emoji's half-box, 1 for the line, and 10 for visible white space.
+  const CIRCLE = { x: 110, y: 115, r: 65 }, RECT = { x: 100, y: 65, w: 140, h: 140 };
+  const POINTS = [{ x: 72, y: 115 }, { x: 210, y: 130 }, { x: 135, y: 120 }, { x: 30, y: 30 }];
   const OBJECTS = ['🐱','🍎','🚗','⭐'];
   function region(p, c, rect) {
     const circle = Math.hypot(p.x - c.x, p.y - c.y) < c.r;
@@ -175,7 +177,7 @@
     return (circle ? 1 : 0) + (square ? 2 : 0);
   }
   function insideOut(r, level) {
-    const dx = ri(r, -10, 10), dy = ri(r, -10, 10);
+    const dx = ri(r, -5, 5), dy = ri(r, -5, 2);
     const circle = { ...CIRCLE, x: CIRCLE.x + dx, y: CIRCLE.y + dy };
     const rect = { ...RECT, x: RECT.x + dx, y: RECT.y + dy };
     const objects = shuffle(r, OBJECTS).map((icon, i) => ({ icon, x: POINTS[i].x + dx, y: POINTS[i].y + dy }));

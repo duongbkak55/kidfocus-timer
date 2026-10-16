@@ -110,7 +110,6 @@
 #tuduy .td-triangle{position:relative;width:min(300px,90vw);aspect-ratio:300/250}
 #tuduy .td-triangle svg{width:100%;height:100%}
 #tuduy .td-tri-cell{position:absolute;transform:translate(-50%,-50%)}
-#tuduy .td-tri-sum{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-weight:800;color:#7c5cff;background:#fff;padding:2px 5px;border-radius:6px;white-space:nowrap}
 #tuduy .td-side.glow,#tuduy .td-order-slot.glow,#tuduy .td-position .glow,#tuduy .td-tri-cell.glow{filter:drop-shadow(0 0 8px #ff9f43);transform:scale(1.06)}
 #tuduy .td-region-object.glow{paint-order:stroke;stroke:#ff9f43;stroke-width:6}
 
@@ -157,6 +156,7 @@
 #tuduy .td-match-lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 #tuduy .td-ring-node.glow .td-box{box-shadow:0 0 0 5px rgba(254,202,87,.7)}
 #tuduy .td-queue{display:flex;gap:4px;width:min(320px,100%)}
+#tuduy .td-queue-front{width:min(320px,100%);text-align:left;font-size:16px;font-weight:900;color:#526186;margin-bottom:6px}
 #tuduy .td-queue .td-choice{flex:1;min-width:0;font-size:19px;padding:3px 1px}
 #tuduy .td-queue small{display:block;font-size:12px}
 #tuduy .td-venn{width:min(300px,100%)}
@@ -169,6 +169,8 @@
 #tuduy .td-dice-pairs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;width:min(320px,100%)}
 #tuduy .td-dice-pairs>div{background:#f2f7ff;border:2px solid #86a5f3;border-radius:12px;padding:6px;font-size:15px;text-align:center}
 #tuduy .td-dice-pairs b{display:block}
+#tuduy .td-dice-faces{display:flex;align-items:center;justify-content:center;gap:5px;font-weight:900}
+#tuduy .td-die{width:42px;height:42px;flex:none}
 #tuduy .td-pyr-four{width:min(320px,100%)}
 #tuduy .td-pyr-four .td-row{gap:4px;margin:5px 0}
 #tuduy .td-pyr-four .td-box{min-width:0;width:43px;height:43px;font-size:20px;padding:0}

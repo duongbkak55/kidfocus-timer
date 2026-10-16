@@ -3,6 +3,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const T = require('../www/tuduy/tuduy-core');
 const P2B = require('../www/tuduy/tuduy-phase2b-core');
+const Layout = require('../www/tuduy/tuduy-visual-layout');
 const fs = require('node:fs');
 const path = require('node:path');
 const N = Number(process.env.TUDUY_N || 100);
@@ -160,6 +161,7 @@ function independent(item, max) {
       const lv = v.left.map((e) => expression(e, max)), rv = v.right.map((e) => expression(e, max));
       assert.equal(new Set(lv).size, lv.length);
       assert.equal(new Set(rv).size, rv.length);
+      assert(v.left.every((left) => v.right.every((right) => JSON.stringify(left) !== JSON.stringify(right))));
       const permutations = (xs) => xs.length ? xs.flatMap((x) => permutations(xs.filter((y) => y !== x)).map((p) => [x, ...p])) : [[]];
       const solutions = permutations(seq(rv.length)).filter((p) => p.every((j, i) => lv[i] === rv[j]));
       assert.equal(solutions.length, 1);
@@ -190,6 +192,19 @@ for (const type of T.PHASE2B_TYPES) for (const level of [2, 3]) {
 }
 test('addTable is unavailable in the 5–6 band', () =>
   assert.throws(() => T.generate('addTable', 2, T.mkRng(1), { max: 10 })));
+test('queue has a visible front, expression tiles have no number prefix, dice show pips', () => {
+  const ui = fs.readFileSync(path.join(__dirname, '../www/tuduy/tuduy-ui.js'), 'utf8');
+  assert.match(ui,/td-queue-front[^`]*Đầu hàng ở bên trái/);
+  assert.match(ui,/data-multi="\$\{i\}">\$\{esc\(e\.join/);
+  assert.doesNotMatch(ui,/\$\{i \+ 1\}\. \$\{esc\(e\.join/);
+  assert.match(ui,/Layout\.dieFace\(a\)/);
+  assert.match(ui,/Layout\.dieFace\(b\)/);
+  for (let n = 1; n <= 6; n++) {
+    const svg = Layout.dieFace(n);
+    assert.equal((svg.match(/<circle /g) || []).length, n);
+    assert(svg.includes(`aria-label="Xúc xắc ${n}"`));
+  }
+});
 test('magic and Venn give at least 30 distinct visuals in 1000 items with safe margins', () => {
   for (const [type, max, options] of [['magic', 10, {}], ['insideOut', 10, { phase2b: true }]]) {
     const rng = T.mkRng(type === 'magic' ? 412 : 413), visuals = new Set();
@@ -213,6 +228,7 @@ function independentExtension(item, max) {
     case 'queue': {
       assert.equal(new Set(v.names).size, v.names.length);
       assert.equal(v.ahead + v.behind + 1, v.names.length);
+      assert.match(item.prompt,/Đầu hàng ở bên trái/);
       return v.ahead;
     }
     case 'venn3': {
@@ -230,6 +246,7 @@ function independentExtension(item, max) {
         const value = expression(e,max); return value === v.target ? i : null;
       }).filter((x) => x != null);
       assert(found.length >= 1 && found.length <= 4);
+      assert(!/ô số \d/.test(item.explain.at(-1)));
       return found;
     }
     case 'dotPattern': {

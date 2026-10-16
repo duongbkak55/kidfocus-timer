@@ -5,6 +5,7 @@
 (function () {
   'use strict';
   const T = window.TuDuy;
+  const Layout = window.TuDuyVisualLayout;
   const KEY = 'tuduy.v1';
   const SESSION_N = 8;
   const $ = (id) => document.getElementById(id);
@@ -134,11 +135,11 @@
     if (v.kind === 'shapePattern') return `<div class="td-pattern">${v.prefix.map((s) => `<span class="td-symbol">${esc(s)}</span>`).join('')}<span class="td-symbol td-missing">?</span></div>`;
     if (v.kind === 'tileGrid') return `<div class="td-tile-grid" style="--n:${v.n}">${v.tiles.map((t) => `<div class="td-grid-cell">${t ? tileSvg(t) : '?'}</div>`).join('')}</div>`;
     if (v.kind === 'oddOne') return `<div class="td-odd">${v.items.map((t, i) => `<button class="td-choice" data-choice="${i}">${tileSvg(t)}</button>`).join('')}</div>`;
-    if (v.kind === 'insideOut') return `<svg class="td-region" viewBox="0 0 260 220" role="img" aria-label="Vật trong và ngoài hai hình"><circle cx="${v.circle.x}" cy="${v.circle.y}" r="${v.circle.r}" class="td-region-line"/><rect x="${v.rect.x}" y="${v.rect.y}" width="${v.rect.w}" height="${v.rect.h}" class="td-region-line"/>${v.objects.map((o, i) => `<text x="${o.x}" y="${o.y + 8}" text-anchor="middle" data-choice="${i}" class="td-region-object" role="button">${o.icon}</text>`).join('')}</svg>`;
+    if (v.kind === 'insideOut') return `<svg class="td-region" viewBox="0 0 260 220" role="img" aria-label="Vật trong và ngoài hai hình"><circle cx="${v.circle.x}" cy="${v.circle.y}" r="${v.circle.r}" class="td-region-line"/><rect x="${v.rect.x}" y="${v.rect.y}" width="${v.rect.w}" height="${v.rect.h}" class="td-region-line"/>${v.objects.map((o, i) => `<text x="${o.x}" y="${o.y}" text-anchor="middle" dominant-baseline="central" data-choice="${i}" class="td-region-object" role="button">${o.icon}</text>`).join('')}</svg>`;
     if (v.kind === 'code') return `<div class="td-code-legend">${Object.entries(v.legend).map(([icon, n]) => `<span>${icon} = ${n}</span>`).join('')}</div><div class="td-code-row">${v.row.map((icon) => `<span>${icon}</span>`).join('')}</div>${item.blanks ? `<div class="td-code-row">${item.blanks.map((b) => blankBox(b.id)).join('')}</div>` : ''}`;
     if (v.kind === 'triSum') {
-      const pts = [[50,12],[10,85],[90,85],[30,45],[50,85],[70,45]];
-      return `<div class="td-triangle"><svg viewBox="0 0 300 250" aria-hidden="true"><path d="M150 12 L10 220 L290 220 Z" fill="none" stroke="#7c5cff" stroke-width="5"/></svg>${v.values.map((n, i) => `<span class="td-tri-cell" style="left:${pts[i][0]}%;top:${pts[i][1]}%">${B(i) ? blankBox(B(i).id) : numBox(n)}</span>`).join('')}<span class="td-tri-sum">Mỗi cạnh = ${v.sum}</span></div>`;
+      const pts = Layout.trianglePoints;
+      return `<div class="td-triangle"><svg viewBox="0 0 300 250" aria-hidden="true"><path d="M150 12 L10 220 L290 220 Z" fill="none" stroke="#7c5cff" stroke-width="5"/></svg>${v.values.map((n, i) => `<span class="td-tri-cell" style="left:${pts[i][0]}%;top:${pts[i][1]}%">${B(i) ? blankBox(B(i).id) : numBox(n)}</span>`).join('')}</div>`;
     }
     if (v.kind === 'latin' || v.kind === 'magic') return `<div class="td-digit-grid" style="--n:${v.n}" role="group" aria-label="Bảng số ${v.n} hàng">${v.cells.map((n, i) => `<div class="td-digit-cell">${B(i) ? blankBox(B(i).id) : esc(n)}</div>`).join('')}</div>${v.kind === 'magic' ? `<div class="td-grid-note">Mỗi hàng và cột = ${v.sum}</div>` : ''}`;
     if (v.kind === 'signs') return `<div class="td-eq td-signs">${v.nums.map((n, i) => i ? `${blankBox(B(i - 1).id)}${numBox(n, 'td-plain')}` : numBox(n, 'td-plain')).join('')}<span class="td-op">=</span>${numBox(v.target, 'td-plain')}</div>`;
@@ -146,17 +147,17 @@
     if (v.kind === 'sumSplit') return `<div class="td-number-choices td-split-numbers">${v.nums.map((n) => numBox(n)).join('')}</div><div class="td-grid-note">□ + □ = □ + □</div>`;
     if (v.kind === 'addTable') return `<div class="td-add-table"><span class="td-add-head">+</span>${v.cols.map((n) => `<span class="td-add-head">${n}</span>`).join('')}${v.rows.map((row, r) => `${row == null ? blankBox('row0') : `<span class="td-add-head">${row}</span>`}${v.cols.map((_, c) => { const i = r * 2 + c; return B(i) ? blankBox(B(i).id) : numBox(v.cells[i]); }).join('')}`).join('')}</div>`;
     if (v.kind === 'numberLine') {
-      const x = (n) => 18 + 264 * n / v.max, x1 = x(v.from), x2 = x(v.to), mid = (x1 + x2) / 2;
-      return `<div class="td-number-line"><svg viewBox="0 0 300 100" role="img" aria-label="Ếch nhảy từ ${v.from} đến ${v.to}"><path d="M18 70 H282" stroke="#477be8" stroke-width="3"/>${Array.from({length:v.max+1}, (_,i) => `<g><path d="M${x(i)} 63 V77" stroke="#477be8" stroke-width="2"/><text x="${x(i)}" y="92" text-anchor="middle" font-size="${v.max===20?9:13}">${i}</text></g>`).join('')}<path d="M${x1} 63 Q${mid} 0 ${x2} 63" fill="none" stroke="#ff9f43" stroke-width="4"/><text class="td-frog" x="${x1}" y="55" text-anchor="middle" font-size="24">🐸</text></svg></div><div class="td-eq td-line-equation">${blankBox('n0')}<span class="td-op">${v.op === '-' ? '−' : '+'}</span>${blankBox('n1')}<span class="td-op">=</span>${blankBox('n2')}</div>`;
+      const line = Layout.numberLine(v);
+      return `<div class="td-number-line"><svg viewBox="0 0 300 100" role="img" aria-label="Ếch nhảy từ ${v.from} đến ${v.to}"><path d="M18 70 H282" stroke="#477be8" stroke-width="3"/>${line.ticks.map(({ value, x }) => `<g><path d="M${x} 63 V77" stroke="#477be8" stroke-width="2"/><text x="${x}" y="92" text-anchor="middle" font-size="${line.fontSize}">${value}</text></g>`).join('')}<path d="M${line.fromX} 63 Q${line.controlX} 8 ${line.toX} 63" fill="none" stroke="#ff9f43" stroke-width="4"/><text class="td-frog" x="${line.fromX}" y="55" text-anchor="middle" font-size="24">🐸</text></svg></div><div class="td-eq td-line-equation">${blankBox('n0')}<span class="td-op">${v.op === '-' ? '−' : '+'}</span>${blankBox('n1')}<span class="td-op">=</span>${blankBox('n2')}</div>`;
     }
     if (v.kind === 'ring') return `<div class="td-ring">${v.values.map((n, i) => { const angle = -Math.PI / 2 + 2 * Math.PI * i / v.values.length, x = 50 + 38 * Math.cos(angle), y = 50 + 38 * Math.sin(angle), d = v.ops[i]; return `<div class="td-ring-node" style="left:${x}%;top:${y}%">${B(i) ? blankBox(B(i).id) : numBox(n)}</div><span class="td-ring-op" style="left:${50 + 38 * Math.cos(angle + Math.PI / v.values.length)}%;top:${50 + 38 * Math.sin(angle + Math.PI / v.values.length)}%">${d > 0 ? '+' + d : '−' + -d} ${ringArrow(i, v.values.length)}</span>`; }).join('')}</div>`;
     if (v.kind === 'match') return `<div class="td-match">${[v.left, v.right].map((col, side) => `<div class="td-match-col">${col.map((e, i) => `<button class="td-match-item" data-pair-side="${side}" data-pair-index="${i}">${e.join(' ').replace('-', '−')}</button>`).join('')}</div>`).join(`<span class="td-match-links">${v.left.map(() => '↔').join('<br>')}</span>`)}<svg class="td-match-lines" aria-hidden="true"></svg></div><div class="td-grid-note" id="tdPairStatus">Chạm một phép bên trái, rồi phép bằng nó bên phải.</div>`;
-    if (v.kind === 'queue') return `<div class="td-queue">${v.names.map((name, i) => `<button class="td-choice" data-choice="${i}"><span>🧒</span><small>${esc(name)}</small></button>`).join('')}</div>`;
+    if (v.kind === 'queue') return `<div class="td-queue-front">🚩 Đầu hàng ở bên trái</div><div class="td-queue">${v.names.map((name, i) => `<button class="td-choice" data-choice="${i}"><span>🧒</span><small>${esc(name)}</small></button>`).join('')}</div>`;
     if (v.kind === 'venn3') return `<svg class="td-region td-venn" viewBox="0 0 260 230" role="img" aria-label="Ba hình tròn và bạn kangaroo">${v.circles.map((c) => `<circle cx="${c.x}" cy="${c.y}" r="${c.r}" class="td-region-line"/>`).join('')}<text x="${v.kangaroo.x}" y="${v.kangaroo.y + 8}" text-anchor="middle" font-size="27">🦘</text></svg>`;
-    if (v.kind === 'expressionCondition') return `<div class="td-expressions">${v.expressions.map((e, i) => `<button class="td-choice" data-multi="${i}">${i + 1}. ${esc(e.join(' ').replace('-', '−'))}</button>`).join('')}</div>`;
+    if (v.kind === 'expressionCondition') return `<div class="td-expressions">${v.expressions.map((e, i) => `<button class="td-choice" data-multi="${i}">${esc(e.join(' ').replace('-', '−'))}</button>`).join('')}</div>`;
     if (v.kind === 'dotPattern') return `<div class="td-dot-pattern">${v.prefix.map(dotTile).join('')}<span class="td-symbol td-missing">?</span></div>`;
     if (v.kind === 'dotGrid') return `<div class="td-tile-grid" style="--n:3">${v.cells.map((t) => `<div class="td-grid-cell">${t ? dotShapeTile(t) : '?'}</div>`).join('')}</div>`;
-    if (v.kind === 'diceCompare') return `<div class="td-dice-pairs">${v.pairs.map(([a,b], i) => `<div><b>Bạn ${i + 1}</b> <span>🎲 ${a}</span> + <span>🎲 ${b}</span></div>`).join('')}</div>`;
+    if (v.kind === 'diceCompare') return `<div class="td-dice-pairs">${v.pairs.map(([a,b], i) => `<div><b>Bạn ${i + 1}</b><span class="td-dice-faces">${Layout.dieFace(a)}<span>+</span>${Layout.dieFace(b)}</span></div>`).join('')}</div>`;
     if (v.kind === 'pyramid4') {
       const cell = (i) => B(i) ? blankBox(B(i).id) : numBox(v.cells[i]);
       return `<div class="td-pyr td-pyr-four"><div class="td-row">${cell(9)}</div><div class="td-row">${cell(7)}${cell(8)}</div><div class="td-row">${cell(4)}${cell(5)}${cell(6)}</div><div class="td-row">${cell(0)}${cell(1)}${cell(2)}${cell(3)}</div></div>`;
@@ -432,10 +433,12 @@
     const a = item.anim;
     if (a.kind === 'numberLine') {
       const frog = vis.querySelector('.td-frog'), v = item.visual, direction = v.to > v.from ? 1 : -1;
+      const line = Layout.numberLine(v);
       if (!frog) return;
+      const renderedStep = line.step * frog.ownerSVGElement.getBoundingClientRect().width / 300;
       frog.style.transform = 'translateX(0px)';
       for (let hop = 1; hop <= Math.abs(v.to - v.from); hop++) {
-        after(300 + hop * 350, () => { frog.style.transform = `translateX(${264 * direction * hop / v.max}px)`; call('sndTap'); });
+        after(300 + hop * 350, () => { frog.style.transform = `translateX(${renderedStep * direction * hop}px)`; call('sndTap'); });
       }
       return;
     }

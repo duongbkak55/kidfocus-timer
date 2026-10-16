@@ -17,13 +17,22 @@ Branch: `feat/learning-tuduy` trong worktree `KidFocusTimer-tuduy`. Không push,
 - Ba engine dùng chung luật cộng/trừ mới: các phép trong phạm vi 10 được giữ, trên 10 tránh nhớ/mượn. `triSum` có tổng 9 hoặc 10; dãy hàng xóm cho phép 9 → 10.
 - Hình Venn và bài trong/ngoài được dịch vị trí trong biên an toàn 12 px; ô vuông kì diệu có thêm các bộ ba số; vòng số mức 3 hiện hai số cho sẵn; bài so sánh mức 2 có chênh lệch 0–3.
 
-Test mới duyệt vét cạn các đáp án của `sumSplit` và `signs`, kiểm phép cộng đổi chỗ trên tia số, kiểm luật mới ở cả ba engine, kiểm ≥30 hình khác nhau trên 1.000 câu cho từng dạng Venn/trong-ngoài/ô vuông và khoảng cách tối thiểu 12 px. 31 test cũ không thay đổi. G3 chờ Claude chạy trên Pixel 9 sau commit này.
+Test mới duyệt vét cạn các đáp án của `sumSplit` và `signs`, kiểm phép cộng đổi chỗ trên tia số, kiểm luật mới ở cả ba engine, kiểm ≥30 hình khác nhau trên 1.000 câu cho từng dạng Venn/trong-ngoài/ô vuông và khoảng cách tối thiểu 12 px. 31 test cũ không thay đổi.
+
+## Sửa sau G3 Pixel 9
+
+- Bốn emoji của `insideOut` được đặt ở bốn vùng có khoảng trắng tối thiểu 10 px giữa **cả hộp hình** và viền tròn/vuông; chữ SVG được căn giữa theo chiều dọc. Test 4.000 câu kiểm cả bán kính emoji, nét viền và mép khung.
+- Câu đố xếp hàng nói rõ “Đầu hàng ở bên trái” trong prompt được đọc bằng TTS; hình có lá cờ đánh dấu đầu hàng.
+- Nhãn tổng được bỏ khỏi mặt tam giác `triSum`; tổng vẫn hiện trong câu hỏi. Tia số 0–20 hiện tối đa 10 nhãn quanh bước nhảy, cỡ chữ 14 và khoảng cách mỗi vạch tối thiểu 24 px ngay cả ở khung 320 px; hoạt ảnh ếch dùng cùng thang mới theo chiều rộng SVG thực tế.
+- Bỏ số thứ tự trước phép tính trong `expressionCondition`, lời giải nêu phép tính thay cho “ô số”; hai cột `match` không lặp nguyên phép tính; cặp xúc xắc hiển thị mặt chấm SVG tương ứng 1–6.
+
+Test bố cục mới kiểm `insideOut`, `triSum`, `numberLine` và test thêm dấu đầu hàng, phép ghép khác nhau, mặt xúc xắc. Claude cần cài APK từ commit mới và chạy lại G3 trên Pixel 9; ảnh G3 trước đó vẫn là ảnh của `fd227ce`.
 
 ## Kiểm tra
 
 | Lệnh | Kết quả |
 |---|---|
-| `TUDUY_N=10000 node --test shared/learning/tests/*.test.js` | 92/92 pass; riêng Phase 2B kiểm độc lập 340.000 câu dạng mới và 150.000 câu biến thể |
+| `TUDUY_N=10000 node --test shared/learning/tests/*.test.js` | 96/96 pass; riêng Phase 2B kiểm độc lập 340.000 câu dạng mới và 150.000 câu biến thể |
 | `JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home ./gradlew testDebugUnitTest lintDebug assembleDebug` | Build thành công; 361 Android unit test |
 | `node --check` trên engine và UI; `git diff --check` | Pass |
 
@@ -42,4 +51,4 @@ Cộng/trừ nhớ qua 10; phép nhân/chia, gấp đôi/chia đôi và đổi t
 
 ## Ảnh và G3
 
-Pixel 9 đã nhận một APK debug ở lượt làm việc này, trước lần chỉnh UI cuối. Chủ máy chọn hoàn tất code trước khi dùng Pixel để chụp. Chưa có ảnh câu hỏi/giải thích 390×844 cho 9 dạng và chưa kiểm tra thao tác UI cuối cùng trên máy; không tạo ảnh thay thế. Khi Pixel rảnh: cài lại APK mới nhất, mở từng dạng, chụp màn hỏi và màn giải thích vào `docs/tasks/g3/phase2b/`, đặc biệt Latin 5×5 và vòng số; sau đó cập nhật mục này. `docs/tasks/g3/` đang là dữ liệu chưa theo dõi có sẵn từ trước và không được stage trong commit Phase 2B.
+Claude đã kiểm tra G3 vòng đầu trên Pixel 9 bằng APK của `fd227ce`, ghi kết quả tại [TUDUY_PHASE2B_G3_REPORT.md](TUDUY_PHASE2B_G3_REPORT.md). Các lỗi nhìn thấy trên máy đã được sửa ở mục trên; cần chạy lại G3 với APK mới. `docs/tasks/g3/` là dữ liệu chưa theo dõi có sẵn và không được stage trong commit sửa G3.

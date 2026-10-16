@@ -219,19 +219,29 @@
     throw new Error('ring closed generation failed');
   }
 
-  function expression(r, value, max) {
+  function expressionOptions(value, max) {
     const candidates = [];
     for (let d = 1; d <= 5; d++) {
       if (step(value - d, '+', d, max)) candidates.push([value - d, '+', d]);
       if (step(value + d, '-', d, max)) candidates.push([value + d, '-', d]);
     }
-    return pick(r, candidates);
+    return candidates;
+  }
+  function expression(r, value, max) {
+    return pick(r, expressionOptions(value, max));
   }
   function match(r, level, max) {
     const count = level === 2 ? 3 : 4;
     const values = shuffle(r, range(max - 2).map((i) => i + 2)).slice(0, count);
     const left = values.map((v) => expression(r, v, max));
-    const rightValues = shuffle(r, values), right = rightValues.map((v) => expression(r, v, max));
+    const used = new Set(left.map((e) => e.join('|')));
+    const rightValues = shuffle(r, values), right = rightValues.map((v) => {
+      const fresh = expressionOptions(v, max).filter((e) => !used.has(e.join('|')));
+      if (!fresh.length) throw new Error('match needs a distinct expression');
+      const chosen = pick(r, fresh);
+      used.add(chosen.join('|'));
+      return chosen;
+    });
     const answer = left.map((e) => right.findIndex((other) => expressionValue(e) === expressionValue(other)));
     return shownAnswer('match', level, 'Nối hai phép tính có cùng kết quả.',
       { kind: 'match', left, right }, 'pairs', answer,
@@ -245,7 +255,7 @@
     const index = ri(r, 1, names.length - 2), ahead = index, behind = names.length - index - 1;
     const answer = range(names.length).filter((i) => i === ahead && names.length - i - 1 === behind);
     if (answer.length !== 1) throw new Error('queue is ambiguous');
-    return shownAnswer('position', 3, `Có ${ahead} bạn đứng trước và ${behind} bạn đứng sau. Chọn bạn đó.`,
+    return shownAnswer('position', 3, `Đầu hàng ở bên trái. Có ${ahead} bạn đứng trước và ${behind} bạn đứng sau. Chọn bạn đó.`,
       { kind: 'queue', names, ahead, behind }, 'choice', answer[0],
       ['Đếm từ đầu hàng: số bạn đứng trước là số bước cần đi.', `${names[index]} đứng thứ ${index + 1} từ đầu hàng.`], { choices: range(names.length) });
   }
@@ -268,7 +278,8 @@
     const answer = expressions.map((e, i) => expressionValue(e) === target ? i : null).filter((i) => i != null);
     return shownAnswer('condition', 3, `Chọn các phép tính có kết quả bằng ${target}.`,
       { kind: 'expressionCondition', expressions, target }, 'multi', answer,
-      ['Tính từng phép rồi so với số đã cho.', `Các phép đúng là ô số ${answer.map((i) => i + 1).join(', ')}.`], { choices: range(expressions.length) });
+      ['Tính từng phép rồi so với số đã cho.', `Các phép đúng là ${answer.map((i) => expressions[i].join(' ').replace('-', '−')).join('; ')}.`],
+      { choices: range(expressions.length) });
   }
   const expressionValue = (e) => e[1] === '+' ? e[0] + e[2] : e[0] - e[2];
   function dotPattern(r) {

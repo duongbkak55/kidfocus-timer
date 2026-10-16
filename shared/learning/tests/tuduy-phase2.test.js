@@ -4,6 +4,7 @@ const assert = require('node:assert/strict');
 const T = require('../www/tuduy/tuduy-core');
 const P2 = require('../www/tuduy/tuduy-phase2-core');
 const P2B = require('../www/tuduy/tuduy-phase2b-core');
+const Layout = require('../www/tuduy/tuduy-visual-layout');
 const N = Number(process.env.TUDUY_N || 100);
 const all = (n) => Array.from({ length: n }, (_, i) => i);
 const digits = (x) => typeof x === 'number' && Number.isInteger(x);
@@ -186,6 +187,63 @@ test('phase-2 inside/out has at least 30 distinct safe visuals in 1000 items',()
   }
   assert(visuals.size>=30,`${visuals.size} distinct visuals`);
 });
+test('inside/out glyph boxes clear every border and the 260×220 viewport',()=>{
+  const halfGlyph=14, halfStroke=1.5, whiteSpace=10;
+  const rng=T.mkRng(9149);
+  for(const max of [10,20]) for(const level of [2,3]) for(let i=0;i<1000;i++){
+    const v=T.generate('insideOut',level,rng,{max}).visual;
+    for(const p of v.objects){
+      assert(Math.min(p.x,260-p.x,p.y,220-p.y)-halfGlyph>=whiteSpace);
+      const circleGap=Math.abs(Math.hypot(p.x-v.circle.x,p.y-v.circle.y)-v.circle.r);
+      assert(circleGap-halfGlyph-halfStroke>=whiteSpace,`circle at ${JSON.stringify(p)}`);
+      const dx=Math.max(v.rect.x-p.x,0,p.x-v.rect.x-v.rect.w);
+      const dy=Math.max(v.rect.y-p.y,0,p.y-v.rect.y-v.rect.h);
+      const squareGap=dx||dy ? Math.hypot(dx,dy) : Math.min(p.x-v.rect.x,v.rect.x+v.rect.w-p.x,p.y-v.rect.y,v.rect.y+v.rect.h-p.y);
+      assert(squareGap-halfGlyph-halfStroke>=whiteSpace,`square at ${JSON.stringify(p)}`);
+    }
+  }
+  const ui=require('node:fs').readFileSync(require.resolve('../www/tuduy/tuduy-ui.js'),'utf8');
+  const css=require('node:fs').readFileSync(require.resolve('../www/tuduy/tuduy.css'),'utf8');
+  assert.match(css,/\.td-region-object\{font-size:27px/);
+  assert.match(ui,/viewBox="0 0 260 220"/);
+  assert.match(ui,/dominant-baseline="central"[^>]*td-region-object/);
+});
+test('triangle target stays in prompt, with no label over a cell',()=>{
+  const ui=require('node:fs').readFileSync(require.resolve('../www/tuduy/tuduy-ui.js'),'utf8');
+  const css=require('node:fs').readFileSync(require.resolve('../www/tuduy/tuduy.css'),'utf8');
+  assert.doesNotMatch(ui,/td-tri-sum/);
+  assert.doesNotMatch(css,/td-tri-sum/);
+  const centers=Layout.trianglePoints.map(([x,y])=>[x*3,y*2.5]);
+  centers.forEach(([x,y],i)=>{
+    assert(x>=23&&x<=277&&y>=23&&y<=227);
+    centers.slice(i+1).forEach(([xx,yy])=>assert(Math.hypot(x-xx,y-yy)>=46));
+  });
+  const rng=T.mkRng(9150);
+  for(let i=0;i<1000;i++){
+    const item=T.generate('triSum',2,rng,{max:20});
+    assert(item.prompt.includes(String(item.visual.sum)));
+  }
+});
+test('0..20 number-line segment has readable labels and at least 24px per hop',()=>{
+  const rng=T.mkRng(9151);
+  for(const level of [2,3]) for(let i=0;i<1000;i++){
+    const v=T.generate('numberLine',level,rng,{max:20}).visual;
+    const line=Layout.numberLine(v);
+    assert(line.ticks.length<=10);
+    assert(line.ticks.some((t)=>t.value===v.from));
+    assert(line.ticks.some((t)=>t.value===v.to));
+    assert(Math.abs(Math.abs(line.toX-line.fromX)-Math.abs(v.to-v.from)*line.step)<1e-9);
+    for(const width of [320,360,390,412]){
+      const scale=Math.min(300,width-52)/300;
+      assert(line.step*scale>=24);
+      assert(line.fontSize*scale>=12);
+    }
+  }
+  const ui=require('node:fs').readFileSync(require.resolve('../www/tuduy/tuduy-ui.js'),'utf8');
+  assert.match(ui,/line\.ticks\.map/);
+  assert.match(ui,/renderedStep = line\.step \* frog\.ownerSVGElement\.getBoundingClientRect\(\)\.width \/ 300/);
+  assert.match(ui,/renderedStep \* direction \* hop/);
+});
 test('phase-2 compare L2 spans differences zero through three',()=>{
   const rng=T.mkRng(9148), differences=new Set();
   for(let i=0;i<1000;i++){
@@ -233,7 +291,7 @@ test('phase 2 viewport geometry stays within a 360 px phone',()=>{
   assert(c[0]-c[2]>=0&&c[0]+c[2]<=64&&c[1]-c[2]>=0&&c[1]+c[2]<=64);
   const rect=/<rect x="(\d+)" y="(\d+)" width="(\d+)" height="(\d+)"/.exec(ui).slice(1).map(Number);
   assert(rect[0]>=0&&rect[0]+rect[2]<=64&&rect[1]>=0&&rect[1]+rect[3]<=64);
-  const pts=JSON.parse(/const pts = (\[\[[^;]+\]);/.exec(ui)[1]);
+  const pts=Layout.trianglePoints;
   pts.forEach(([x,y])=>assert(x*3-23>=0&&x*3+23<=300&&y*2.5-23>=0&&y*2.5+23<=250));
   for(const viewport of [360,390,412]) {
     const content=viewport-24-28; // hub padding + card padding
