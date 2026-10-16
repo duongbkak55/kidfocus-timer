@@ -1,13 +1,12 @@
 /* Luyện tư duy phase 2B. Pure puzzle generation; no DOM or device APIs. */
 (function (root) {
   'use strict';
+  const arithmetic = typeof module !== 'undefined' && module.exports ? require('./tuduy-arithmetic.js') : root.TuDuyArithmetic;
   const ri = (r, a, b) => a + Math.floor(r() * (b - a + 1));
   const pick = (r, a) => a[ri(r, 0, a.length - 1)];
   const range = (n) => Array.from({ length: n }, (_, i) => i);
   function shuffle(r, a) { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = ri(r, 0, i); [b[i], b[j]] = [b[j], b[i]]; } return b; }
-  const step = (a, op, b, max) => a >= 0 && b >= 0 && b <= max &&
-    (op === '+' ? a + b <= max && (max === 10 || a % 10 + b % 10 <= 9) :
-      a - b >= 0 && (max === 10 || a % 10 >= b % 10));
+  const step = arithmetic.step;
   const shownAnswer = (type, level, prompt, visual, input, answer, explain, extra) =>
     Object.assign({ type, level, prompt, visual, input, answer, explain, anim: { kind: type } }, extra || {});
   const blank = (cell, answer, prefix) => ({ id: prefix + cell, cell, answer });
@@ -44,7 +43,9 @@
   }
 
   function magic(r, level, max) {
-    const candidates = max === 10 ? [[1, 2, 3], [2, 3, 4]] : [[1, 2, 3], [2, 3, 4], [10, 2, 3]];
+    const candidates = max === 10 ?
+      [[0, 1, 2], [1, 2, 3], [0, 2, 4], [1, 2, 4], [2, 3, 4], [1, 3, 5]] :
+      [[0, 1, 2], [1, 2, 3], [0, 2, 4], [1, 2, 4], [2, 3, 4], [1, 3, 5], [10, 2, 3]];
     // The book's 1–4 / sum-10 column variant conflicts with both the 5–6 S≤9
     // band and the Lớp 1 no-carry rule, so it remains paper-only.
     const triple = shuffle(r, pick(r, candidates));
@@ -66,22 +67,22 @@
       ['Cộng các ô đã biết trong một hàng, rồi tìm số còn thiếu.', `Điền lần lượt ${blanks.map((b) => b.answer).join(', ')}; mỗi hàng và cột được ${sum}.`], { blanks });
   }
 
-  function signSolutions(nums, target, max) {
+  function signSolutions(nums, target) {
     const out = [], k = nums.length - 1;
     for (let mask = 0; mask < (1 << k); mask++) {
-      let value = nums[0], legal = true; const ops = [];
+      let value = nums[0], nonnegative = true; const ops = [];
       for (let i = 0; i < k; i++) {
         const op = mask & (1 << i) ? '+' : '-'; ops.push(op);
-        if (!step(value, op, nums[i + 1], max)) { legal = false; break; }
         value += op === '+' ? nums[i + 1] : -nums[i + 1];
+        if (value < 0) { nonnegative = false; break; }
       }
-      if (legal && value === target) out.push(ops);
+      if (nonnegative && value === target) out.push(ops);
     }
     return out;
   }
   function signs(r, level, max) {
     const k = level === 2 ? 2 : 3;
-    for (let trial = 0; trial < 300; trial++) {
+    for (let trial = 0; trial < 500; trial++) {
       const nums = [ri(r, 3, Math.min(max, 16)), ...range(k).map(() => ri(r, 1, 5))];
       let target = nums[0], valid = true;
       const ops = range(k).map(() => pick(r, ['+', '-']));
@@ -89,8 +90,10 @@
         if (!step(target, ops[i], nums[i + 1], max)) { valid = false; break; }
         target += ops[i] === '+' ? nums[i + 1] : -nums[i + 1];
       }
-      if (!valid || signSolutions(nums, target, max).length !== 1) continue;
-      const answer = signSolutions(nums, target, max)[0];
+      if (!valid) continue;
+      const solutions = signSolutions(nums, target);
+      if (solutions.length !== 1) continue;
+      const answer = solutions[0];
       const blanks = answer.map((op, i) => blank(i, op, 's'));
       return shownAnswer('signs', level, 'Chọn dấu cộng hoặc trừ để phép tính đúng.',
         { kind: 'signs', nums, target }, 'signs', answer,
@@ -120,21 +123,24 @@
     const out = [];
     for (let unused = 0; unused < 5; unused++) {
       const four = nums.filter((_, i) => i !== unused);
-      if ((four[0] + four[1] === four[2] + four[3] && four[0] + four[1] <= 10) ||
-          (four[0] + four[2] === four[1] + four[3] && four[0] + four[2] <= 10) ||
-          (four[0] + four[3] === four[1] + four[2] && four[0] + four[3] <= 10)) out.push(unused);
+      if (four[0] + four[1] === four[2] + four[3] ||
+          four[0] + four[2] === four[1] + four[3] ||
+          four[0] + four[3] === four[1] + four[2]) out.push(unused);
     }
     return out;
   }
-  function sumSplit(r, level) {
-    for (let trial = 0; trial < 200; trial++) {
-      const nums = shuffle(r, range(11)).slice(0, 5);
+  function sumSplit(r, level, max) {
+    for (let trial = 0; trial < 300; trial++) {
+      const nums = shuffle(r, range(10).map((i) => i + 1)).slice(0, 5);
       const solved = equalPairings(nums);
       if (solved.length !== 1) continue;
-      const unused = solved[0], choices = shuffle(r, [nums[unused], ...shuffle(r, nums.filter((_, i) => i !== unused)).slice(0, 3)]);
+      const unused = solved[0];
       const four = nums.filter((_, i) => i !== unused);
       const pairings = [[0, 1, 2, 3], [0, 2, 1, 3], [0, 3, 1, 2]];
-      const pairing = pairings.find(([a, b, c, d]) => four[a] + four[b] === four[c] + four[d] && four[a] + four[b] <= 10);
+      const pairing = pairings.find(([a, b, c, d]) =>
+        four[a] + four[b] === four[c] + four[d] && step(four[a], '+', four[b], max) && step(four[c], '+', four[d], max));
+      if (!pairing) continue;
+      const choices = shuffle(r, [nums[unused], ...shuffle(r, nums.filter((_, i) => i !== unused)).slice(0, 3)]);
       return shownAnswer('sumSplit', level, 'Chọn bốn số để hai bên cộng bằng nhau. Số nào không dùng?',
         { kind: 'sumSplit', nums }, 'choice', choices.indexOf(nums[unused]),
         ['Thử ghép thành hai cặp có tổng bằng nhau.',
@@ -202,9 +208,11 @@
       const solved = [values[0]];
       ops.forEach((d) => solved.push(solved.at(-1) + d));
       if (solved.at(-1) !== solved[0]) throw new Error('ring does not close');
-      const blanks = range(n - 1).map((i) => blank(i + 1, solved[i + 1], 'r'));
+      const secondGiven = level === 3 ? Math.floor(n / 2) : -1;
+      const shown = values.map((value, i) => i === 0 || i === secondGiven ? value : null);
+      const blanks = range(n).filter((i) => shown[i] == null).map((i) => blank(i, solved[i], 'r'));
       return shownAnswer('ring', level, 'Đi theo mũi tên quanh vòng. Điền số còn thiếu.',
-        { kind: 'ring', values: [values[0], ...range(n - 1).map(() => null)], ops }, 'numpad', blanks.map((b) => b.answer),
+        { kind: 'ring', values: shown, ops }, 'numpad', blanks.map((b) => b.answer),
         ['Từ số đã cho, làm phép tính trên từng mũi tên.',
           `Đi một vòng được ${values.join(' → ')} → ${values[0]}.`], { blanks });
     }
@@ -242,9 +250,10 @@
       ['Đếm từ đầu hàng: số bạn đứng trước là số bước cần đi.', `${names[index]} đứng thứ ${index + 1} từ đầu hàng.`], { choices: range(names.length) });
   }
   function venn(r) {
-    const circles = [{ x: 100, y: 110, r: 65 }, { x: 160, y: 110, r: 65 }, { x: 130, y: 155, r: 65 }];
+    const dx = ri(r, -10, 10), dy = ri(r, -10, -2);
+    const circles = [{ x: 100 + dx, y: 110 + dy, r: 65 }, { x: 160 + dx, y: 110 + dy, r: 65 }, { x: 130 + dx, y: 155 + dy, r: 65 }];
     const points = [{ x: 60, y: 80 }, { x: 130, y: 70 }, { x: 130, y: 110 }];
-    const count = ri(r, 1, 3), kangaroo = points[count - 1];
+    const count = ri(r, 1, 3), kangaroo = { x: points[count - 1].x + dx, y: points[count - 1].y + dy };
     const solved = circles.filter((c) => Math.hypot(kangaroo.x - c.x, kangaroo.y - c.y) < c.r).length;
     return shownAnswer('insideOut', 3, 'Bạn kangaroo nằm trong mấy hình tròn?',
       { kind: 'venn3', circles, kangaroo }, 'choice', solved - 1,
@@ -362,7 +371,7 @@
     if (!GENS[type]) throw new Error('unknown phase2b type ' + type);
     return GENS[type](rng, level, max);
   }
-  const api = { generate, generateExtension };
+  const api = { generate, generateExtension, _internal: { step } };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.TuDuyPhase2B = api;
 })(typeof window !== 'undefined' ? window : this);

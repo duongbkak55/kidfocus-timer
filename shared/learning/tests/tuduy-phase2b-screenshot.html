@@ -30,6 +30,7 @@ let ageBand='l1'; window.speakText=()=>Promise.resolve();
 const args=new URLSearchParams(location.search), type=args.get('type')||'latin', level=Number(args.get('level')||2);
 localStorage.setItem('tuduy.v1',JSON.stringify({stats:{[type]:{level}},review:[]}));
 </script>
+<script src="../www/tuduy/tuduy-arithmetic.js"></script>
 <script src="../www/tuduy/tuduy-core.js"></script>
 <script src="../www/tuduy/tuduy-phase2-core.js"></script>
 <script src="../www/tuduy/tuduy-phase2b-core.js"></script>

@@ -1,5 +1,5 @@
 /* KidFocus Learning - cache all shared learning assets for the standalone PWA. */
-const CACHE = 'kidfocus-learning-v2';
+const CACHE = 'kidfocus-learning-v3';
 const ASSETS = [
   'index.html',
   'manifest.webmanifest',
@@ -7,7 +7,10 @@ const ASSETS = [
   'icons/icon-512.png',
   'icons/icon-maskable-512.png',
   'tuduy/tuduy.css',
+  'tuduy/tuduy-arithmetic.js',
   'tuduy/tuduy-core.js',
+  'tuduy/tuduy-phase2-core.js',
+  'tuduy/tuduy-phase2b-core.js',
   'tuduy/tuduy-ui.js'
 ];
 

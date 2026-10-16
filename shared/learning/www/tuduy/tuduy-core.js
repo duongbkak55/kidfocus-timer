@@ -11,6 +11,7 @@
  */
 (function (root) {
   'use strict';
+  const arithmetic = typeof module !== 'undefined' && module.exports ? require('./tuduy-arithmetic.js') : root.TuDuyArithmetic;
 
   let MAX = 10;
   const TYPES = ['pyramid', 'balance', 'chain', 'sequence', 'scale', 'shapes'];
@@ -54,8 +55,7 @@
   const pick = (r, a) => a[Math.floor(r() * a.length)];
   function shuffle(r, a) { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; }
   const inRange = (v) => Number.isInteger(v) && v >= 0 && v <= MAX;
-  const legalStep = (a, op, b) => inRange(a) && inRange(b) && inRange(op === '+' ? a + b : a - b) &&
-    (MAX === 10 || (op === '+' ? a % 10 + b % 10 <= 9 : a % 10 >= b % 10));
+  const legalStep = (a, op, b) => arithmetic.step(a, op, b, MAX);
 
   /* ======================= 1. Tháp số (pyramid) ======================= */
   // Cells: 0..2 bottom (a,b,c), 3..4 middle (a+b, b+c), 5 top. Rule: cell = sum of two below.
@@ -464,8 +464,17 @@
     return s;
   }
 
-  const api = { MAX: 10, TYPES, PHASE2_TYPES, PHASE2B_TYPES, TYPE_INFO, mkRng, generate, updateStat, nextLevel,
-    _internal: { pyramidSolve, pyramidBrute, balanceSolutions, evalSide, fanTriangles, stripRects, gridRects } };
+  function numberLineCorrect(item, values) {
+    if (!item || !item.visual || item.visual.kind !== 'numberLine' || !Array.isArray(values) || values.length !== 3) return false;
+    const v = item.visual, distance = Math.abs(v.to - v.from);
+    if (values[2] !== v.to) return false;
+    if (v.op === '+') return (values[0] === v.from && values[1] === distance) ||
+      (values[0] === distance && values[1] === v.from);
+    return v.op === '-' && values[0] === v.from && values[1] === distance;
+  }
+
+  const api = { MAX: 10, TYPES, PHASE2_TYPES, PHASE2B_TYPES, TYPE_INFO, mkRng, generate, updateStat, nextLevel, numberLineCorrect,
+    _internal: { step: arithmetic.step, pyramidSolve, pyramidBrute, balanceSolutions, evalSide, fanTriangles, stripRects, gridRects } };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.TuDuy = api;
 })(typeof window !== 'undefined' ? window : this);

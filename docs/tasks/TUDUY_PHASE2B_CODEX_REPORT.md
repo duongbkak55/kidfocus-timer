@@ -9,11 +9,21 @@ Branch: `feat/learning-tuduy` trong worktree `KidFocusTimer-tuduy`. Không push,
 - Màn chọn bài chia bốn nhóm: Số & phép tính, Quy luật, Hình & vị trí, Câu đố ô số. Trộn các dạng nay lấy ngẫu nhiên từ toàn bộ danh sách hợp lệ. UI có phím dấu +/−, bàn 1..n cho Sudoku, nối cặp bằng chạm trái→phải, ếch nhảy từng vạch, vòng số, bảng cộng và bảng 5×5 co theo chiều rộng.
 - JSON mẫu đầy đủ cho từng dạng mới và từng biến thể mở rộng: [TUDUY_PHASE2B_EXAMPLES.json](TUDUY_PHASE2B_EXAMPLES.json). Ví dụ trong file: `4 ○ 1 ○ 3 = 8` giải bằng `+`, `+`; vòng số đi `3 → 1 → 2 → 4 → 1 → 0 → 3`; nối cặp mẫu là `1–1, 2–3, 3–2`.
 
+## Sửa theo review G2 Phase 2B
+
+- `sumSplit`: chọn đáp án chỉ khi đúng duy nhất trong mọi cách ghép bốn số, kể cả tổng vượt giới hạn của bài; năm số đều từ 1 đến 10. Cách ghép được trình bày cho trẻ vẫn phải là phép cộng hợp lệ ở band tương ứng.
+- `signs`: duyệt mọi chuỗi dấu có kết quả trung gian không âm, kể cả chuỗi vượt phạm vi bài; chỉ phát câu có một đáp án. Chuỗi đáp án phải thỏa luật tính ở band đó.
+- Tia số chấp nhận đổi chỗ hai số hạng của phép cộng; phép trừ giữ đúng thứ tự. Bộ so sánh đáp án được tách thành hàm thuần để test.
+- Ba engine dùng chung luật cộng/trừ mới: các phép trong phạm vi 10 được giữ, trên 10 tránh nhớ/mượn. `triSum` có tổng 9 hoặc 10; dãy hàng xóm cho phép 9 → 10.
+- Hình Venn và bài trong/ngoài được dịch vị trí trong biên an toàn 12 px; ô vuông kì diệu có thêm các bộ ba số; vòng số mức 3 hiện hai số cho sẵn; bài so sánh mức 2 có chênh lệch 0–3.
+
+Test mới duyệt vét cạn các đáp án của `sumSplit` và `signs`, kiểm phép cộng đổi chỗ trên tia số, kiểm luật mới ở cả ba engine, kiểm ≥30 hình khác nhau trên 1.000 câu cho từng dạng Venn/trong-ngoài/ô vuông và khoảng cách tối thiểu 12 px. 31 test cũ không thay đổi. G3 chờ Claude chạy trên Pixel 9 sau commit này.
+
 ## Kiểm tra
 
 | Lệnh | Kết quả |
 |---|---|
-| `TUDUY_N=10000 node --test shared/learning/tests/*.test.js` | 87/87 pass; riêng Phase 2B kiểm độc lập 340.000 câu dạng mới và 150.000 câu biến thể |
+| `TUDUY_N=10000 node --test shared/learning/tests/*.test.js` | 92/92 pass; riêng Phase 2B kiểm độc lập 340.000 câu dạng mới và 150.000 câu biến thể |
 | `JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home ./gradlew testDebugUnitTest lintDebug assembleDebug` | Build thành công; 361 Android unit test |
 | `node --check` trên engine và UI; `git diff --check` | Pass |
 

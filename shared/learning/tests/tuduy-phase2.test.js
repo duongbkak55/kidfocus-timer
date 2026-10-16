@@ -2,11 +2,13 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const T = require('../www/tuduy/tuduy-core');
+const P2 = require('../www/tuduy/tuduy-phase2-core');
+const P2B = require('../www/tuduy/tuduy-phase2b-core');
 const N = Number(process.env.TUDUY_N || 100);
 const all = (n) => Array.from({ length: n }, (_, i) => i);
 const digits = (x) => typeof x === 'number' && Number.isInteger(x);
 const inRange = (n, max) => !digits(n) || (n >= 0 && n <= max);
-const canStep = (a, op, b) => op === '+' ? a % 10 + b % 10 <= 9 : a % 10 >= b % 10;
+const canStep = (a, op, b) => op === '+' ? a + b <= 10 || a % 10 + b % 10 <= 9 : a <= 10 || a % 10 >= b % 10;
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 const sign = (a, b) => a === b ? '=' : a > b ? '>' : '<';
 const ev = (e) => e.length === 1 ? e[0] : e[1] === '+' ? e[0] + e[2] : e[0] - e[2];
@@ -36,7 +38,6 @@ function independent(item, max) {
       const first = v.values.findIndex((x) => x != null), anchor = v.values[first];
       const full = v.values.map((_, i) => anchor + i - first);
       assert(full.every((x) => x >= 0 && x <= max));
-      if(max===20) assert(!full.includes(9)||!full.includes(10));
       return v.values.map((x,i) => x == null ? full[i] : null).filter((x) => x != null);
     }
     case 'position': {
@@ -113,13 +114,15 @@ function independent(item, max) {
     }
     case 'triSum': {
       assert.equal(max,20);
-      assert.equal(v.sum,9); // a side target above 9 would require a carry with 1..6
+      assert([9,10].includes(v.sum));
       const sols=permutations.filter((p)=>{
         const [A,B,C,AB,BC,CA]=p;
         return A+AB+B===v.sum && B+BC+C===v.sum && C+CA+A===v.sum &&
           v.values.every((x,i)=>x==null||x===p[i]);
       });
       assert.equal(sols.length,1);
+      const [A,B,C,AB,BC,CA]=sols[0];
+      for (const [x,y,z] of [[A,AB,B],[B,BC,C],[C,CA,A]]) assert(canStep(x,'+',y)&&canStep(x+y,'+',z));
       return v.values.map((x,i)=>x==null?sols[0][i]:null).filter((x)=>x!=null);
     }
   }
@@ -156,6 +159,41 @@ for (const type of T.PHASE2_TYPES) for (const level of [2,3]) {
   });
 }
 test('triSum is hidden from age 5–6 generation',()=>assert.throws(()=>T.generate('triSum',2,T.mkRng(1),{max:10})));
+test('all three engines share the corrected no-carry boundary',()=>{
+  for (const engine of [T, P2, P2B]) {
+    const step=engine._internal.step;
+    for (const [a,op,b] of [[4,'+',6],[10,'-',3],[14,'+',5]]) assert.equal(step(a,op,b,20),true);
+    for (const [a,op,b] of [[8,'+',5],[14,'+',6],[13,'-',5],[20,'-',3]]) assert.equal(step(a,op,b,20),false);
+  }
+});
+test('number-line UI comparison accepts swapped addition but keeps subtraction order',()=>{
+  const plus={visual:{kind:'numberLine',from:3,to:7,op:'+'}};
+  const minus={visual:{kind:'numberLine',from:7,to:3,op:'-'}};
+  assert.equal(T.numberLineCorrect(plus,[4,3,7]),true);
+  assert.equal(T.numberLineCorrect(plus,[3,4,7]),true);
+  assert.equal(T.numberLineCorrect(minus,[4,7,3]),false);
+  assert.equal(T.numberLineCorrect(minus,[7,4,3]),true);
+});
+test('phase-2 inside/out has at least 30 distinct safe visuals in 1000 items',()=>{
+  const rng=T.mkRng(9147), visuals=new Set();
+  for(let i=0;i<1000;i++){
+    const v=T.generate('insideOut',2,rng,{max:10}).visual;
+    assert(v.circle.x-v.circle.r>=12&&v.circle.x+v.circle.r<=248);
+    assert(v.circle.y-v.circle.r>=12&&v.circle.y+v.circle.r<=208);
+    assert(v.rect.x>=12&&v.rect.x+v.rect.w<=248&&v.rect.y>=12&&v.rect.y+v.rect.h<=208);
+    assert(v.objects.every((p)=>p.x>=12&&p.x<=248&&p.y>=12&&p.y<=208));
+    visuals.add(JSON.stringify([v.circle,v.rect,v.objects.map((p)=>[p.x,p.y])]));
+  }
+  assert(visuals.size>=30,`${visuals.size} distinct visuals`);
+});
+test('phase-2 compare L2 spans differences zero through three',()=>{
+  const rng=T.mkRng(9148), differences=new Set();
+  for(let i=0;i<1000;i++){
+    const v=T.generate('compare',2,rng,{max:20}).visual;
+    differences.add(Math.abs(ev(v.left)-ev(v.right)));
+  }
+  assert.deepEqual([...differences].sort((a,b)=>a-b),[0,1,2,3]);
+});
 test('old type opts max 20 remains in range and avoids carry or borrow',()=>{
   const rng=T.mkRng(9182);
   for(const type of T.TYPES) for(const level of [2,3]) for(let i=0;i<100;i++){

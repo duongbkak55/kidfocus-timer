@@ -2,13 +2,14 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const T = require('../www/tuduy/tuduy-core');
+const P2B = require('../www/tuduy/tuduy-phase2b-core');
 const fs = require('node:fs');
 const path = require('node:path');
 const N = Number(process.env.TUDUY_N || 100);
 const seq = (n) => Array.from({ length: n }, (_, i) => i);
 const legal = (a, op, b, max) => a >= 0 && b >= 0 && b <= max &&
-  (op === '+' ? a + b <= max && (max === 10 || a % 10 + b % 10 <= 9) :
-    a - b >= 0 && (max === 10 || a % 10 >= b % 10));
+  (op === '+' ? a + b <= max && (max === 10 || a + b <= 10 || a % 10 + b % 10 <= 9) :
+    a - b >= 0 && (max === 10 || a <= 10 || a % 10 >= b % 10));
 function gridSolutions(cells, n) {
   let count = 0, solution;
   const a = cells.slice();
@@ -46,14 +47,14 @@ function magicSolutions(v, max) {
   }
   walk(0); return sols;
 }
-function signAnswers(v, max) {
+function signAnswers(v) {
   const out = [], k = v.nums.length - 1;
   for (let mask = 0; mask < 1 << k; mask++) {
     let acc = v.nums[0], good = true; const signs = [];
     for (let j = 0; j < k; j++) {
       const op = mask & 1 << j ? '+' : '-'; signs.push(op);
-      if (!legal(acc, op, v.nums[j + 1], max)) { good = false; break; }
       acc += op === '+' ? v.nums[j + 1] : -v.nums[j + 1];
+      if (acc < 0) { good = false; break; }
     }
     if (good && acc === v.target) out.push(signs);
   }
@@ -63,7 +64,7 @@ function unusedNumbers(nums) {
   const out = [];
   for (let omitted = 0; omitted < 5; omitted++) {
     const a = nums.filter((_, i) => i !== omitted);
-    if ([[0,1,2,3],[0,2,1,3],[0,3,1,2]].some(([p,q,r,s]) => a[p] + a[q] === a[r] + a[s] && a[p] + a[q] <= 10)) out.push(nums[omitted]);
+    if ([[0,1,2,3],[0,2,1,3],[0,3,1,2]].some(([p,q,r,s]) => a[p] + a[q] === a[r] + a[s])) out.push(nums[omitted]);
   }
   return out;
 }
@@ -92,8 +93,10 @@ function independent(item, max) {
     }
     case 'signs': {
       assert.equal(v.nums.length - 1, item.level);
-      const sols = signAnswers(v, max);
+      const sols = signAnswers(v);
       assert.equal(sols.length, 1);
+      let acc = v.nums[0];
+      sols[0].forEach((op, i) => { assert(legal(acc, op, v.nums[i + 1], max)); acc += op === '+' ? v.nums[i + 1] : -v.nums[i + 1]; });
       return sols[0];
     }
     case 'triCenter': {
@@ -107,10 +110,13 @@ function independent(item, max) {
     }
     case 'sumSplit': {
       assert.equal(new Set(v.nums).size, 5);
-      assert(v.nums.every((x) => x >= 0 && x <= 10));
+      assert(v.nums.every((x) => x >= 1 && x <= 10));
       assert.equal(item.choices.length, 4);
       const sols = unusedNumbers(v.nums);
       assert.equal(sols.length, 1);
+      const four = v.nums.filter((n) => n !== sols[0]);
+      assert([[0,1,2,3],[0,2,1,3],[0,3,1,2]].some(([a,b,c,d]) =>
+        four[a] + four[b] === four[c] + four[d] && legal(four[a], '+', four[b], max) && legal(four[c], '+', four[d], max)));
       assert.equal(item.choices.filter((x) => x === sols[0]).length, 1);
       return item.choices.indexOf(sols[0]);
     }
@@ -144,8 +150,11 @@ function independent(item, max) {
         values.push(values[i] + d);
       });
       assert.equal(values.at(-1), values[0]);
-      assert(v.values.slice(1).every((x) => x == null));
-      return values.slice(1, -1);
+      assert.equal(v.values[0], values[0]);
+      const givens = v.values.map((x, i) => x == null ? null : i).filter((x) => x != null);
+      assert.equal(givens.length, item.level === 3 ? 2 : 1);
+      assert(givens.every((i) => v.values[i] === values[i]));
+      return item.blanks.map((b) => values[b.cell]);
     }
     case 'match': {
       const lv = v.left.map((e) => expression(e, max)), rv = v.right.map((e) => expression(e, max));
@@ -181,6 +190,23 @@ for (const type of T.PHASE2B_TYPES) for (const level of [2, 3]) {
 }
 test('addTable is unavailable in the 5–6 band', () =>
   assert.throws(() => T.generate('addTable', 2, T.mkRng(1), { max: 10 })));
+test('magic and Venn give at least 30 distinct visuals in 1000 items with safe margins', () => {
+  for (const [type, max, options] of [['magic', 10, {}], ['insideOut', 10, { phase2b: true }]]) {
+    const rng = T.mkRng(type === 'magic' ? 412 : 413), visuals = new Set();
+    for (let i = 0; i < 1000; i++) {
+      const item = T.generate(type, type === 'magic' ? 2 : 3, rng, { max, ...options });
+      const v = item.visual;
+      if (type === 'magic') visuals.add(JSON.stringify([v.cells, v.sum]));
+      else {
+        assert.equal(v.kind, 'venn3');
+        for (const c of v.circles) assert(c.x - c.r >= 12 && c.x + c.r <= 248 && c.y - c.r >= 12 && c.y + c.r <= 218);
+        assert(v.kangaroo.x >= 12 && v.kangaroo.x <= 248 && v.kangaroo.y >= 12 && v.kangaroo.y <= 218);
+        visuals.add(JSON.stringify([v.circles, v.kangaroo]));
+      }
+    }
+    assert(visuals.size >= 30, `${type}: ${visuals.size} distinct visuals`);
+  }
+});
 function independentExtension(item, max) {
   const v = item.visual;
   switch (v.kind) {

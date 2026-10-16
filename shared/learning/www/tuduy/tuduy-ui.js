@@ -351,8 +351,9 @@
       input === 'pairs' ? Array.isArray(answers.pairs) && answers.pairs.filter((x) => x != null).length === item.answer.length : answers.choice != null;
     if (!filled) { $('tdFb').textContent = 'Con chọn hoặc điền đủ đáp án nhé!'; $('tdFb').className = 'fb'; return; }
     tries += 1;
-    const wrong = blankInput ? item.blanks.filter((b) => answers[b.id] !== b.answer) : [];
-    const correct = blankInput ? !wrong.length : input === 'order' ? JSON.stringify(answers.order) === JSON.stringify(item.answer) :
+    const numberLineOK = item.type === 'numberLine' && T.numberLineCorrect(item, item.blanks.map((b) => answers[b.id]));
+    const wrong = blankInput && !numberLineOK ? item.blanks.filter((b) => answers[b.id] !== b.answer) : [];
+    const correct = blankInput ? numberLineOK || !wrong.length : input === 'order' ? JSON.stringify(answers.order) === JSON.stringify(item.answer) :
       input === 'multi' ? JSON.stringify(answers.multi.slice().sort((a,b) => a-b)) === JSON.stringify(item.answer) :
       input === 'pairs' ? JSON.stringify(answers.pairs) === JSON.stringify(item.answer) :
       answers.choice === item.answer;

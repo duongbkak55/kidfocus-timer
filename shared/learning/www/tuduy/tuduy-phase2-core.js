@@ -1,12 +1,12 @@
 /* Phase 2 puzzle engine. Pure data in, pure data out; no DOM or network. */
 (function (root) {
   'use strict';
+  const arithmetic = typeof module !== 'undefined' && module.exports ? require('./tuduy-arithmetic.js') : root.TuDuyArithmetic;
   const ri = (r, a, b) => a + Math.floor(r() * (b - a + 1));
   const pick = (r, a) => a[ri(r, 0, a.length - 1)];
   function shuffle(r, a) { const b = a.slice(); for (let i = b.length - 1; i; i--) { const j = ri(r, 0, i); [b[i], b[j]] = [b[j], b[i]]; } return b; }
   const range = (n) => Array.from({ length: n }, (_, i) => i);
-  const step = (a, op, b, max) => a >= 0 && b >= 0 && (op === '+' ? a + b : a - b) >= 0 &&
-    (op === '+' ? a + b : a - b) <= max && (max === 10 || (op === '+' ? a % 10 + b % 10 <= 9 : a % 10 >= b % 10));
+  const step = arithmetic.step;
   function result(type, level, prompt, visual, input, answer, explain, more) {
     return Object.assign({ type, level, prompt, visual, input, answer, explain, anim: { kind: type } }, more || {});
   }
@@ -25,8 +25,8 @@
     return [value];
   }
   function compare(r, level, max) {
-    const leftValue = ri(r, 1, max - 1);
-    const relation = pick(r, [-1, 0, 1]);
+    const leftValue = level === 2 ? ri(r, 3, max - 3) : ri(r, 1, max - 1);
+    const relation = level === 2 ? pick(r, [-3, -2, -1, 0, 0, 1, 2, 3]) : pick(r, [-1, 0, 1]);
     const rightValue = leftValue + relation;
     const left = level === 3 ? expr(r, max, leftValue) : (r() < .5 ? [leftValue] : expr(r, max, leftValue));
     const right = level === 3 ? expr(r, max, rightValue) : [rightValue];
@@ -49,10 +49,6 @@
     const n = ri(r, mode === 'twoPrev' ? 2 : 1, mode === 'next' || mode === 'both' || mode === 'middle' ? max - 1 : max);
     const shown = mode === 'twoPrev' ? [null, null, n] : mode === 'both' ? [null, n, null] :
       mode === 'prev' ? [null, n] : mode === 'next' ? [n, null] : [n - 1, null, n + 1];
-    if (max === 20) {
-      const first = shown.findIndex((x) => x != null), full = shown.map((_, i) => shown[first] + i - first);
-      if (full.includes(9) && full.includes(10)) return neighbor(r, level, max);
-    }
     // Derive the missing numbers from a visible anchor, rather than retaining the sampled centre.
     const first = shown.findIndex((x) => x != null), full = shown.map((_, i) => shown[first] + i - first);
     const blanks = shown.map((v, i) => v == null ? { id: 'n' + i, cell: i, answer: full[i] } : null).filter(Boolean);
@@ -173,18 +169,21 @@
   const CIRCLE = { x: 120, y: 120, r: 70 }, RECT = { x: 110, y: 70, w: 110, h: 110 };
   const POINTS = [{ x: 80, y: 120 }, { x: 205, y: 120 }, { x: 150, y: 120 }, { x: 45, y: 30 }];
   const OBJECTS = ['🐱','🍎','🚗','⭐'];
-  function region(p) {
-    const circle = Math.hypot(p.x - CIRCLE.x, p.y - CIRCLE.y) < CIRCLE.r;
-    const square = p.x > RECT.x && p.x < RECT.x + RECT.w && p.y > RECT.y && p.y < RECT.y + RECT.h;
+  function region(p, c, rect) {
+    const circle = Math.hypot(p.x - c.x, p.y - c.y) < c.r;
+    const square = p.x > rect.x && p.x < rect.x + rect.w && p.y > rect.y && p.y < rect.y + rect.h;
     return (circle ? 1 : 0) + (square ? 2 : 0);
   }
   function insideOut(r, level) {
-    const objects = shuffle(r, OBJECTS).map((icon, i) => ({ icon, ...POINTS[i] }));
-    const target = ri(r, 0, 3), answer = objects.findIndex((o) => region(o) === target);
+    const dx = ri(r, -10, 10), dy = ri(r, -10, 10);
+    const circle = { ...CIRCLE, x: CIRCLE.x + dx, y: CIRCLE.y + dy };
+    const rect = { ...RECT, x: RECT.x + dx, y: RECT.y + dy };
+    const objects = shuffle(r, OBJECTS).map((icon, i) => ({ icon, x: POINTS[i].x + dx, y: POINTS[i].y + dy }));
+    const target = ri(r, 0, 3), answer = objects.findIndex((o) => region(o, circle, rect) === target);
     const names = ['ngoài cả hai hình', 'trong hình tròn nhưng ngoài hình vuông',
       'trong hình vuông nhưng ngoài hình tròn', 'trong cả hai hình'];
     return result('insideOut', level, `Vật nào ở ${names[target]}?`,
-      { kind: 'insideOut', circle: CIRCLE, rect: RECT, objects, target }, 'choice', answer,
+      { kind: 'insideOut', circle, rect, objects, target }, 'choice', answer,
       ['Nhìn xem vật nằm ở phía nào của từng đường viền.', `${objects[answer].icon} ở ${names[target]}.`],
       { choices: range(objects.length) });
   }
@@ -224,8 +223,8 @@
   function triSum(r, level) {
     const bySum = triSolutions();
     for (let t = 0; t < 200; t++) {
-      // With 1..6, a target above 9 necessarily carries across 10; the hard no-carry rule wins.
-      const S = 9;
+      // Totals through 10 are Grade-1 facts; totals above 10 would carry.
+      const S = pick(r, [9, 10]);
       const full = pick(r, bySum[S]);
       const givens = shuffle(r, range(6)).slice(0, pick(r, [3,4]));
       const matches = bySum[S].filter((p) => givens.every((i) => p[i] === full[i]));
@@ -244,7 +243,7 @@
     if (!GENS[type]) throw new Error('unknown phase2 type ' + type);
     return GENS[type](rng, level, max);
   }
-  const api = { generate };
+  const api = { generate, _internal: { step } };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.TuDuyPhase2 = api;
 })(typeof window !== 'undefined' ? window : this);
