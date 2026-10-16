@@ -11,6 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="tuduy/tuduy.css">
 <style>
   :root{
     --pink:#ff6b9d; --orange:#ff9f43; --yellow:#feca57; --green:#1dd1a1;
@@ -546,6 +547,8 @@
           <span class="age-em">🧸</span>2–3 tuổi</button>
         <button class="age-chip sel" data-age="4-5" aria-pressed="true" onclick="setAge('4-5')">
           <span class="age-em">🎈</span>4–5 tuổi</button>
+        <button class="age-chip" data-age="5-6" aria-pressed="false" onclick="setAge('5-6')">
+          <span class="age-em">🌟</span>5–6 tuổi</button>
         <button class="age-chip" data-age="l1" aria-pressed="false" onclick="setAge('l1')">
           <span class="age-em">✏️</span>Lớp 1</button>
         <button class="age-chip" data-age="l2" aria-pressed="false" onclick="setAge('l2')">
@@ -575,6 +578,15 @@
         <button class="qchip" data-total="10" aria-pressed="false" onclick="setQuestionTotal(10)">10 câu</button>
         <button class="qchip" data-total="12" aria-pressed="false" onclick="setQuestionTotal(12)">12 câu</button>
         <button class="qchip" data-total="15" aria-pressed="false" onclick="setQuestionTotal(15)">15 câu</button>
+      </div>
+    </div>
+    <div class="subject-section" id="thinkSection">
+      <div class="subject-title grade2"><span class="em">🧠</span> Luyện tư duy · Thinking Puzzles</div>
+      <div class="menu">
+        <button class="tile c25" data-game="tuduy" onclick="go('tuduy')">
+          <div class="ic">🧠</div>
+          <div><div class="t-vi">Luyện tư duy</div><div class="t-en">Tháp số, ô trống, quy luật, đếm hình</div></div>
+        </button>
       </div>
     </div>
     <div class="subject-section" id="examSection">
@@ -1215,6 +1227,32 @@
     </div>
   </div>
 
+  <div id="tuduy" class="screen">
+    <div class="scr-head"><button class="back" onclick="go('home')">← Về</button>
+      <div class="scr-title">Luyện tư duy <small>Chơi mà nghĩ, nghĩ mà chơi</small></div></div>
+    <div class="card" id="tdChooser">
+      <div class="qprompt">Hôm nay con muốn giải đố gì?</div>
+      <div class="td-intro">Làm sai cũng không sao: con được thử lại và xem cách làm.</div>
+      <div class="td-pickgrid" id="tdPick"></div>
+    </div>
+    <div class="card" id="tdQuiz" hidden>
+      <div class="td-top"><span id="tdCount"></span><span id="tdStars"></span></div>
+      <div class="td-prompt"><span id="tdPrompt"></span><button class="td-say" onclick="TuDuyUI.speakPrompt()" aria-label="Nghe đề">🔊</button></div>
+      <div class="td-visual" id="tdVisual"></div>
+      <div class="td-pad" id="tdPad" role="group" aria-label="Bàn phím số"></div>
+      <div class="td-actions"><button class="rbtn next" id="tdCheck" onclick="TuDuyUI.check()">✔ Xong rồi</button>
+        <button class="rbtn next" id="tdNext" onclick="TuDuyUI.next()" hidden>Câu tiếp ▶</button></div>
+      <div class="fb" id="tdFb" role="status" aria-live="polite"></div>
+      <div class="td-explain" id="tdExplain" hidden></div>
+    </div>
+    <div class="card td-done" id="tdDone" hidden>
+      <div class="td-big" id="tdDoneStars"></div>
+      <div class="qprompt" id="tdDoneText"></div>
+      <div class="td-actions"><button class="rbtn next" onclick="TuDuyUI.open()">Chơi tiếp 🧠</button>
+        <button class="rbtn prev" onclick="go('home')">Về trang chính</button></div>
+    </div>
+  </div>
+
   <div id="exam" class="screen">
     <div class="scr-head"><button class="back" onclick="go('home')">← Về</button>
       <div class="scr-title">Ôn luyện thi Lớp 1 <small>Chọn dạng bài hoặc thi thử</small></div></div>
@@ -1323,9 +1361,20 @@ const AGE_BANDS={
       defaultMax:20,questionTotal:5,ranges:[10,20],questionChoices:[5,10]
     }
   },
+  '5-6':{
+    label:'5–6 tuổi',
+    /* Mẫu giáo lớn. `tuduy` (Luyện tư duy) starts here: puzzles within 10, no exam framing.
+       `exam`, `vna`, `vph`, `vread` are not shown in this band. */
+    visible:['tuduy','story','numline','add','sub','beaf','cmp','cnt','pattern','sort','science','memory','rhythm','feelings','color','shape','size','sudoku','maze','abc','wrd'],
+    profile:{
+      icon:'🌟',description:'Mẫu giáo lớn: số đến 20, giải đố tư duy, quy luật và khám phá.',
+      numberMax:20,additionMax:10,subtractionMax:10,compareMax:20,countMax:20,sequenceMax:20,bondMax:10,
+      defaultMax:10,questionTotal:5,ranges:[10,20],questionChoices:[5,8,10]
+    }
+  },
   l1:{
     label:'Lớp 1',
-    visible:['exam','story','numline','add','sub','beaf','cmp','cnt','pattern','sort','science','memory','rhythm','feelings','seq','bond','place100','sudoku','maze','abc','wrd','vna','vph','vread'],
+    visible:['tuduy','exam','story','numline','add','sub','beaf','cmp','cnt','pattern','sort','science','memory','rhythm','feelings','seq','bond','place100','sudoku','maze','abc','wrd','vna','vph','vread'],
     profile:{
       icon:'✏️',description:'Số đến 100, cộng trừ trong 20, dãy số dài hơn và đọc câu ngắn.',
       numberMax:100,additionMax:20,subtractionMax:20,compareMax:100,countMax:20,sequenceMax:100,bondMax:20,
@@ -1335,7 +1384,7 @@ const AGE_BANDS={
   },
   l2:{
     label:'Lớp 2',
-    visible:['exam','story','sudoku','maze','numline','add','sub','beaf','cmp','cnt','pattern','sort','science','memory','rhythm','feelings','seq','bond','mult','divi','place100','place','skip','groups','clock','money','abc','wrd','vna','vph','vread'],
+    visible:['tuduy','exam','story','sudoku','maze','numline','add','sub','beaf','cmp','cnt','pattern','sort','science','memory','rhythm','feelings','seq','bond','mult','divi','place100','place','skip','groups','clock','money','abc','wrd','vna','vph','vread'],
     profile:{
       icon:'📘',description:'Số đến 100, cộng trừ trong 100, chục–đơn vị và đếm cách đều.',
       numberMax:100,additionMax:100,subtractionMax:100,compareMax:100,countMax:30,sequenceMax:100,bondMax:100,
@@ -1345,7 +1394,7 @@ const AGE_BANDS={
   },
   l3:{
     label:'Lớp 3',
-    visible:['exam','story','sudoku','maze','numline','add','sub','beaf','cmp','cnt','pattern','sort','science','memory','rhythm','feelings','seq','bond','mult','divi','place100','place','skip','groups','clock','money','abc','wrd','vna','vph','vread'],
+    visible:['tuduy','exam','story','sudoku','maze','numline','add','sub','beaf','cmp','cnt','pattern','sort','science','memory','rhythm','feelings','seq','bond','mult','divi','place100','place','skip','groups','clock','money','abc','wrd','vna','vph','vread'],
     profile:{
       icon:'📗',description:'Số đến 1000, cộng trừ trong 100 và bước đầu luyện nhóm phép nhân.',
       numberMax:1000,additionMax:100,subtractionMax:100,compareMax:1000,countMax:50,sequenceMax:1000,bondMax:100,
@@ -1558,6 +1607,7 @@ function go(id){
   if(id==='memory') startMemory();
   if(id==='rhythm') startRhythm();
   if(id==='feelings') startFeelings();
+  if(id==='tuduy'&&window.TuDuyUI) TuDuyUI.open();
   if(id==='exam') openExam();
   if(id==='story') startStory();
   if(id==='clock') startClock();
@@ -3408,5 +3458,7 @@ window.addEventListener('load',()=>{
 setAge(ageBand,false);
 nativePost('ready',{contentVersion:'1.0.0'});
 </script>
+<script src="tuduy/tuduy-core.js"></script>
+<script src="tuduy/tuduy-ui.js"></script>
 </body>
 </html>

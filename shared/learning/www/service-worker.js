@@ -1,11 +1,14 @@
 /* KidFocus Learning - cache all shared learning assets for the standalone PWA. */
-const CACHE = 'kidfocus-learning-v1';
+const CACHE = 'kidfocus-learning-v2';
 const ASSETS = [
   'index.html',
   'manifest.webmanifest',
   'icons/icon-192.png',
   'icons/icon-512.png',
-  'icons/icon-maskable-512.png'
+  'icons/icon-maskable-512.png',
+  'tuduy/tuduy.css',
+  'tuduy/tuduy-core.js',
+  'tuduy/tuduy-ui.js'
 ];
 
 self.addEventListener('install', (e) => {
