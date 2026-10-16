@@ -1228,7 +1228,7 @@
   </div>
 
   <div id="tuduy" class="screen">
-    <div class="scr-head"><button class="back" onclick="go('home')">← Về</button>
+    <div class="scr-head"><button class="back" onclick="KidFocusHost.handleBack()">← Về</button>
       <div class="scr-title">Luyện tư duy <small>Chơi mà nghĩ, nghĩ mà chơi</small></div></div>
     <div class="card" id="tdChooser">
       <div class="qprompt">Hôm nay con muốn giải đố gì?</div>
@@ -1330,8 +1330,9 @@ window.KidFocusHost={
     if(config.ageBand&&AGE_BANDS[config.ageBand]&&config.ageBand!==ageBand)setAge(config.ageBand,false);
   },
   handleBack(){
-    if(currentGameId==='home')return false;
-    go('home');return true;
+    if(currentGameId==='home')return 'home';
+    if(currentGameId==='tuduy'&&window.TuDuyUI&&TuDuyUI.backToChooser())return 'tuduy';
+    go('home');return 'home';
   }
 };
 

@@ -439,6 +439,10 @@
 
   window.TuDuyUI = {
     open() { buildPad(currentMax()); stopAnim(); open(); },
+    backToChooser() {
+      if ($('tdQuiz').hidden && $('tdDone').hidden) return false;
+      stopAnim(); open(); return true;
+    },
     check, next, speakPrompt, start,
   };
 })();

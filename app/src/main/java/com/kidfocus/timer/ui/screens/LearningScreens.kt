@@ -93,11 +93,12 @@ fun LearningHubScreen(
             onBack()
         } else {
             tts.stop()
-            webView?.evaluateJavascript(
-                "if(window.KidFocusHost){window.KidFocusHost.handleBack();}",
-                null,
-            )
-            currentScreen = "home"
+            val view = webView ?: run { onBack(); return }
+            view.evaluateJavascript(
+                "window.KidFocusHost ? window.KidFocusHost.handleBack() : 'home'",
+            ) { destination ->
+                currentScreen = if (destination == "\"tuduy\"") "tuduy" else "home"
+            }
         }
     }
 
