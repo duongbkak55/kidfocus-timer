@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../www/tuduy/tuduy.css">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#eaf2ff;color:#283158;font:16px system-ui,sans-serif}
+#tuduy{width:390px;max-width:100%;min-height:844px;margin:auto;padding:10px 12px}
+.card{background:#fff;border-radius:20px;padding:14px;margin:5px 0;box-shadow:0 4px 18px #273e611c}
+.rbtn{border:0;border-radius:12px;background:#567cf2;color:#fff;padding:10px 16px;font:inherit;font-weight:800}
+.fb{margin-top:8px;min-height:24px}.fb.no{color:#cf4453}.fb.ok{color:#11805d}
+.next{font-size:18px}h1{font-size:19px;margin:0 0 5px}
+</style>
+</head>
+<body>
+<div id="tuduy">
+  <div class="card" id="tdChooser"><h1>Luyện tư duy</h1><div id="tdPick" class="td-pickgrid"></div></div>
+  <div class="card" id="tdQuiz" hidden>
+    <div class="td-top"><span id="tdCount"></span><span id="tdStars"></span></div>
+    <div class="td-prompt"><span id="tdPrompt"></span></div>
+    <div class="td-visual" id="tdVisual"></div>
+    <div class="td-pad" id="tdPad"></div>
+    <div class="td-actions"><button class="rbtn next" id="tdCheck">✔ Xong rồi</button><button class="rbtn next" id="tdNext" hidden>Câu tiếp ▶</button></div>
+    <div id="tdFb" class="fb"></div><div id="tdExplain" class="td-explain" hidden></div>
+  </div>
+  <div class="card" id="tdDone" hidden><span id="tdDoneStars"></span><span id="tdDoneText"></span></div>
+</div>
+<script>
+let ageBand='l1'; window.speakText=()=>Promise.resolve();
+const args=new URLSearchParams(location.search), type=args.get('type')||'latin', level=Number(args.get('level')||2);
+localStorage.setItem('tuduy.v1',JSON.stringify({stats:{[type]:{level}},review:[]}));
+</script>
+<script src="../www/tuduy/tuduy-core.js"></script>
+<script src="../www/tuduy/tuduy-phase2-core.js"></script>
+<script src="../www/tuduy/tuduy-phase2b-core.js"></script>
+<script src="../www/tuduy/tuduy-ui.js"></script>
+<script>
+Math.random=TuDuy.mkRng(4729);
+const sample=TuDuy.generate(type,level,TuDuy.mkRng(4729),{max:20,phase2b:true});
+TuDuyUI.open(); TuDuyUI.start(type);
+if(args.get('view')==='explain'){
+  if(sample.input==='numpad'||sample.input==='signs') sample.blanks.forEach((b)=>{
+    document.querySelector('[data-blank="'+b.id+'"]').click();
+    const key=[...document.querySelectorAll('#tdPad .td-key')].find((el)=>
+      el.textContent!==String(b.answer).replace('-','−')&&!el.classList.contains('del'));
+    key.click();
+  });
+  else if(sample.input==='pairs') sample.answer.forEach((_,i)=>{
+    document.querySelector('[data-pair-side="0"][data-pair-index="'+i+'"]').click();
+    document.querySelector('[data-pair-side="1"][data-pair-index="'+((i+1)%sample.answer.length)+'"]').click();
+  });
+  else [...document.querySelectorAll('#tdPad .td-choice')].find((_,i)=>i!==sample.answer).click();
+  TuDuyUI.check();TuDuyUI.check();
+}
+</script>
+</body></html>

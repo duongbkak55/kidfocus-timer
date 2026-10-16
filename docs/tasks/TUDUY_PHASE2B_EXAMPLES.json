@@ -1,0 +1,822 @@
+{
+  "newTypes": {
+    "latin": {
+      "type": "latin",
+      "level": 2,
+      "prompt": "Mỗi hàng và mỗi cột có đủ các số, không lặp. Điền ô trống.",
+      "visual": {
+        "kind": "latin",
+        "n": 3,
+        "cells": [
+          null,
+          1,
+          3,
+          1,
+          3,
+          2,
+          3,
+          2,
+          null
+        ]
+      },
+      "input": "numpad",
+      "answer": [
+        2,
+        1
+      ],
+      "explain": [
+        "Xem hàng và cột của từng ô: số nào còn thiếu?",
+        "Các ô trống lần lượt là 2, 1."
+      ],
+      "anim": {
+        "kind": "latin"
+      },
+      "blanks": [
+        {
+          "id": "l0",
+          "cell": 0,
+          "answer": 2
+        },
+        {
+          "id": "l8",
+          "cell": 8,
+          "answer": 1
+        }
+      ]
+    },
+    "magic": {
+      "type": "magic",
+      "level": 2,
+      "prompt": "Mỗi hàng và cột cộng được 6. Điền các ô trống.",
+      "visual": {
+        "kind": "magic",
+        "n": 3,
+        "cells": [
+          2,
+          null,
+          1,
+          1,
+          2,
+          null,
+          null,
+          1,
+          2
+        ],
+        "sum": 6
+      },
+      "input": "numpad",
+      "answer": [
+        3,
+        3,
+        3
+      ],
+      "explain": [
+        "Cộng các ô đã biết trong một hàng, rồi tìm số còn thiếu.",
+        "Điền lần lượt 3, 3, 3; mỗi hàng và cột được 6."
+      ],
+      "anim": {
+        "kind": "magic"
+      },
+      "blanks": [
+        {
+          "id": "m1",
+          "cell": 1,
+          "answer": 3
+        },
+        {
+          "id": "m5",
+          "cell": 5,
+          "answer": 3
+        },
+        {
+          "id": "m6",
+          "cell": 6,
+          "answer": 3
+        }
+      ]
+    },
+    "signs": {
+      "type": "signs",
+      "level": 2,
+      "prompt": "Chọn dấu cộng hoặc trừ để phép tính đúng.",
+      "visual": {
+        "kind": "signs",
+        "nums": [
+          4,
+          1,
+          3
+        ],
+        "target": 8
+      },
+      "input": "signs",
+      "answer": [
+        "+",
+        "+"
+      ],
+      "explain": [
+        "Thử đi từ trái sang phải, giữ kết quả sau mỗi bước.",
+        "4 + 1 + 3 = 8."
+      ],
+      "anim": {
+        "kind": "signs"
+      },
+      "blanks": [
+        {
+          "id": "s0",
+          "cell": 0,
+          "answer": "+"
+        },
+        {
+          "id": "s1",
+          "cell": 1,
+          "answer": "+"
+        }
+      ]
+    },
+    "triCenter": {
+      "type": "triCenter",
+      "level": 2,
+      "prompt": "Số ở giữa bằng tổng ba góc. Điền ô trống.",
+      "visual": {
+        "kind": "triCenter",
+        "values": [
+          1,
+          1,
+          1,
+          null
+        ]
+      },
+      "input": "numpad",
+      "answer": [
+        3
+      ],
+      "explain": [
+        "Cộng ba góc để tìm số giữa; nếu thiếu một góc thì đếm ngược từ số giữa.",
+        "1 + 1 + 1 = 3; ô trống là 3."
+      ],
+      "anim": {
+        "kind": "triCenter"
+      },
+      "blanks": [
+        {
+          "id": "t3",
+          "cell": 3,
+          "answer": 3
+        }
+      ]
+    },
+    "sumSplit": {
+      "type": "sumSplit",
+      "level": 2,
+      "prompt": "Chọn bốn số để hai bên cộng bằng nhau. Số nào không dùng?",
+      "visual": {
+        "kind": "sumSplit",
+        "nums": [
+          10,
+          2,
+          3,
+          7,
+          6
+        ]
+      },
+      "input": "choice",
+      "answer": 0,
+      "explain": [
+        "Thử ghép thành hai cặp có tổng bằng nhau.",
+        "2 + 7 = 3 + 6; số không dùng là 10."
+      ],
+      "anim": {
+        "kind": "sumSplit"
+      },
+      "choices": [
+        10,
+        2,
+        7,
+        3
+      ]
+    },
+    "addTable": {
+      "type": "addTable",
+      "level": 2,
+      "prompt": "Số trong ô bằng số đầu hàng cộng số đầu cột.",
+      "visual": {
+        "kind": "addTable",
+        "rows": [
+          12,
+          13
+        ],
+        "cols": [
+          1,
+          3
+        ],
+        "cells": [
+          null,
+          null,
+          null,
+          16
+        ]
+      },
+      "input": "numpad",
+      "answer": [
+        14,
+        15,
+        13
+      ],
+      "explain": [
+        "Nhìn số đầu hàng và đầu cột; cộng hai số đó.",
+        "Các ô trống lần lượt là 14, 15, 13."
+      ],
+      "anim": {
+        "kind": "addTable"
+      },
+      "blanks": [
+        {
+          "id": "a2",
+          "cell": 2,
+          "answer": 14
+        },
+        {
+          "id": "a1",
+          "cell": 1,
+          "answer": 15
+        },
+        {
+          "id": "a0",
+          "cell": 0,
+          "answer": 13
+        }
+      ]
+    },
+    "numberLine": {
+      "type": "numberLine",
+      "level": 2,
+      "prompt": "Nhìn bước nhảy rồi điền phép tính.",
+      "visual": {
+        "kind": "numberLine",
+        "max": 10,
+        "from": 2,
+        "to": 0,
+        "op": "-"
+      },
+      "input": "numpad",
+      "answer": [
+        2,
+        2,
+        0
+      ],
+      "explain": [
+        "Xem ếch bắt đầu ở đâu, nhảy mấy bước, rồi dừng ở đâu.",
+        "2 − 2 = 0."
+      ],
+      "anim": {
+        "kind": "numberLine"
+      },
+      "blanks": [
+        {
+          "id": "n0",
+          "cell": 0,
+          "answer": 2
+        },
+        {
+          "id": "n1",
+          "cell": 1,
+          "answer": 2
+        },
+        {
+          "id": "n2",
+          "cell": 2,
+          "answer": 0
+        }
+      ]
+    },
+    "ring": {
+      "type": "ring",
+      "level": 2,
+      "prompt": "Đi theo mũi tên quanh vòng. Điền số còn thiếu.",
+      "visual": {
+        "kind": "ring",
+        "values": [
+          3,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "ops": [
+          -2,
+          1,
+          2,
+          -3,
+          -1,
+          3
+        ]
+      },
+      "input": "numpad",
+      "answer": [
+        1,
+        2,
+        4,
+        1,
+        0
+      ],
+      "explain": [
+        "Từ số đã cho, làm phép tính trên từng mũi tên.",
+        "Đi một vòng được 3 → 1 → 2 → 4 → 1 → 0 → 3."
+      ],
+      "anim": {
+        "kind": "ring"
+      },
+      "blanks": [
+        {
+          "id": "r1",
+          "cell": 1,
+          "answer": 1
+        },
+        {
+          "id": "r2",
+          "cell": 2,
+          "answer": 2
+        },
+        {
+          "id": "r3",
+          "cell": 3,
+          "answer": 4
+        },
+        {
+          "id": "r4",
+          "cell": 4,
+          "answer": 1
+        },
+        {
+          "id": "r5",
+          "cell": 5,
+          "answer": 0
+        }
+      ]
+    },
+    "match": {
+      "type": "match",
+      "level": 2,
+      "prompt": "Nối hai phép tính có cùng kết quả.",
+      "visual": {
+        "kind": "match",
+        "left": [
+          [
+            4,
+            "+",
+            4
+          ],
+          [
+            7,
+            "+",
+            2
+          ],
+          [
+            10,
+            "-",
+            4
+          ]
+        ],
+        "right": [
+          [
+            11,
+            "-",
+            3
+          ],
+          [
+            4,
+            "+",
+            2
+          ],
+          [
+            8,
+            "+",
+            1
+          ]
+        ]
+      },
+      "input": "pairs",
+      "answer": [
+        0,
+        2,
+        1
+      ],
+      "explain": [
+        "Tính từng phép ở cột trái và cột phải rồi nối hai kết quả giống nhau.",
+        "Nối 1–1, 2–3, 3–2."
+      ],
+      "anim": {
+        "kind": "match"
+      }
+    }
+  },
+  "extensions": {
+    "position": {
+      "type": "position",
+      "level": 3,
+      "prompt": "Có 4 bạn đứng trước và 1 bạn đứng sau. Chọn bạn đó.",
+      "visual": {
+        "kind": "queue",
+        "names": [
+          "Minh",
+          "Dũng",
+          "An",
+          "Chi",
+          "Lan",
+          "Hà"
+        ],
+        "ahead": 4,
+        "behind": 1
+      },
+      "input": "choice",
+      "answer": 4,
+      "explain": [
+        "Đếm từ đầu hàng: số bạn đứng trước là số bước cần đi.",
+        "Lan đứng thứ 5 từ đầu hàng."
+      ],
+      "anim": {
+        "kind": "position"
+      },
+      "choices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    "insideOut": {
+      "type": "insideOut",
+      "level": 3,
+      "prompt": "Bạn kangaroo nằm trong mấy hình tròn?",
+      "visual": {
+        "kind": "venn3",
+        "circles": [
+          {
+            "x": 100,
+            "y": 110,
+            "r": 65
+          },
+          {
+            "x": 160,
+            "y": 110,
+            "r": 65
+          },
+          {
+            "x": 130,
+            "y": 155,
+            "r": 65
+          }
+        ],
+        "kangaroo": {
+          "x": 60,
+          "y": 80
+        }
+      },
+      "input": "choice",
+      "answer": 0,
+      "explain": [
+        "Nhìn từng đường tròn rồi đếm những hình ôm lấy bạn kangaroo.",
+        "Bạn kangaroo nằm trong 1 hình tròn."
+      ],
+      "anim": {
+        "kind": "insideOut"
+      },
+      "choices": [
+        1,
+        2,
+        3
+      ]
+    },
+    "condition": {
+      "type": "condition",
+      "level": 3,
+      "prompt": "Chọn các phép tính có kết quả bằng 4.",
+      "visual": {
+        "kind": "expressionCondition",
+        "expressions": [
+          [
+            3,
+            "+",
+            2
+          ],
+          [
+            13,
+            "+",
+            3
+          ],
+          [
+            13,
+            "-",
+            2
+          ],
+          [
+            9,
+            "-",
+            5
+          ],
+          [
+            8,
+            "-",
+            4
+          ],
+          [
+            13,
+            "-",
+            3
+          ]
+        ],
+        "target": 4
+      },
+      "input": "multi",
+      "answer": [
+        3,
+        4
+      ],
+      "explain": [
+        "Tính từng phép rồi so với số đã cho.",
+        "Các phép đúng là ô số 4, 5."
+      ],
+      "anim": {
+        "kind": "condition"
+      },
+      "choices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    "shapePattern": {
+      "type": "shapePattern",
+      "level": 3,
+      "prompt": "Chấm tròn đi quanh bốn ô. Hình nào tiếp theo?",
+      "visual": {
+        "kind": "dotPattern",
+        "prefix": [
+          0,
+          3,
+          2,
+          1,
+          0,
+          3,
+          2,
+          1
+        ]
+      },
+      "input": "choice",
+      "answer": 0,
+      "explain": [
+        "Theo dõi chấm tròn đi qua từng góc theo cùng một chiều.",
+        "Chấm tiếp theo ở góc 1."
+      ],
+      "anim": {
+        "kind": "shapePattern"
+      },
+      "choices": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    "grid": {
+      "type": "grid",
+      "level": 3,
+      "prompt": "Ô dấu hỏi cần hình nào và mấy chấm?",
+      "visual": {
+        "kind": "dotGrid",
+        "n": 3,
+        "cells": [
+          {
+            "shape": "■",
+            "dots": 3
+          },
+          {
+            "shape": "▲",
+            "dots": 2
+          },
+          {
+            "shape": "●",
+            "dots": 1
+          },
+          {
+            "shape": "▲",
+            "dots": 1
+          },
+          null,
+          {
+            "shape": "■",
+            "dots": 2
+          },
+          {
+            "shape": "●",
+            "dots": 2
+          },
+          {
+            "shape": "■",
+            "dots": 1
+          },
+          {
+            "shape": "▲",
+            "dots": 3
+          }
+        ],
+        "missing": 4
+      },
+      "input": "choice",
+      "answer": 0,
+      "explain": [
+        "Mỗi hàng và cột cần đủ ba hình và ba số chấm.",
+        "Ô cần điền là ● với 3 chấm."
+      ],
+      "anim": {
+        "kind": "grid"
+      },
+      "choices": [
+        {
+          "shape": "●",
+          "dots": 3
+        },
+        {
+          "shape": "■",
+          "dots": 3
+        },
+        {
+          "shape": "●",
+          "dots": 2
+        },
+        {
+          "shape": "●",
+          "dots": 1
+        }
+      ]
+    },
+    "compare": {
+      "type": "compare",
+      "level": 3,
+      "prompt": "Cặp xúc xắc của bạn nào có tổng lớn nhất?",
+      "visual": {
+        "kind": "diceCompare",
+        "pairs": [
+          [
+            4,
+            2
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            2,
+            5
+          ]
+        ]
+      },
+      "input": "choice",
+      "answer": 3,
+      "explain": [
+        "Cộng hai mặt xúc xắc của từng bạn, rồi so các tổng.",
+        "Cặp thứ 4 lớn nhất, được 7."
+      ],
+      "anim": {
+        "kind": "compare"
+      },
+      "choices": [
+        "Bạn 1",
+        "Bạn 2",
+        "Bạn 3",
+        "Bạn 4"
+      ]
+    },
+    "pyramid": {
+      "type": "pyramid",
+      "level": 3,
+      "prompt": "Mỗi ô bằng tổng hai ô ngay dưới. Điền tháp bốn tầng.",
+      "visual": {
+        "kind": "pyramid4",
+        "cells": [
+          3,
+          0,
+          1,
+          2,
+          3,
+          null,
+          3,
+          null,
+          4,
+          8
+        ]
+      },
+      "input": "numpad",
+      "answer": [
+        1,
+        4
+      ],
+      "explain": [
+        "Bắt đầu từ hàng dưới rồi cộng hai ô liền nhau.",
+        "Các ô trống là 1, 4; đỉnh tháp là 8."
+      ],
+      "anim": {
+        "kind": "pyramid"
+      },
+      "blanks": [
+        {
+          "id": "p5",
+          "cell": 5,
+          "answer": 1
+        },
+        {
+          "id": "p7",
+          "cell": 7,
+          "answer": 4
+        }
+      ]
+    },
+    "chain": {
+      "type": "chain",
+      "level": 3,
+      "prompt": "Đi theo từng toa và điền các số còn thiếu.",
+      "visual": {
+        "kind": "chain",
+        "values": [
+          16,
+          null,
+          null,
+          16,
+          13,
+          null,
+          19
+        ],
+        "ops": [
+          -4,
+          -1,
+          5,
+          -3,
+          1,
+          5
+        ]
+      },
+      "input": "numpad",
+      "answer": [
+        12,
+        11,
+        14
+      ],
+      "explain": [
+        "Làm từng phép trên mũi tên từ trái sang phải.",
+        "Đoàn tàu đúng là 16 → 12 → 11 → 16 → 13 → 14 → 19."
+      ],
+      "anim": {
+        "kind": "hops",
+        "values": [
+          16,
+          12,
+          11,
+          16,
+          13,
+          14,
+          19
+        ],
+        "ops": [
+          -4,
+          -1,
+          5,
+          -3,
+          1,
+          5
+        ],
+        "order": [
+          1,
+          2,
+          5
+        ]
+      },
+      "blanks": [
+        {
+          "id": "t1",
+          "cell": 1,
+          "answer": 12
+        },
+        {
+          "id": "t2",
+          "cell": 2,
+          "answer": 11
+        },
+        {
+          "id": "t5",
+          "cell": 5,
+          "answer": 14
+        }
+      ]
+    }
+  }
+}

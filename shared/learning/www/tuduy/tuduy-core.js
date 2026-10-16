@@ -15,6 +15,7 @@
   let MAX = 10;
   const TYPES = ['pyramid', 'balance', 'chain', 'sequence', 'scale', 'shapes'];
   const PHASE2_TYPES = ['compare', 'order', 'neighbor', 'position', 'condition', 'shapePattern', 'grid', 'oddOne', 'insideOut', 'code', 'triSum'];
+  const PHASE2B_TYPES = ['latin', 'magic', 'signs', 'triCenter', 'sumSplit', 'addTable', 'numberLine', 'ring', 'match'];
   const TYPE_INFO = {
     pyramid:  { name: 'Tháp số', emoji: '🔺' },
     balance:  { name: 'Ô trống cân bằng', emoji: '⚖️' },
@@ -33,6 +34,15 @@
     insideOut: { name: 'Trong và ngoài', emoji: '⭕' },
     code: { name: 'Mật mã hình', emoji: '🔐' },
     triSum: { name: 'Tam giác số', emoji: '🔺' },
+    latin: { name: 'Sudoku nhí', emoji: '🧩' },
+    magic: { name: 'Ô vuông kì diệu', emoji: '✨' },
+    signs: { name: 'Điền dấu cộng trừ', emoji: '➕' },
+    triCenter: { name: 'Tổng ba góc', emoji: '🔺' },
+    sumSplit: { name: 'Chọn bốn số', emoji: '🔢' },
+    addTable: { name: 'Bảng cộng', emoji: '🧮' },
+    numberLine: { name: 'Nhảy trên tia số', emoji: '🐸' },
+    ring: { name: 'Vòng số', emoji: '⭕' },
+    match: { name: 'Nối cùng kết quả', emoji: '🔗' },
   };
 
   /* ---------- RNG helpers (injectable for deterministic tests) ---------- */
@@ -411,17 +421,27 @@
 
   const GENS = { pyramid: genPyramid, balance: genBalance, chain: genChain, sequence: genSequence, scale: genScale, shapes: genShapes };
   function generate(type, level, rng, opts) {
-    const phase2 = PHASE2_TYPES.includes(type);
-    if (!GENS[type] && !phase2) throw new Error('unknown type ' + type);
+    const phase2 = PHASE2_TYPES.includes(type), phase2b = PHASE2B_TYPES.includes(type);
+    if (!GENS[type] && !phase2 && !phase2b) throw new Error('unknown type ' + type);
     if (level !== 2 && level !== 3) throw new Error('level must be 2 or 3');
     const max = opts && opts.max != null ? opts.max : 10;
     if (max !== 10 && max !== 20) throw new Error('max must be 10 or 20');
     if (type === 'triSum' && max === 10) throw new Error('triSum is for Lớp 1+');
+    if (type === 'addTable' && max === 10) throw new Error('addTable is for Lớp 1+');
     const previous = MAX;
     MAX = max;
     try {
+      if (opts && opts.phase2b && level === 3) {
+        const extension = typeof module !== 'undefined' && module.exports ? require('./tuduy-phase2b-core.js') : root.TuDuyPhase2B;
+        const item = extension.generateExtension(type, level, rng || Math.random, max);
+        if (item) return item;
+      }
       if (phase2) {
         const engine = typeof module !== 'undefined' && module.exports ? require('./tuduy-phase2-core.js') : root.TuDuyPhase2;
+        return engine.generate(type, level, rng || Math.random, max);
+      }
+      if (phase2b) {
+        const engine = typeof module !== 'undefined' && module.exports ? require('./tuduy-phase2b-core.js') : root.TuDuyPhase2B;
         return engine.generate(type, level, rng || Math.random, max);
       }
       return GENS[type](rng || Math.random, level);
@@ -444,7 +464,7 @@
     return s;
   }
 
-  const api = { MAX: 10, TYPES, PHASE2_TYPES, TYPE_INFO, mkRng, generate, updateStat, nextLevel,
+  const api = { MAX: 10, TYPES, PHASE2_TYPES, PHASE2B_TYPES, TYPE_INFO, mkRng, generate, updateStat, nextLevel,
     _internal: { pyramidSolve, pyramidBrute, balanceSolutions, evalSide, fanTriangles, stripRects, gridRects } };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.TuDuy = api;

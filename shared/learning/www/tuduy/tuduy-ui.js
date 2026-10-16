@@ -20,7 +20,14 @@
 
   /* ---------- session state ---------- */
   let items = [], idx = 0, score = 0, tries = 0, active = null, answers = {}, mode = 'mix', locked = false;
-  const allTypes = () => T.TYPES.concat(T.PHASE2_TYPES.filter((t) => t !== 'triSum' || (typeof ageBand !== 'undefined' && ageBand !== '5-6')));
+  const allTypes = () => T.TYPES.concat(T.PHASE2_TYPES, T.PHASE2B_TYPES).filter((t) =>
+    (t !== 'triSum' && t !== 'addTable') || (typeof ageBand !== 'undefined' && ageBand !== '5-6'));
+  const SHELVES = [
+    ['Số & phép tính', ['balance', 'chain', 'compare', 'order', 'neighbor', 'condition', 'signs', 'sumSplit', 'addTable', 'numberLine']],
+    ['Quy luật', ['sequence', 'shapePattern', 'oddOne', 'ring', 'match']],
+    ['Hình & vị trí', ['shapes', 'position', 'insideOut', 'grid']],
+    ['Câu đố ô số', ['pyramid', 'scale', 'code', 'triSum', 'latin', 'magic', 'triCenter']],
+  ];
   const currentMax = () => (typeof ageBand !== 'undefined' && ageBand === '5-6' ? 10 : 20);
 
   function open() {
@@ -33,10 +40,13 @@
       b.onclick = onClick; box.appendChild(b);
     };
     mk('🎲', 'Trộn các dạng', SESSION_N + ' câu', () => start('mix'), 'mix');
-    for (const t of allTypes()) {
-      const s = store.stats[t] || {};
-      const stars = s.seen ? '⭐'.repeat(Math.min(3, Math.floor((s.right || 0) / 4))) || '·' : 'mới';
-      mk(T.TYPE_INFO[t].emoji, T.TYPE_INFO[t].name, `Mức ${s.level || 2} · ${stars}`, () => start(t));
+    for (const [title, types] of SHELVES) {
+      const heading = document.createElement('h3'); heading.className = 'td-shelf'; heading.textContent = title; box.appendChild(heading);
+      for (const t of types.filter((x) => allTypes().includes(x))) {
+        const s = store.stats[t] || {};
+        const stars = s.seen ? '⭐'.repeat(Math.min(3, Math.floor((s.right || 0) / 4))) || '·' : 'mới';
+        mk(T.TYPE_INFO[t].emoji, T.TYPE_INFO[t].name, `Mức ${s.level || 2} · ${stars}`, () => start(t));
+      }
     }
     if (store.review.length) mk('🔁', 'Làm lại câu chưa đúng', store.review.length + ' câu', () => start('review'), 'review');
   }
@@ -46,12 +56,16 @@
     call('sndTap');
     mode = m; idx = 0; score = 0;
     if (m === 'review') items = store.review.slice(0, SESSION_N);
-    else items = Array.from({ length: SESSION_N }, (_, i) => {
-      const kinds = allTypes();
-      const t = m === 'mix' ? kinds[i % kinds.length] : m;
-      return T.generate(t, levelFor(t), undefined, { max: currentMax() });
-    });
-    if (m === 'mix') items.sort(() => Math.random() - 0.5);
+    else {
+      const mixed = allTypes();
+      if (m === 'mix') for (let i = mixed.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1)); [mixed[i], mixed[j]] = [mixed[j], mixed[i]];
+      }
+      items = Array.from({ length: SESSION_N }, (_, i) => {
+        const t = m === 'mix' ? mixed[i % mixed.length] : m;
+        return T.generate(t, levelFor(t), undefined, { max: currentMax(), phase2b: true });
+      });
+    }
     $('tdChooser').hidden = true; $('tdDone').hidden = true; $('tdQuiz').hidden = false;
     show();
   }
@@ -65,6 +79,17 @@
       t.shape === 'triangle' ? `<path d="M32 8 L57 55 H7 Z" fill="${color}"/>` :
       `<rect x="10" y="10" width="44" height="44" rx="5" fill="${color}"/>`;
     return `<svg class="td-tile-svg" viewBox="0 0 64 64" aria-hidden="true">${shape}</svg>`;
+  }
+  function dotTile(position) {
+    const coords = [[16,16],[48,16],[48,48],[16,48]];
+    return `<svg class="td-tile-svg" viewBox="0 0 64 64" aria-hidden="true"><rect x="3" y="3" width="58" height="58" rx="8" fill="#f2f7ff" stroke="#477be8" stroke-width="2"/>${coords.map(([x,y], i) => `<circle cx="${x}" cy="${y}" r="${i === position ? 8 : 4}" fill="${i === position ? '#ff6b9d' : '#bfd0ef'}"/>`).join('')}</svg>`;
+  }
+  function dotShapeTile(t) {
+    return `<span class="td-dot-shape">${esc(t.shape)}<small>${'•'.repeat(t.dots)}</small></span>`;
+  }
+  function ringArrow(index, count) {
+    const tangent = 2 * Math.PI * (index + .5) / count;
+    return ['→', '↘', '↓', '↙', '←', '↖', '↑', '↗'][Math.round(tangent / (Math.PI / 4)) % 8];
   }
 
   function renderVisual(item) {
@@ -115,6 +140,27 @@
       const pts = [[50,12],[10,85],[90,85],[30,45],[50,85],[70,45]];
       return `<div class="td-triangle"><svg viewBox="0 0 300 250" aria-hidden="true"><path d="M150 12 L10 220 L290 220 Z" fill="none" stroke="#7c5cff" stroke-width="5"/></svg>${v.values.map((n, i) => `<span class="td-tri-cell" style="left:${pts[i][0]}%;top:${pts[i][1]}%">${B(i) ? blankBox(B(i).id) : numBox(n)}</span>`).join('')}<span class="td-tri-sum">Mỗi cạnh = ${v.sum}</span></div>`;
     }
+    if (v.kind === 'latin' || v.kind === 'magic') return `<div class="td-digit-grid" style="--n:${v.n}" role="group" aria-label="Bảng số ${v.n} hàng">${v.cells.map((n, i) => `<div class="td-digit-cell">${B(i) ? blankBox(B(i).id) : esc(n)}</div>`).join('')}</div>${v.kind === 'magic' ? `<div class="td-grid-note">Mỗi hàng và cột = ${v.sum}</div>` : ''}`;
+    if (v.kind === 'signs') return `<div class="td-eq td-signs">${v.nums.map((n, i) => i ? `${blankBox(B(i - 1).id)}${numBox(n, 'td-plain')}` : numBox(n, 'td-plain')).join('')}<span class="td-op">=</span>${numBox(v.target, 'td-plain')}</div>`;
+    if (v.kind === 'triCenter') return `<div class="td-triangle td-center-triangle"><svg viewBox="0 0 300 250" aria-hidden="true"><path d="M150 12 L10 220 L290 220 Z" fill="none" stroke="#7c5cff" stroke-width="5"/></svg>${[[50,10],[10,86],[90,86],[50,58]].map(([x,y], i) => `<span class="td-tri-cell" style="left:${x}%;top:${y}%">${B(i) ? blankBox(B(i).id) : numBox(v.values[i])}</span>`).join('')}</div>`;
+    if (v.kind === 'sumSplit') return `<div class="td-number-choices td-split-numbers">${v.nums.map((n) => numBox(n)).join('')}</div><div class="td-grid-note">□ + □ = □ + □</div>`;
+    if (v.kind === 'addTable') return `<div class="td-add-table"><span class="td-add-head">+</span>${v.cols.map((n) => `<span class="td-add-head">${n}</span>`).join('')}${v.rows.map((row, r) => `${row == null ? blankBox('row0') : `<span class="td-add-head">${row}</span>`}${v.cols.map((_, c) => { const i = r * 2 + c; return B(i) ? blankBox(B(i).id) : numBox(v.cells[i]); }).join('')}`).join('')}</div>`;
+    if (v.kind === 'numberLine') {
+      const x = (n) => 18 + 264 * n / v.max, x1 = x(v.from), x2 = x(v.to), mid = (x1 + x2) / 2;
+      return `<div class="td-number-line"><svg viewBox="0 0 300 100" role="img" aria-label="Ếch nhảy từ ${v.from} đến ${v.to}"><path d="M18 70 H282" stroke="#477be8" stroke-width="3"/>${Array.from({length:v.max+1}, (_,i) => `<g><path d="M${x(i)} 63 V77" stroke="#477be8" stroke-width="2"/><text x="${x(i)}" y="92" text-anchor="middle" font-size="${v.max===20?9:13}">${i}</text></g>`).join('')}<path d="M${x1} 63 Q${mid} 0 ${x2} 63" fill="none" stroke="#ff9f43" stroke-width="4"/><text class="td-frog" x="${x1}" y="55" text-anchor="middle" font-size="24">🐸</text></svg></div><div class="td-eq td-line-equation">${blankBox('n0')}<span class="td-op">${v.op === '-' ? '−' : '+'}</span>${blankBox('n1')}<span class="td-op">=</span>${blankBox('n2')}</div>`;
+    }
+    if (v.kind === 'ring') return `<div class="td-ring">${v.values.map((n, i) => { const angle = -Math.PI / 2 + 2 * Math.PI * i / v.values.length, x = 50 + 38 * Math.cos(angle), y = 50 + 38 * Math.sin(angle), d = v.ops[i]; return `<div class="td-ring-node" style="left:${x}%;top:${y}%">${B(i) ? blankBox(B(i).id) : numBox(n)}</div><span class="td-ring-op" style="left:${50 + 38 * Math.cos(angle + Math.PI / v.values.length)}%;top:${50 + 38 * Math.sin(angle + Math.PI / v.values.length)}%">${d > 0 ? '+' + d : '−' + -d} ${ringArrow(i, v.values.length)}</span>`; }).join('')}</div>`;
+    if (v.kind === 'match') return `<div class="td-match">${[v.left, v.right].map((col, side) => `<div class="td-match-col">${col.map((e, i) => `<button class="td-match-item" data-pair-side="${side}" data-pair-index="${i}">${e.join(' ').replace('-', '−')}</button>`).join('')}</div>`).join(`<span class="td-match-links">${v.left.map(() => '↔').join('<br>')}</span>`)}<svg class="td-match-lines" aria-hidden="true"></svg></div><div class="td-grid-note" id="tdPairStatus">Chạm một phép bên trái, rồi phép bằng nó bên phải.</div>`;
+    if (v.kind === 'queue') return `<div class="td-queue">${v.names.map((name, i) => `<button class="td-choice" data-choice="${i}"><span>🧒</span><small>${esc(name)}</small></button>`).join('')}</div>`;
+    if (v.kind === 'venn3') return `<svg class="td-region td-venn" viewBox="0 0 260 230" role="img" aria-label="Ba hình tròn và bạn kangaroo">${v.circles.map((c) => `<circle cx="${c.x}" cy="${c.y}" r="${c.r}" class="td-region-line"/>`).join('')}<text x="${v.kangaroo.x}" y="${v.kangaroo.y + 8}" text-anchor="middle" font-size="27">🦘</text></svg>`;
+    if (v.kind === 'expressionCondition') return `<div class="td-expressions">${v.expressions.map((e, i) => `<button class="td-choice" data-multi="${i}">${i + 1}. ${esc(e.join(' ').replace('-', '−'))}</button>`).join('')}</div>`;
+    if (v.kind === 'dotPattern') return `<div class="td-dot-pattern">${v.prefix.map(dotTile).join('')}<span class="td-symbol td-missing">?</span></div>`;
+    if (v.kind === 'dotGrid') return `<div class="td-tile-grid" style="--n:3">${v.cells.map((t) => `<div class="td-grid-cell">${t ? dotShapeTile(t) : '?'}</div>`).join('')}</div>`;
+    if (v.kind === 'diceCompare') return `<div class="td-dice-pairs">${v.pairs.map(([a,b], i) => `<div><b>Bạn ${i + 1}</b> <span>🎲 ${a}</span> + <span>🎲 ${b}</span></div>`).join('')}</div>`;
+    if (v.kind === 'pyramid4') {
+      const cell = (i) => B(i) ? blankBox(B(i).id) : numBox(v.cells[i]);
+      return `<div class="td-pyr td-pyr-four"><div class="td-row">${cell(9)}</div><div class="td-row">${cell(7)}${cell(8)}</div><div class="td-row">${cell(4)}${cell(5)}${cell(6)}</div><div class="td-row">${cell(0)}${cell(1)}${cell(2)}${cell(3)}</div></div>`;
+    }
     return '';
   }
 
@@ -147,8 +193,9 @@
     $('tdFb').textContent = ''; $('tdFb').className = 'fb';
     $('tdNext').hidden = true; $('tdCheck').hidden = false; $('tdPad').hidden = false;
     $('tdVisual').querySelectorAll('.td-blank').forEach((b) => { b.onclick = () => select(b.dataset.blank); });
-    if (item.input === 'numpad' || !item.input) {
-      buildPad(item.type === 'code' ? 9 : currentMax());
+    if (item.input === 'numpad' || !item.input || item.input === 'signs') {
+      if (item.input === 'signs') buildSignsPad();
+      else buildPad(item.type === 'code' ? 9 : item.type === 'latin' ? item.visual.n : currentMax(), item.type === 'latin' ? 1 : 0);
       select(item.blanks[0].id);
     } else {
       active = null;
@@ -157,6 +204,7 @@
       $('tdVisual').querySelectorAll('[data-multi]').forEach((b) => { b.onclick = () => toggleNumber(Number(b.dataset.multi)); });
       $('tdVisual').querySelectorAll('[data-order]').forEach((b) => { b.onclick = () => placeNumber(Number(b.dataset.order)); });
       $('tdVisual').querySelectorAll('[data-undo]').forEach((b) => { b.onclick = () => undoOrder(Number(b.dataset.undo)); });
+      $('tdVisual').querySelectorAll('[data-pair-side]').forEach((b) => { b.onclick = () => pair(Number(b.dataset.pairSide), Number(b.dataset.pairIndex)); });
     }
     speakPrompt();
   }
@@ -188,6 +236,40 @@
     call('sndTap');
     document.querySelectorAll('#tuduy [data-choice]').forEach((b) => b.classList.toggle('chosen', Number(b.dataset.choice) === value));
   }
+  function pair(side, index) {
+    if (locked) return;
+    if (side === 0) answers.pairLeft = index;
+    else if (answers.pairLeft != null) {
+      const pairs = (answers.pairs || []).slice();
+      pairs[answers.pairLeft] = index;
+      // Each right-hand expression can have only one line.
+      pairs.forEach((v, i) => { if (i !== answers.pairLeft && v === index) pairs[i] = null; });
+      answers.pairs = pairs;
+      answers.pairLeft = null;
+    }
+    call('sndTap');
+    $('tdVisual').querySelectorAll('[data-pair-side]').forEach((b) => {
+      const s = Number(b.dataset.pairSide), i = Number(b.dataset.pairIndex);
+      b.classList.toggle('chosen', s === 0 && i === answers.pairLeft);
+      b.textContent = s === 0 && answers.pairs && answers.pairs[i] != null ?
+        `${items[idx].visual.left[i].join(' ').replace('-', '−')} → ${answers.pairs[i] + 1}` :
+        (s === 0 ? items[idx].visual.left[i] : items[idx].visual.right[i]).join(' ').replace('-', '−');
+    });
+    $('tdPairStatus').textContent = (answers.pairs || []).filter((x) => x != null).length + '/' + items[idx].answer.length + ' cặp đã nối';
+    drawPairs();
+  }
+  function drawPairs() {
+    const root = $('tdVisual').querySelector('.td-match'), svg = root && root.querySelector('.td-match-lines');
+    if (!svg) return;
+    const bounds = root.getBoundingClientRect();
+    svg.setAttribute('viewBox', `0 0 ${bounds.width} ${bounds.height}`);
+    svg.innerHTML = (answers.pairs || []).map((right, left) => {
+      if (right == null) return '';
+      const a = root.querySelector(`[data-pair-side="0"][data-pair-index="${left}"]`).getBoundingClientRect();
+      const b = root.querySelector(`[data-pair-side="1"][data-pair-index="${right}"]`).getBoundingClientRect();
+      return `<path d="M${a.right - bounds.left} ${a.top + a.height / 2 - bounds.top} L${b.left - bounds.left} ${b.top + b.height / 2 - bounds.top}" stroke="#ff9f43" stroke-width="3" fill="none"/>`;
+    }).join('');
+  }
   function toggleNumber(n) {
     if (locked) return;
     const selected = new Set(answers.multi || []);
@@ -214,6 +296,13 @@
     $('tdVisual').querySelectorAll('[data-order]').forEach((b) => { b.disabled = selected.includes(Number(b.dataset.order)); });
   }
   function showCorrect(item) {
+    if (item.input === 'pairs') {
+      answers.pairs = item.answer.slice(); answers.pairLeft = null;
+      $('tdVisual').querySelectorAll('[data-pair-side="0"]').forEach((b, i) => { b.textContent = `${item.visual.left[i].join(' ').replace('-', '−')} → ${item.answer[i] + 1}`; b.classList.add('shown'); });
+      $('tdPairStatus').textContent = 'Các cặp đúng đã được nối.';
+      drawPairs();
+      return;
+    }
     if (item.input === 'order') { answers.order = item.answer.slice(); updateOrder(); return; }
     if (item.input === 'multi') {
       answers.multi = item.answer.slice();
@@ -223,12 +312,15 @@
     const v = item.answer;
     if (item.input === 'sign' || item.type === 'shapePattern') {
       $('tdPad').querySelectorAll('.td-choice').forEach((b, i) => b.classList.toggle('shown', (item.input === 'sign' ? ['>', '<', '='][i] : item.choices[i]) === v));
-    } else document.querySelectorAll('#tuduy [data-choice]').forEach((b) => b.classList.toggle('shown', Number(b.dataset.choice) === v));
+    } else {
+      document.querySelectorAll('#tuduy [data-choice]').forEach((b) => b.classList.toggle('shown', Number(b.dataset.choice) === v));
+      $('tdPad').querySelectorAll('.td-choice').forEach((b, i) => b.classList.toggle('shown', i === v));
+    }
   }
   function buildChoicePad(item) {
     const pad = $('tdPad'); pad.innerHTML = ''; pad.dataset.built = '';
     pad.className = 'td-pad';
-    if (item.input === 'order' || item.input === 'multi' || item.type === 'position' || item.type === 'oddOne' || item.type === 'insideOut') {
+    if (item.input === 'order' || item.input === 'multi' || item.input === 'pairs' || item.type === 'position' || item.type === 'oddOne' || (item.type === 'insideOut' && item.visual.kind !== 'venn3')) {
       pad.hidden = true; return;
     }
     pad.hidden = false;
@@ -238,7 +330,7 @@
       const b = document.createElement('button');
       b.className = 'td-key td-choice';
       b.dataset.choice = item.input === 'sign' ? i : i;
-      b.innerHTML = item.type === 'grid' ? tileSvg(choice) : esc(choice);
+      b.innerHTML = item.visual.kind === 'dotPattern' ? dotTile(choice) : item.visual.kind === 'dotGrid' ? dotShapeTile(choice) : item.type === 'grid' ? tileSvg(choice) : esc(choice);
       b.onclick = () => {
         answers.choice = item.input === 'sign' ? choice : item.type === 'shapePattern' ? choice : i;
         call('sndTap');
@@ -252,14 +344,17 @@
     if (locked) return;
     const item = items[idx];
     const input = item.input || 'numpad';
-    const filled = input === 'numpad' ? item.blanks.every((b) => answers[b.id] != null) :
+    const blankInput = input === 'numpad' || input === 'signs';
+    const filled = blankInput ? item.blanks.every((b) => answers[b.id] != null) :
       input === 'order' ? Array.isArray(answers.order) && answers.order.length === item.answer.length :
-      input === 'multi' ? Array.isArray(answers.multi) && answers.multi.length > 0 : answers.choice != null;
+      input === 'multi' ? Array.isArray(answers.multi) && answers.multi.length > 0 :
+      input === 'pairs' ? Array.isArray(answers.pairs) && answers.pairs.filter((x) => x != null).length === item.answer.length : answers.choice != null;
     if (!filled) { $('tdFb').textContent = 'Con chọn hoặc điền đủ đáp án nhé!'; $('tdFb').className = 'fb'; return; }
     tries += 1;
-    const wrong = input === 'numpad' ? item.blanks.filter((b) => answers[b.id] !== b.answer) : [];
-    const correct = input === 'numpad' ? !wrong.length : input === 'order' ? JSON.stringify(answers.order) === JSON.stringify(item.answer) :
+    const wrong = blankInput ? item.blanks.filter((b) => answers[b.id] !== b.answer) : [];
+    const correct = blankInput ? !wrong.length : input === 'order' ? JSON.stringify(answers.order) === JSON.stringify(item.answer) :
       input === 'multi' ? JSON.stringify(answers.multi.slice().sort((a,b) => a-b)) === JSON.stringify(item.answer) :
+      input === 'pairs' ? JSON.stringify(answers.pairs) === JSON.stringify(item.answer) :
       answers.choice === item.answer;
     if (correct) {
       locked = true;
@@ -283,7 +378,7 @@
     // second miss: show the answer, the steps and the animation; queue for review
     locked = true;
     record(item, false);
-    if (input === 'numpad') item.blanks.forEach((b) => { const el = $('tdVisual').querySelector(`[data-blank="${b.id}"]`); el.textContent = b.answer; el.classList.remove('bad'); el.classList.add('shown'); });
+    if (blankInput) item.blanks.forEach((b) => { const el = $('tdVisual').querySelector(`[data-blank="${b.id}"]`); el.textContent = b.answer === '-' ? '−' : b.answer; el.classList.remove('bad'); el.classList.add('shown'); });
     else showCorrect(item);
     $('tdFb').textContent = 'Mình cùng xem cách làm nhé 👇';
     $('tdFb').className = 'fb';
@@ -334,6 +429,21 @@
     stopAnim();
     const vis = $('tdVisual');
     const a = item.anim;
+    if (a.kind === 'numberLine') {
+      const frog = vis.querySelector('.td-frog'), v = item.visual, direction = v.to > v.from ? 1 : -1;
+      if (!frog) return;
+      frog.style.transform = 'translateX(0px)';
+      for (let hop = 1; hop <= Math.abs(v.to - v.from); hop++) {
+        after(300 + hop * 350, () => { frog.style.transform = `translateX(${264 * direction * hop / v.max}px)`; call('sndTap'); });
+      }
+      return;
+    }
+    if (a.kind === 'ring') {
+      const nodes = [...vis.querySelectorAll('.td-ring-node')];
+      nodes.forEach((node, i) => after(300 + i * 500, () => { nodes.forEach((x) => x.classList.remove('glow')); node.classList.add('glow'); call('sndTap'); }));
+      after(500 + nodes.length * 500, () => nodes.forEach((x) => x.classList.remove('glow')));
+      return;
+    }
     if (['compare', 'order', 'position', 'insideOut', 'triSum'].includes(a.kind)) {
       const selectors = { compare: '.td-side', order: '.td-order-slot', position: '.td-position .td-choice', insideOut: '.td-region-object', triSum: '.td-tri-cell' };
       const nodes = [...vis.querySelectorAll(selectors[a.kind])];
@@ -430,11 +540,17 @@
   async function speakLines(lines) { for (const l of lines) { await call('speakText', spoken(l), 'vi-VN', null, 'en-US', 0.9, 1.1); } }
 
   /* ---------- keypad ---------- */
-  function buildPad(max) {
-    const pad = $('tdPad'); if (!pad || pad.dataset.built === String(max)) return;
-    pad.innerHTML = ''; pad.className = 'td-pad'; pad.dataset.built = String(max);
-    for (let n = 0; n <= max; n++) { const b = document.createElement('button'); b.className = 'td-key'; b.textContent = n; b.onclick = () => press(n); pad.appendChild(b); }
+  function buildPad(max, min) {
+    const start = min || 0, key = `${start}-${max}`;
+    const pad = $('tdPad'); if (!pad || pad.dataset.built === key) return;
+    pad.innerHTML = ''; pad.className = 'td-pad'; pad.dataset.built = key;
+    for (let n = start; n <= max; n++) { const b = document.createElement('button'); b.className = 'td-key'; b.textContent = n; b.onclick = () => press(n); pad.appendChild(b); }
     const del = document.createElement('button'); del.className = 'td-key del'; del.textContent = '⌫'; del.setAttribute('aria-label', 'Xoá'); del.onclick = clearActive; pad.appendChild(del);
+  }
+  function buildSignsPad() {
+    const pad = $('tdPad'); pad.innerHTML = ''; pad.className = 'td-pad td-choice-pad'; pad.dataset.built = 'signs';
+    for (const op of ['+', '-']) { const b = document.createElement('button'); b.className = 'td-key'; b.textContent = op === '-' ? '−' : op; b.onclick = () => press(op); pad.appendChild(b); }
+    const del = document.createElement('button'); del.className = 'td-key del'; del.textContent = '⌫'; del.onclick = clearActive; pad.appendChild(del);
   }
 
   window.TuDuyUI = {
