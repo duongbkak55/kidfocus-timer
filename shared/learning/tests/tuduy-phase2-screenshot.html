@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../www/tuduy/tuduy.css">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#eaf2ff;color:#283158;font:16px system-ui,sans-serif}
+#tuduy{width:390px;max-width:100%;min-height:844px;margin:auto;padding:10px 12px}
+.card{background:#fff;border-radius:20px;padding:14px;margin:5px 0;box-shadow:0 4px 18px #273e611c}
+.rbtn{border:0;border-radius:12px;background:#567cf2;color:#fff;padding:10px 16px;font:inherit;font-weight:800}
+.fb{margin-top:8px;min-height:24px}.fb.no{color:#cf4453}.fb.ok{color:#11805d}
+.next{font-size:18px}h1{font-size:19px;margin:0 0 5px}
+</style>
+</head>
+<body>
+<div id="tuduy">
+  <div class="card" id="tdChooser"><h1>Luyện tư duy</h1><div id="tdPick"></div></div>
+  <div class="card" id="tdQuiz" hidden>
+    <div class="td-top"><span id="tdCount"></span><span id="tdStars"></span></div>
+    <div class="td-prompt"><span id="tdPrompt"></span></div>
+    <div class="td-visual" id="tdVisual"></div>
+    <div class="td-pad" id="tdPad"></div>
+    <div class="td-actions"><button class="rbtn next" id="tdCheck">✔ Xong rồi</button><button class="rbtn next" id="tdNext" hidden>Câu tiếp ▶</button></div>
+    <div id="tdFb" class="fb"></div><div id="tdExplain" class="td-explain" hidden></div>
+  </div>
+  <div class="card" id="tdDone" hidden><span id="tdDoneStars"></span><span id="tdDoneText"></span></div>
+</div>
+<script>let ageBand='l1'; window.speakText=()=>Promise.resolve();</script>
+<script src="../www/tuduy/tuduy-core.js"></script>
+<script src="../www/tuduy/tuduy-phase2-core.js"></script>
+<script src="../www/tuduy/tuduy-ui.js"></script>
+<script>
+const args=new URLSearchParams(location.search), type=args.get('type')||'compare', rng=TuDuy.mkRng(1729);
+Math.random=rng;
+const sample=TuDuy.generate(type,2,TuDuy.mkRng(1729),{max:20});
+TuDuyUI.open(); TuDuyUI.start(type);
+if(args.get('view')==='explain'){
+  const bad=sample.input==='numpad' ? null : sample.input==='order' ? sample.answer.slice().reverse() :
+    sample.input==='multi' ? sample.choices.find((x)=>!sample.answer.includes(x)) :
+    sample.input==='sign' ? ['>','<','='].find((x)=>x!==sample.answer) :
+    sample.input==='choice' && type==='shapePattern' ? sample.choices.find((x)=>x!==sample.answer) :
+    sample.input==='choice' ? sample.choices.findIndex((_,i)=>i!==sample.answer) : null;
+  if(sample.input==='numpad') sample.blanks.forEach((b)=>{
+    document.querySelector('[data-blank="'+b.id+'"]').click();
+    [...document.querySelectorAll('#tdPad .td-key')].find((el)=>el.textContent===String(b.answer===0?1:0)).click();
+  });
+  else if(sample.input==='order') bad.forEach((n)=>document.querySelector('[data-order="'+n+'"]').click());
+  else if(sample.input==='multi') document.querySelector('[data-multi="'+bad+'"]').click();
+  else if(type==='position'||type==='oddOne'||type==='insideOut') document.querySelector('[data-choice="'+bad+'"]').click();
+  else [...document.querySelectorAll('#tdPad .td-choice')][sample.input==='sign' ? ['>','<','='].indexOf(bad) :
+    type==='shapePattern' ? sample.choices.indexOf(bad) : bad].click();
+  TuDuyUI.check(); TuDuyUI.check();
+}
+</script>
+</body></html>

@@ -2,7 +2,8 @@
  *
  * Every generator returns an item whose answers come from a solver, never from the
  * generator's own bookkeeping, and is rejected unless:
- *   - every number shown or expected is an integer in 0..10 (5–6 tuổi scope, no carrying),
+ *   - every number is within the selected 0..10 or 0..20 range,
+ *   - max 20 arithmetic never carries or borrows across ten,
  *   - the blanks have exactly one solution,
  *   - the explanation steps end with the same answers the solver found.
  * Scale/picture items use substitution and addition/subtraction only (audit M11: no
@@ -11,8 +12,9 @@
 (function (root) {
   'use strict';
 
-  const MAX = 10;
+  let MAX = 10;
   const TYPES = ['pyramid', 'balance', 'chain', 'sequence', 'scale', 'shapes'];
+  const PHASE2_TYPES = ['compare', 'order', 'neighbor', 'position', 'condition', 'shapePattern', 'grid', 'oddOne', 'insideOut', 'code', 'triSum'];
   const TYPE_INFO = {
     pyramid:  { name: 'Tháp số', emoji: '🔺' },
     balance:  { name: 'Ô trống cân bằng', emoji: '⚖️' },
@@ -20,6 +22,17 @@
     sequence: { name: 'Quy luật dãy số', emoji: '🔢' },
     scale:    { name: 'Mỗi hình là một số', emoji: '🍎' },
     shapes:   { name: 'Đếm hình', emoji: '🔷' },
+    compare: { name: 'So sánh', emoji: '⚖️' },
+    order: { name: 'Sắp xếp', emoji: '🔢' },
+    neighbor: { name: 'Số liền kề', emoji: '🚂' },
+    position: { name: 'Vị trí', emoji: '🐾' },
+    condition: { name: 'Chọn số', emoji: '🎯' },
+    shapePattern: { name: 'Quy luật hình', emoji: '🔶' },
+    grid: { name: 'Bảng còn thiếu', emoji: '🧩' },
+    oddOne: { name: 'Khác loại', emoji: '🔎' },
+    insideOut: { name: 'Trong và ngoài', emoji: '⭕' },
+    code: { name: 'Mật mã hình', emoji: '🔐' },
+    triSum: { name: 'Tam giác số', emoji: '🔺' },
   };
 
   /* ---------- RNG helpers (injectable for deterministic tests) ---------- */
@@ -31,6 +44,8 @@
   const pick = (r, a) => a[Math.floor(r() * a.length)];
   function shuffle(r, a) { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; }
   const inRange = (v) => Number.isInteger(v) && v >= 0 && v <= MAX;
+  const legalStep = (a, op, b) => inRange(a) && inRange(b) && inRange(op === '+' ? a + b : a - b) &&
+    (MAX === 10 || (op === '+' ? a % 10 + b % 10 <= 9 : a % 10 >= b % 10));
 
   /* ======================= 1. Tháp số (pyramid) ======================= */
   // Cells: 0..2 bottom (a,b,c), 3..4 middle (a+b, b+c), 5 top. Rule: cell = sum of two below.
@@ -53,11 +68,11 @@
     return v.every((x) => x != null) ? v : null;
   }
   function pyramidBrute(cells) {
-    // Independent check: count full assignments 0..10 consistent with givens.
+    // Independent check: count full assignments in the selected range consistent with givens.
     let count = 0, sol = null;
     for (let a = 0; a <= MAX; a++) for (let b = 0; b <= MAX; b++) for (let c = 0; c <= MAX; c++) {
       const full = [a, b, c, a + b, b + c, a + 2 * b + c];
-      if (!full.every(inRange)) continue;
+      if (!full.every(inRange) || !legalStep(a, '+', b) || !legalStep(b, '+', c) || !legalStep(a + b, '+', b + c)) continue;
       if (full.every((x, i) => cells[i] == null || cells[i] === x)) { count++; sol = full; }
     }
     return count === 1 ? sol : null;
@@ -70,7 +85,7 @@
     for (let t = 0; t < 200; t++) {
       const a = ri(r, 1, 4), b = ri(r, 1, 3), c = ri(r, 1, 4);
       const full = [a, b, c, a + b, b + c, a + 2 * b + c];
-      if (!full.every(inRange) || full[5] < 5) continue;
+      if (!full.every(inRange) || full[5] < 5 || !legalStep(a, '+', b) || !legalStep(b, '+', c) || !legalStep(a + b, '+', b + c)) continue;
       const blanks = pick(r, PYR_BLANKS[level]);
       const shown = full.map((x, i) => (blanks.includes(i) ? null : x));
       const sol = pyramidSolve(shown);
@@ -106,6 +121,7 @@
     let acc = tokens[0];
     for (let i = 1; i < tokens.length; i += 2) {
       const n = tokens[i + 1];
+      if (!legalStep(acc, tokens[i], n)) return null;
       acc = tokens[i] === '+' ? acc + n : acc - n;
       if (!inRange(acc)) return null; // also forbids negative intermediates
     }
@@ -208,7 +224,7 @@
       for (let k = 0; k < len; k++) {
         const prev = vals[vals.length - 1];
         const cand = [];
-        for (let d = 1; d <= 6; d++) { if (prev + d <= MAX) cand.push(d); if (prev - d >= 0) cand.push(-d); }
+        for (let d = 1; d <= 6; d++) { if (legalStep(prev, '+', d)) cand.push(d); if (legalStep(prev, '-', d)) cand.push(-d); }
         if (!cand.length) { ok = false; break; }
         const d = pick(r, cand); ops.push(d); vals.push(prev + d);
       }
@@ -262,11 +278,13 @@
     abab: (r) => { const [a, b, c] = shuffle(r, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]).slice(0, 3); const seq = [a, b, c, a, b, c, a, b]; return { seq, why: `Nhóm ${a}, ${b}, ${c} lặp lại.` }; },
   };
   function genSequence(r, level) {
-    const pool = level === 2 ? ['step', 'step', 'abab', 'zip'] : ['tens', 'repeat', 'fib', 'zip', 'step'];
+    const pool = level === 2 ? ['step', 'step', 'abab', 'zip'] :
+      (MAX === 20 ? ['repeat', 'fib', 'zip', 'step'] : ['tens', 'repeat', 'fib', 'zip', 'step']);
     for (let t = 0; t < 200; t++) {
       const kind = pick(r, pool);
       const { seq, why } = SEQ_RULES[kind](r);
       if (!seq.every(inRange)) continue;
+      if (MAX === 20 && kind === 'step' && seq.some((v, i) => i > 0 && !legalStep(seq[i - 1], v >= seq[i - 1] ? '+' : '-', Math.abs(v - seq[i - 1])))) continue;
       const nBlank = level === 2 ? 1 : (seq.length >= 8 ? 2 : 1);
       // never blank the first two, so the rule stays visible
       const blanks = shuffle(r, seq.map((_, i) => i).slice(2)).slice(0, nBlank).sort((a, b) => a - b);
@@ -294,12 +312,12 @@
       const a = ri(r, 1, 6), b = ri(r, 1, 6), c = ri(r, 0, 6);
       let facts, ask, answer, steps;
       if (level === 2) {
-        if (a + b > MAX) continue;
+        if (!legalStep(a, '+', b)) continue;
         facts = [{ left: [A], right: [String(a)] }, { left: [A, B], right: [String(a + b)] }];
         ask = { left: [B] }; answer = b;
         steps = [`${A} = ${a}.`, `${A} + ${B} = ${a + b}, nên ${a} + ${B} = ${a + b}.`, `${B} = ${a + b} − ${a} = ${b}.`];
       } else {
-        if (a + b > MAX || b + c > MAX || a + c > MAX) continue;
+        if (!legalStep(a, '+', b) || !legalStep(b, '+', c) || !legalStep(a, '+', c)) continue;
         facts = [{ left: [A], right: [String(a)] }, { left: [A, B], right: [String(a + b)] }, { left: [B, C], right: [String(b + c)] }];
         ask = { left: [A, C] }; answer = a + c;
         steps = [`${A} = ${a}.`, `${A} + ${B} = ${a + b}, nên ${B} = ${a + b} − ${a} = ${b}.`, `${B} + ${C} = ${b + c}, nên ${C} = ${b + c} − ${b} = ${c}.`, `${A} + ${C} = ${a} + ${c} = ${a + c}.`];
@@ -392,10 +410,22 @@
   }
 
   const GENS = { pyramid: genPyramid, balance: genBalance, chain: genChain, sequence: genSequence, scale: genScale, shapes: genShapes };
-  function generate(type, level, rng) {
-    if (!GENS[type]) throw new Error('unknown type ' + type);
+  function generate(type, level, rng, opts) {
+    const phase2 = PHASE2_TYPES.includes(type);
+    if (!GENS[type] && !phase2) throw new Error('unknown type ' + type);
     if (level !== 2 && level !== 3) throw new Error('level must be 2 or 3');
-    return GENS[type](rng || Math.random, level);
+    const max = opts && opts.max != null ? opts.max : 10;
+    if (max !== 10 && max !== 20) throw new Error('max must be 10 or 20');
+    if (type === 'triSum' && max === 10) throw new Error('triSum is for Lớp 1+');
+    const previous = MAX;
+    MAX = max;
+    try {
+      if (phase2) {
+        const engine = typeof module !== 'undefined' && module.exports ? require('./tuduy-phase2-core.js') : root.TuDuyPhase2;
+        return engine.generate(type, level, rng || Math.random, max);
+      }
+      return GENS[type](rng || Math.random, level);
+    } finally { MAX = previous; }
   }
 
   /* ---------- Adaptive level + progress (pure; caller persists) ---------- */
@@ -414,7 +444,7 @@
     return s;
   }
 
-  const api = { MAX, TYPES, TYPE_INFO, mkRng, generate, updateStat, nextLevel,
+  const api = { MAX: 10, TYPES, PHASE2_TYPES, TYPE_INFO, mkRng, generate, updateStat, nextLevel,
     _internal: { pyramidSolve, pyramidBrute, balanceSolutions, evalSide, fanTriangles, stripRects, gridRects } };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.TuDuy = api;

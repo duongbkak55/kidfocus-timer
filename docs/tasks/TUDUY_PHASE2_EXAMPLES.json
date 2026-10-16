@@ -1,0 +1,429 @@
+{
+  "compare": {
+    "type": "compare",
+    "level": 2,
+    "prompt": "Bên nào lớn hơn? Chọn dấu thích hợp.",
+    "visual": {
+      "kind": "compare",
+      "left": [
+        2
+      ],
+      "right": [
+        3
+      ]
+    },
+    "input": "sign",
+    "answer": "<",
+    "explain": [
+      "Tính mỗi bên rồi mới chọn dấu.",
+      "2 = 2; 3 = 3.",
+      "2 < 3."
+    ],
+    "anim": {
+      "kind": "compare"
+    }
+  },
+  "order": {
+    "type": "order",
+    "level": 2,
+    "prompt": "Chạm các số theo thứ tự từ bé đến lớn.",
+    "visual": {
+      "kind": "order",
+      "nums": [
+        11,
+        17,
+        18,
+        6
+      ],
+      "ascending": true
+    },
+    "input": "order",
+    "answer": [
+      6,
+      11,
+      17,
+      18
+    ],
+    "explain": [
+      "Nhìn xem số nào ở đầu dãy theo chiều cần xếp.",
+      "Ta xếp lần lượt: 6 → 11 → 17 → 18."
+    ],
+    "anim": {
+      "kind": "order"
+    }
+  },
+  "neighbor": {
+    "type": "neighbor",
+    "level": 2,
+    "prompt": "Điền số còn thiếu vào đoàn tàu số.",
+    "visual": {
+      "kind": "neighbor",
+      "values": [
+        null,
+        15
+      ]
+    },
+    "input": "numpad",
+    "answer": [
+      14
+    ],
+    "explain": [
+      "Mỗi toa kế tiếp hơn toa trước một số.",
+      "Dãy đúng là 14 → 15."
+    ],
+    "anim": {
+      "kind": "neighbor"
+    },
+    "blanks": [
+      {
+        "id": "n0",
+        "cell": 0,
+        "answer": 14
+      }
+    ]
+  },
+  "position": {
+    "type": "position",
+    "level": 2,
+    "prompt": "Chọn con thứ 6 tính từ bên trái.",
+    "visual": {
+      "kind": "position",
+      "icons": [
+        "🐸",
+        "🦊",
+        "🐨",
+        "🐵",
+        "🐼",
+        "🐶"
+      ],
+      "mode": "left",
+      "k": 6
+    },
+    "input": "choice",
+    "answer": 5,
+    "explain": [
+      "Đặt ngón tay ở đúng bên bắt đầu rồi đếm từng con.",
+      "Con cần chọn là 🐶 ở ô thứ 6 từ trái."
+    ],
+    "anim": {
+      "kind": "position"
+    },
+    "choices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  "condition": {
+    "type": "condition",
+    "level": 2,
+    "prompt": "Chọn tất cả số chẵn.",
+    "visual": {
+      "kind": "condition",
+      "nums": [
+        5,
+        9,
+        7,
+        15,
+        19,
+        4,
+        1,
+        20
+      ],
+      "rule": {
+        "lo": null,
+        "parity": 0
+      }
+    },
+    "input": "multi",
+    "answer": [
+      4,
+      20
+    ],
+    "explain": [
+      "Đọc từng điều kiện, rồi xem từng số có đúng hết không.",
+      "Các số đúng là: 4, 20."
+    ],
+    "anim": {
+      "kind": "condition"
+    },
+    "choices": [
+      5,
+      9,
+      7,
+      15,
+      19,
+      4,
+      1,
+      20
+    ]
+  },
+  "shapePattern": {
+    "type": "shapePattern",
+    "level": 2,
+    "prompt": "Hình nào tiếp theo trong dãy?",
+    "visual": {
+      "kind": "shapePattern",
+      "prefix": [
+        "●",
+        "▲",
+        "●",
+        "▲"
+      ],
+      "arrow": false
+    },
+    "input": "choice",
+    "answer": "●",
+    "explain": [
+      "Tìm nhóm hình lặp lại từ đầu dãy.",
+      "Nhóm lặp là ● ▲, nên hình tiếp theo là ●."
+    ],
+    "anim": {
+      "kind": "shapePattern"
+    },
+    "choices": [
+      "■",
+      "◆",
+      "▲",
+      "●"
+    ]
+  },
+  "grid": {
+    "type": "grid",
+    "level": 2,
+    "prompt": "Ô dấu hỏi cần hình nào?",
+    "visual": {
+      "kind": "tileGrid",
+      "n": 2,
+      "tiles": [
+        {
+          "shape": "square",
+          "color": "#ef5975"
+        },
+        null,
+        {
+          "shape": "triangle",
+          "color": "#ef5975"
+        },
+        {
+          "shape": "triangle",
+          "color": "#25a47f"
+        }
+      ],
+      "missing": 1
+    },
+    "input": "choice",
+    "answer": 3,
+    "explain": [
+      "Nhìn quy luật hình và màu theo từng hàng, từng cột.",
+      "Ô cần điền là hình vuông màu xanh lá."
+    ],
+    "anim": {
+      "kind": "grid"
+    },
+    "choices": [
+      {
+        "shape": "triangle",
+        "color": "#477be8"
+      },
+      {
+        "shape": "circle",
+        "color": "#25a47f"
+      },
+      {
+        "shape": "square",
+        "color": "#ef5975"
+      },
+      {
+        "shape": "square",
+        "color": "#25a47f"
+      }
+    ]
+  },
+  "oddOne": {
+    "type": "oddOne",
+    "level": 2,
+    "prompt": "Hình nào khác ba hình còn lại?",
+    "visual": {
+      "kind": "oddOne",
+      "items": [
+        {
+          "shape": "triangle",
+          "color": "#25a47f",
+          "size": 40
+        },
+        {
+          "shape": "triangle",
+          "color": "#25a47f",
+          "size": 40
+        },
+        {
+          "shape": "triangle",
+          "color": "#25a47f",
+          "size": 40
+        },
+        {
+          "shape": "square",
+          "color": "#25a47f",
+          "size": 40
+        }
+      ]
+    },
+    "input": "choice",
+    "answer": 3,
+    "explain": [
+      "So từng hình theo hình dạng và màu sắc.",
+      "Hình thứ 4 khác ở hình dạng."
+    ],
+    "anim": {
+      "kind": "oddOne"
+    },
+    "choices": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  "insideOut": {
+    "type": "insideOut",
+    "level": 2,
+    "prompt": "Vật nào ở trong cả hai hình?",
+    "visual": {
+      "kind": "insideOut",
+      "circle": {
+        "x": 120,
+        "y": 120,
+        "r": 70
+      },
+      "rect": {
+        "x": 110,
+        "y": 70,
+        "w": 110,
+        "h": 110
+      },
+      "objects": [
+        {
+          "icon": "🍎",
+          "x": 80,
+          "y": 120
+        },
+        {
+          "icon": "⭐",
+          "x": 205,
+          "y": 120
+        },
+        {
+          "icon": "🚗",
+          "x": 150,
+          "y": 120
+        },
+        {
+          "icon": "🐱",
+          "x": 45,
+          "y": 30
+        }
+      ],
+      "target": 3
+    },
+    "input": "choice",
+    "answer": 2,
+    "explain": [
+      "Nhìn xem vật nằm ở phía nào của từng đường viền.",
+      "🚗 ở trong cả hai hình."
+    ],
+    "anim": {
+      "kind": "insideOut"
+    },
+    "choices": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  "code": {
+    "type": "code",
+    "level": 2,
+    "prompt": "Mỗi hình ứng với một chữ số. Chọn mật mã đúng.",
+    "visual": {
+      "kind": "code",
+      "legend": {
+        "🐸": 2,
+        "🦊": 6,
+        "🐨": 7,
+        "🐻": 8
+      },
+      "row": [
+        "🦊",
+        "🐻",
+        "🐸"
+      ]
+    },
+    "input": "choice",
+    "answer": 3,
+    "explain": [
+      "Đọc chú giải từng hình rồi ghép các chữ số theo thứ tự.",
+      "Các hình cho dãy số 682."
+    ],
+    "anim": {
+      "kind": "code"
+    },
+    "choices": [
+      "862",
+      "683",
+      "782",
+      "682"
+    ]
+  },
+  "triSum": {
+    "type": "triSum",
+    "level": 2,
+    "prompt": "Mỗi cạnh cộng được 9. Điền số còn thiếu.",
+    "visual": {
+      "kind": "triSum",
+      "values": [
+        1,
+        null,
+        null,
+        6,
+        4,
+        null
+      ],
+      "sum": 9
+    },
+    "input": "numpad",
+    "answer": [
+      2,
+      3,
+      5
+    ],
+    "explain": [
+      "Mỗi cạnh gồm hai góc và một ô ở giữa.",
+      "Ba góc là 1, 2, 3; ba ô giữa cạnh là 6, 4, 5. Mỗi cạnh bằng 9."
+    ],
+    "anim": {
+      "kind": "triSum"
+    },
+    "blanks": [
+      {
+        "id": "v1",
+        "cell": 1,
+        "answer": 2
+      },
+      {
+        "id": "v2",
+        "cell": 2,
+        "answer": 3
+      },
+      {
+        "id": "v5",
+        "cell": 5,
+        "answer": 5
+      }
+    ]
+  }
+}

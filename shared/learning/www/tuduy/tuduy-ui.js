@@ -20,6 +20,8 @@
 
   /* ---------- session state ---------- */
   let items = [], idx = 0, score = 0, tries = 0, active = null, answers = {}, mode = 'mix', locked = false;
+  const allTypes = () => T.TYPES.concat(T.PHASE2_TYPES.filter((t) => t !== 'triSum' || (typeof ageBand !== 'undefined' && ageBand !== '5-6')));
+  const currentMax = () => (typeof ageBand !== 'undefined' && ageBand === '5-6' ? 10 : 20);
 
   function open() {
     $('tdQuiz').hidden = true; $('tdDone').hidden = true; $('tdChooser').hidden = false;
@@ -31,7 +33,7 @@
       b.onclick = onClick; box.appendChild(b);
     };
     mk('🎲', 'Trộn các dạng', SESSION_N + ' câu', () => start('mix'), 'mix');
-    for (const t of T.TYPES) {
+    for (const t of allTypes()) {
       const s = store.stats[t] || {};
       const stars = s.seen ? '⭐'.repeat(Math.min(3, Math.floor((s.right || 0) / 4))) || '·' : 'mới';
       mk(T.TYPE_INFO[t].emoji, T.TYPE_INFO[t].name, `Mức ${s.level || 2} · ${stars}`, () => start(t));
@@ -45,8 +47,9 @@
     mode = m; idx = 0; score = 0;
     if (m === 'review') items = store.review.slice(0, SESSION_N);
     else items = Array.from({ length: SESSION_N }, (_, i) => {
-      const t = m === 'mix' ? T.TYPES[i % T.TYPES.length] : m;
-      return T.generate(t, levelFor(t));
+      const kinds = allTypes();
+      const t = m === 'mix' ? kinds[i % kinds.length] : m;
+      return T.generate(t, levelFor(t), undefined, { max: currentMax() });
     });
     if (m === 'mix') items.sort(() => Math.random() - 0.5);
     $('tdChooser').hidden = true; $('tdDone').hidden = true; $('tdQuiz').hidden = false;
@@ -56,6 +59,13 @@
   /* ---------- rendering ---------- */
   function blankBox(id, cls) { return `<button class="td-box td-blank ${cls || ''}" data-blank="${id}" aria-label="ô trống">?</button>`; }
   function numBox(v, cls) { return `<span class="td-box ${cls || ''}">${v}</span>`; }
+  function tileSvg(t) {
+    const color = t.color || '#477be8';
+    const shape = t.shape === 'circle' ? `<circle cx="32" cy="32" r="22" fill="${color}"/>` :
+      t.shape === 'triangle' ? `<path d="M32 8 L57 55 H7 Z" fill="${color}"/>` :
+      `<rect x="10" y="10" width="44" height="44" rx="5" fill="${color}"/>`;
+    return `<svg class="td-tile-svg" viewBox="0 0 64 64" aria-hidden="true">${shape}</svg>`;
+  }
 
   function renderVisual(item) {
     const v = item.visual, B = (i) => item.blanks.find((b) => b.cell === i);
@@ -88,6 +98,23 @@
       return h + '</div>';
     }
     if (v.kind === 'fan' || v.kind === 'grid') return `<div class="td-fig">${figureSvg(v)}</div><div class="td-eq">Có ${blankBox(item.blanks[0].id)} hình</div>`;
+    if (v.kind === 'compare') {
+      const fmt = (e) => e.join(' ').replace('-', '−');
+      return `<div class="td-compare"><span class="td-side">${esc(fmt(v.left))}</span><span class="td-question">?</span><span class="td-side">${esc(fmt(v.right))}</span></div>`;
+    }
+    if (v.kind === 'order') return `<div class="td-order-slots">${v.nums.map((_, i) => `<button class="td-order-slot" data-undo="${i}" aria-label="Vị trí ${i + 1}">?</button>`).join('')}</div><div class="td-order-source">${v.nums.map((n) => `<button class="td-choice" data-order="${n}">${n}</button>`).join('')}</div>`;
+    if (v.kind === 'neighbor') return `<div class="td-neighbor">${v.values.map((n, i) => B(i) ? blankBox(B(i).id) : numBox(n)).join('<span>→</span>')}</div>`;
+    if (v.kind === 'position') return `<div class="td-position">${v.icons.map((icon, i) => `<button class="td-choice" data-choice="${i}" aria-label="Con thứ ${i + 1}">${icon}</button>`).join('')}</div>`;
+    if (v.kind === 'condition') return `<div class="td-number-choices">${v.nums.map((n) => `<button class="td-choice" data-multi="${n}">${n}</button>`).join('')}</div>`;
+    if (v.kind === 'shapePattern') return `<div class="td-pattern">${v.prefix.map((s) => `<span class="td-symbol">${esc(s)}</span>`).join('')}<span class="td-symbol td-missing">?</span></div>`;
+    if (v.kind === 'tileGrid') return `<div class="td-tile-grid" style="--n:${v.n}">${v.tiles.map((t) => `<div class="td-grid-cell">${t ? tileSvg(t) : '?'}</div>`).join('')}</div>`;
+    if (v.kind === 'oddOne') return `<div class="td-odd">${v.items.map((t, i) => `<button class="td-choice" data-choice="${i}">${tileSvg(t)}</button>`).join('')}</div>`;
+    if (v.kind === 'insideOut') return `<svg class="td-region" viewBox="0 0 260 220" role="img" aria-label="Vật trong và ngoài hai hình"><circle cx="${v.circle.x}" cy="${v.circle.y}" r="${v.circle.r}" class="td-region-line"/><rect x="${v.rect.x}" y="${v.rect.y}" width="${v.rect.w}" height="${v.rect.h}" class="td-region-line"/>${v.objects.map((o, i) => `<text x="${o.x}" y="${o.y + 8}" text-anchor="middle" data-choice="${i}" class="td-region-object" role="button">${o.icon}</text>`).join('')}</svg>`;
+    if (v.kind === 'code') return `<div class="td-code-legend">${Object.entries(v.legend).map(([icon, n]) => `<span>${icon} = ${n}</span>`).join('')}</div><div class="td-code-row">${v.row.map((icon) => `<span>${icon}</span>`).join('')}</div>${item.blanks ? `<div class="td-code-row">${item.blanks.map((b) => blankBox(b.id)).join('')}</div>` : ''}`;
+    if (v.kind === 'triSum') {
+      const pts = [[50,12],[10,85],[90,85],[30,45],[50,85],[70,45]];
+      return `<div class="td-triangle"><svg viewBox="0 0 300 250" aria-hidden="true"><path d="M150 12 L10 220 L290 220 Z" fill="none" stroke="#7c5cff" stroke-width="5"/></svg>${v.values.map((n, i) => `<span class="td-tri-cell" style="left:${pts[i][0]}%;top:${pts[i][1]}%">${B(i) ? blankBox(B(i).id) : numBox(n)}</span>`).join('')}<span class="td-tri-sum">Mỗi cạnh = ${v.sum}</span></div>`;
+    }
     return '';
   }
 
@@ -120,7 +147,17 @@
     $('tdFb').textContent = ''; $('tdFb').className = 'fb';
     $('tdNext').hidden = true; $('tdCheck').hidden = false; $('tdPad').hidden = false;
     $('tdVisual').querySelectorAll('.td-blank').forEach((b) => { b.onclick = () => select(b.dataset.blank); });
-    select(item.blanks[0].id);
+    if (item.input === 'numpad' || !item.input) {
+      buildPad(item.type === 'code' ? 9 : currentMax());
+      select(item.blanks[0].id);
+    } else {
+      active = null;
+      buildChoicePad(item);
+      $('tdVisual').querySelectorAll('[data-choice]').forEach((b) => { b.onclick = () => choose(Number(b.dataset.choice)); });
+      $('tdVisual').querySelectorAll('[data-multi]').forEach((b) => { b.onclick = () => toggleNumber(Number(b.dataset.multi)); });
+      $('tdVisual').querySelectorAll('[data-order]').forEach((b) => { b.onclick = () => placeNumber(Number(b.dataset.order)); });
+      $('tdVisual').querySelectorAll('[data-undo]').forEach((b) => { b.onclick = () => undoOrder(Number(b.dataset.undo)); });
+    }
     speakPrompt();
   }
 
@@ -145,14 +182,86 @@
     const el = $('tdVisual').querySelector(`[data-blank="${active}"]`);
     el.textContent = '?'; el.classList.remove('filled', 'bad');
   }
+  function choose(value) {
+    if (locked) return;
+    answers.choice = value;
+    call('sndTap');
+    document.querySelectorAll('#tuduy [data-choice]').forEach((b) => b.classList.toggle('chosen', Number(b.dataset.choice) === value));
+  }
+  function toggleNumber(n) {
+    if (locked) return;
+    const selected = new Set(answers.multi || []);
+    if (selected.has(n)) selected.delete(n); else selected.add(n);
+    answers.multi = [...selected];
+    call('sndTap');
+    document.querySelectorAll('#tuduy [data-multi]').forEach((b) => b.classList.toggle('chosen', selected.has(Number(b.dataset.multi))));
+  }
+  function placeNumber(n) {
+    if (locked) return;
+    const selected = answers.order || [];
+    if (selected.includes(n) || selected.length >= items[idx].answer.length) return;
+    answers.order = selected.concat(n);
+    call('sndTap'); updateOrder();
+  }
+  function undoOrder(i) {
+    if (locked || !answers.order || i >= answers.order.length) return;
+    answers.order = answers.order.slice(0, i);
+    call('sndTap'); updateOrder();
+  }
+  function updateOrder() {
+    const selected = answers.order || [];
+    $('tdVisual').querySelectorAll('[data-undo]').forEach((b, i) => { b.textContent = selected[i] == null ? '?' : selected[i]; b.classList.toggle('chosen', selected[i] != null); });
+    $('tdVisual').querySelectorAll('[data-order]').forEach((b) => { b.disabled = selected.includes(Number(b.dataset.order)); });
+  }
+  function showCorrect(item) {
+    if (item.input === 'order') { answers.order = item.answer.slice(); updateOrder(); return; }
+    if (item.input === 'multi') {
+      answers.multi = item.answer.slice();
+      $('tdVisual').querySelectorAll('[data-multi]').forEach((b) => b.classList.toggle('shown', item.answer.includes(Number(b.dataset.multi))));
+      return;
+    }
+    const v = item.answer;
+    if (item.input === 'sign' || item.type === 'shapePattern') {
+      $('tdPad').querySelectorAll('.td-choice').forEach((b, i) => b.classList.toggle('shown', (item.input === 'sign' ? ['>', '<', '='][i] : item.choices[i]) === v));
+    } else document.querySelectorAll('#tuduy [data-choice]').forEach((b) => b.classList.toggle('shown', Number(b.dataset.choice) === v));
+  }
+  function buildChoicePad(item) {
+    const pad = $('tdPad'); pad.innerHTML = ''; pad.dataset.built = '';
+    pad.className = 'td-pad';
+    if (item.input === 'order' || item.input === 'multi' || item.type === 'position' || item.type === 'oddOne' || item.type === 'insideOut') {
+      pad.hidden = true; return;
+    }
+    pad.hidden = false;
+    pad.classList.add('td-choice-pad');
+    const labels = item.input === 'sign' ? ['>', '<', '='] : item.choices;
+    labels.forEach((choice, i) => {
+      const b = document.createElement('button');
+      b.className = 'td-key td-choice';
+      b.dataset.choice = item.input === 'sign' ? i : i;
+      b.innerHTML = item.type === 'grid' ? tileSvg(choice) : esc(choice);
+      b.onclick = () => {
+        answers.choice = item.input === 'sign' ? choice : item.type === 'shapePattern' ? choice : i;
+        call('sndTap');
+        pad.querySelectorAll('.td-choice').forEach((x) => x.classList.toggle('chosen', x === b));
+      };
+      pad.appendChild(b);
+    });
+  }
 
   function check() {
     if (locked) return;
     const item = items[idx];
-    if (item.blanks.some((b) => answers[b.id] == null)) { $('tdFb').textContent = 'Con điền hết các ô trống nhé!'; $('tdFb').className = 'fb'; return; }
+    const input = item.input || 'numpad';
+    const filled = input === 'numpad' ? item.blanks.every((b) => answers[b.id] != null) :
+      input === 'order' ? Array.isArray(answers.order) && answers.order.length === item.answer.length :
+      input === 'multi' ? Array.isArray(answers.multi) && answers.multi.length > 0 : answers.choice != null;
+    if (!filled) { $('tdFb').textContent = 'Con chọn hoặc điền đủ đáp án nhé!'; $('tdFb').className = 'fb'; return; }
     tries += 1;
-    const wrong = item.blanks.filter((b) => answers[b.id] !== b.answer);
-    if (!wrong.length) {
+    const wrong = input === 'numpad' ? item.blanks.filter((b) => answers[b.id] !== b.answer) : [];
+    const correct = input === 'numpad' ? !wrong.length : input === 'order' ? JSON.stringify(answers.order) === JSON.stringify(item.answer) :
+      input === 'multi' ? JSON.stringify(answers.multi.slice().sort((a,b) => a-b)) === JSON.stringify(item.answer) :
+      answers.choice === item.answer;
+    if (correct) {
       locked = true;
       if (tries === 1) score += 1;
       record(item, tries === 1);
@@ -174,7 +283,8 @@
     // second miss: show the answer, the steps and the animation; queue for review
     locked = true;
     record(item, false);
-    item.blanks.forEach((b) => { const el = $('tdVisual').querySelector(`[data-blank="${b.id}"]`); el.textContent = b.answer; el.classList.remove('bad'); el.classList.add('shown'); });
+    if (input === 'numpad') item.blanks.forEach((b) => { const el = $('tdVisual').querySelector(`[data-blank="${b.id}"]`); el.textContent = b.answer; el.classList.remove('bad'); el.classList.add('shown'); });
+    else showCorrect(item);
     $('tdFb').textContent = 'Mình cùng xem cách làm nhé 👇';
     $('tdFb').className = 'fb';
     revealExplain(item, true);
@@ -224,6 +334,14 @@
     stopAnim();
     const vis = $('tdVisual');
     const a = item.anim;
+    if (['compare', 'order', 'position', 'insideOut', 'triSum'].includes(a.kind)) {
+      const selectors = { compare: '.td-side', order: '.td-order-slot', position: '.td-position .td-choice', insideOut: '.td-region-object', triSum: '.td-tri-cell' };
+      const nodes = [...vis.querySelectorAll(selectors[a.kind])];
+      nodes.forEach((node) => node.classList.remove('glow'));
+      nodes.forEach((node, i) => after(300 + i * 500, () => { node.classList.add('glow'); call('sndTap'); }));
+      after(700 + nodes.length * 500, () => nodes.forEach((node) => node.classList.remove('glow')));
+      return;
+    }
     if (a.kind === 'pyramid') {
       const kids = { 3: [0, 1], 4: [1, 2], 5: [3, 4] };
       const order = item.blanks.map((b) => b.cell).sort((x, y) => (x < 3 && y >= 3 ? 1 : 0));
@@ -312,15 +430,15 @@
   async function speakLines(lines) { for (const l of lines) { await call('speakText', spoken(l), 'vi-VN', null, 'en-US', 0.9, 1.1); } }
 
   /* ---------- keypad ---------- */
-  function buildPad() {
-    const pad = $('tdPad'); if (!pad || pad.dataset.built) return;
-    pad.dataset.built = '1';
-    for (let n = 0; n <= 10; n++) { const b = document.createElement('button'); b.className = 'td-key'; b.textContent = n; b.onclick = () => press(n); pad.appendChild(b); }
+  function buildPad(max) {
+    const pad = $('tdPad'); if (!pad || pad.dataset.built === String(max)) return;
+    pad.innerHTML = ''; pad.className = 'td-pad'; pad.dataset.built = String(max);
+    for (let n = 0; n <= max; n++) { const b = document.createElement('button'); b.className = 'td-key'; b.textContent = n; b.onclick = () => press(n); pad.appendChild(b); }
     const del = document.createElement('button'); del.className = 'td-key del'; del.textContent = '⌫'; del.setAttribute('aria-label', 'Xoá'); del.onclick = clearActive; pad.appendChild(del);
   }
 
   window.TuDuyUI = {
-    open() { buildPad(); stopAnim(); open(); },
+    open() { buildPad(currentMax()); stopAnim(); open(); },
     check, next, speakPrompt, start,
   };
 })();
