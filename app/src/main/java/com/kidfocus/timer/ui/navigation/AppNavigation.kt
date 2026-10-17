@@ -7,6 +7,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -92,6 +95,7 @@ fun AppNavigation(
     val scheduleConfig by scheduleAccess.config.collectAsState()
     val cloudAccount by cloudSyncViewModel.account.collectAsState()
     val cloudSyncStatus by cloudSyncViewModel.syncStatus.collectAsState()
+    val guestChoicePending by cloudSyncViewModel.guestChoicePending.collectAsState()
     val childProfileViewModel: ChildProfileViewModel = hiltViewModel()
     val activeChildProfile by childProfileViewModel.activeProfile.collectAsState()
 
@@ -484,6 +488,14 @@ fun AppNavigation(
                 onBack = { navController.popBackStack() },
             )
         }
+    }
+    if (guestChoicePending) {
+        AlertDialog(onDismissRequest = {}, title = { Text("Dữ liệu trên máy") },
+            text = { Text("Bạn muốn đưa lịch và nhật ký trên máy vào tài khoản này, hay chỉ dùng dữ liệu của tài khoản?") },
+            confirmButton = { TextButton(onClick = { cloudSyncViewModel.chooseGuestData(true) }) {
+                Text("Đưa dữ liệu trên máy vào tài khoản này") } },
+            dismissButton = { TextButton(onClick = { cloudSyncViewModel.chooseGuestData(false) }) {
+                Text("Chỉ dùng dữ liệu của tài khoản") } })
     }
     } // end Box
 }

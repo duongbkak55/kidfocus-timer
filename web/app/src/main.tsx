@@ -1,10 +1,11 @@
-import { render } from "preact";
+import { Fragment, render } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { Auth, User } from "firebase/auth";
 import type { Firestore } from "firebase/firestore";
 import {
   CloudStore,
   checkRedirect,
+  clearPrivateCache,
   emptyData,
   loadFirebase,
   loginEmail,
@@ -301,6 +302,23 @@ function App() {
     setTab("history");
   }
 
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement;
+      if (event.key === "Escape") {
+        const close = document.querySelector<HTMLElement>("[role='dialog'] button[aria-label='Đóng']");
+        if (close) { close.click(); event.preventDefault(); }
+      }
+      if (tab !== "focus" || event.code !== "Space" || event.repeat ||
+          target.closest("button, input, select, textarea, a, [role='dialog']")) return;
+      event.preventDefault();
+      if (run) { if (run.paused) resumeFocus(); else pauseFocus(); }
+      else if (selectedTask && focusMinutes >= 1 && focusMinutes <= 120) startFocus(selectedTask, focusMinutes);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [tab, run, selectedTask, focusMinutes]);
+
   if (startupError)
     return (
       <main class="setup">
@@ -324,10 +342,38 @@ function App() {
         <p>Đang mở ứng dụng…</p>
       </main>
     );
-  if (!user) return <Login auth={auth} notice={notice} onError={report} />;
+  if (!user) return <Login auth={auth} db={db} notice={notice} onError={report} />;
 
   return (
     <div class="app-shell">
+      <aside class="side-nav" aria-label="Điều hướng màn hình lớn">
+        <div class="brand"><span class="mark">K</span><span>KidFocus</span></div>
+        <div class="side-account">
+          <label>Hồ sơ bé
+            <select value={profileId} onChange={event => setProfileId(event.currentTarget.value)}>
+              {profiles.length ? profiles.map(profile =>
+                <option key={stringValue(profile.id)} value={stringValue(profile.id)}>
+                  {stringValue(profile.avatarEmoji)} {stringValue(profile.name)}
+                </option>) : <option value="default">Bé của tôi</option>}
+            </select>
+          </label>
+          <button class={`sync-chip ${data.sync === "Lỗi" ? "error" : ""}`}
+            onClick={() => store?.retry()} title={data.error || "Đồng bộ lại"}>
+            {data.sync === "Lỗi" ? "↻" : data.sync === "Đã đồng bộ" ? "✓" : "◌"} {data.sync}
+          </button>
+        </div>
+        <nav class="side-links" aria-label="Các màn hình">
+          {([
+            ["today", "☀️", "Hôm nay"], ["week", "🗓️", "Lịch"],
+            ["focus", "⏱️", "Tập trung"], ["history", "🏅", "Đã xong"],
+            ["daylog", "📝", "Nhật ký ngày"], ["profiles", "🐣", "Hồ sơ bé"],
+            ["settings", "⚙️", "Cài đặt"], ["learning", "🧠", "Luyện tư duy"],
+          ] as const).map(([target, icon, label]) =>
+            <button key={target} aria-current={tab === target ? "page" : undefined} onClick={() => setTab(target)}>
+              <span aria-hidden="true">{icon}</span><span>{label}</span>
+            </button>)}
+        </nav>
+      </aside>
       <header class="topbar">
         <div class="brand">
           <span class="mark">K</span>
@@ -343,7 +389,7 @@ function App() {
           </button>
           <button
             class="text-button"
-            onClick={() => logout(auth).catch(report)}
+            onClick={() => logout(auth, db ?? undefined).then(() => location.reload()).catch(report)}
           >
             Đăng xuất
           </button>
@@ -427,6 +473,7 @@ function App() {
           <Today
             data={data}
             profileId={profileId}
+            run={run}
             onFocus={(task) => startFocus(task)}
             onComplete={(entity) => write("completions", entity)}
           />
@@ -441,6 +488,7 @@ function App() {
             <p class="muted">
               Trên web không có báo thức khi đóng tab — dùng app để nhắc giờ.
             </p>
+            <div class="focus-layout"><div class="focus-main">
             {run ? (
               <>
                 <div class="timer" aria-live="off">
@@ -544,6 +592,14 @@ function App() {
                   Cho phép thông báo khi xong
                 </button>
               )}
+            </div><aside class="focus-side card"><h2>Hoạt động của bé</h2>
+              {alive(data.tasks, profileId).filter(row => row.entity.enabled).map(row =>
+                <button class="history-row edit-row" key={row.id} disabled={!!run}
+                  onClick={() => { setSelectedTask(row.entity); setFocusMinutes(numberValue(row.entity.focusDurationMinutes)); }}>
+                  <span class="emoji">{stringValue(row.entity.emoji)}</span>
+                  <span><strong>{stringValue(row.entity.name)}</strong><small>{numberValue(row.entity.focusDurationMinutes)} phút</small></span>
+                </button>)}
+            </aside></div>
           </section>
         )}
         {tab === "history" && <History data={data} profileId={profileId} />}
@@ -607,10 +663,12 @@ function App() {
 
 function Login({
   auth,
+  db,
   notice,
   onError,
 }: {
   auth: Auth;
+  db: Firestore | null;
   notice: string;
   onError: (error: unknown) => void;
 }) {
@@ -694,14 +752,17 @@ function Login({
           <input
             type="checkbox"
             checked={trusted}
-            onChange={(event) => {
+            onChange={async (event) => {
               const value = event.currentTarget.checked;
               setTrusted(value);
               localStorage.setItem(
                 "kidfocus-trusted-device",
                 value ? "yes" : "no",
               );
-              location.reload();
+              try {
+                if (!value && db) await clearPrivateCache(db);
+                location.reload();
+              } catch (error) { onError(error); }
             }}
           />{" "}
           Đây là máy của tôi — lưu dữ liệu để dùng khi mất mạng
@@ -742,11 +803,13 @@ function NavButton({
 function Today({
   data,
   profileId,
+  run,
   onFocus,
   onComplete,
 }: {
   data: DataState;
   profileId: string;
+  run: FocusRun | null;
   onFocus: (task: Entity) => void;
   onComplete: (entity: Entity) => void;
 }) {
@@ -769,6 +832,10 @@ function Today({
         entity: row.entity,
       })),
   ].sort((a, b) => a.minutes - b.minutes);
+  const focusedMinutes = Math.floor(alive(data.sessions, profileId)
+    .filter(row => dateKey(new Date(numberValue(row.entity.timestampMillis))) === key && row.entity.isFocus)
+    .reduce((sum, row) => sum + numberValue(row.entity.durationSeconds), 0) / 60);
+  const goalMinutes = Math.max(1, numberValue(data.settings?.dailyGoalMinutes || 120));
   return (
     <section class="page">
       <div class="eyebrow">
@@ -776,6 +843,7 @@ function Today({
       </div>
       <h1>Việc của con hôm nay</h1>
       <p class="muted">Chọn hoạt động theo nhịp của con; lịch chỉ là gợi ý.</p>
+      <div class="today-layout"><div>
       {items.length ? (
         <div class="timeline">
           {items.map((item) => {
@@ -842,6 +910,19 @@ function Today({
           🌱 Chưa có hoạt động hôm nay. Mở Lịch để thêm nhé.
         </div>
       )}
+      </div><aside class="today-aside">
+        <section class="card"><h2>Đang tập trung</h2>
+          <p>{run ? stringValue(run.task.name) : "Chưa bắt đầu phiên tập trung"}</p>
+          <strong>{run ? `${Math.ceil(run.totalSeconds / 60)} phút` : "Chọn một hoạt động trong lịch"}</strong>
+        </section>
+        <section class="card"><h2>Mục tiêu hôm nay</h2>
+          <p><strong>{focusedMinutes} / {goalMinutes} phút</strong> tập trung</p>
+          <meter min="0" max={goalMinutes} value={Math.min(goalMinutes, focusedMinutes)} />
+          <h3>Việc đến hạn</h3>
+          <ul>{items.filter(item => item.type === "routine").map(item =>
+            <li key={stringValue(item.entity.id)}>{timeLabel(item.minutes)} · {stringValue(item.entity.title)}</li>)}</ul>
+        </section>
+      </aside></div>
     </section>
   );
 }
@@ -869,8 +950,19 @@ function Week({
     day.setDate(day.getDate() + i);
     return day;
   });
+  const scheduledHours = [
+    ...alive(data.tasks, profileId).map(row => numberValue(row.entity.hour)),
+    ...alive(data.routines, profileId).map(row => Math.floor(numberValue(row.entity.deadlineMinutes) / 60)),
+  ].filter(hour => Number.isInteger(hour) && hour >= 0 && hour <= 23);
+  const firstHour = Math.min(6, ...scheduledHours);
+  const lastHour = Math.max(22, ...scheduledHours);
+  const hours = Array.from({ length: lastHour - firstHour + 1 }, (_, index) => firstHour + index);
   return (
-    <section class="page">
+    <section class="page week-page" onKeyDown={event => {
+      if ((event.target as HTMLElement).closest("input, select, textarea, [role='dialog']")) return;
+      if (event.key === "ArrowLeft") { setWeekShift(value => value - 1); event.preventDefault(); }
+      if (event.key === "ArrowRight") { setWeekShift(value => value + 1); event.preventDefault(); }
+    }}>
       <div class="eyebrow">LỊCH TUẦN CHUNG</div>
       <h1>Mỗi tuần một nhịp</h1>
       <p class="muted">Lịch này lặp lại cho mọi tuần.</p>
@@ -940,6 +1032,29 @@ function Week({
               ) && <p class="empty-day">Nghỉ ngơi</p>}
           </article>
         ))}
+      </div>
+      <div class="week-time-grid" aria-label="Lịch tuần theo giờ">
+        <div class="week-corner">Giờ</div>
+        {days.map(day => <div class="week-day-heading" key={dateKey(day)}>{DAY_LABELS[day.getDay()]} <strong>{day.getDate()}</strong></div>)}
+        {hours.map(hour => <Fragment key={hour}>
+          <div class="week-hour-heading">{timeLabel(hour * 60)}</div>
+          {days.map(day => {
+            const tasks = alive(data.tasks, profileId).filter(row => taskOnDate(row.entity, day) && numberValue(row.entity.hour) === hour);
+            const routines = alive(data.routines, profileId).filter(row => routineOnDate(row.entity, day) && Math.floor(numberValue(row.entity.deadlineMinutes) / 60) === hour);
+            return <div class="week-hour-cell" key={`${dateKey(day)}-${hour}`}>
+              {tasks.map(row => <button class="mini-item" onClick={() => setEditTask({ ...row.entity })}>
+                <span>{timeLabel(hour * 60 + numberValue(row.entity.minute))} {stringValue(row.entity.emoji)}</span>
+                <strong>{stringValue(row.entity.name)}</strong>
+              </button>)}
+              {routines.map(row => <button class="mini-item routine" onClick={() => setEditRoutine({ ...row.entity })}>
+                <span>{timeLabel(numberValue(row.entity.deadlineMinutes))} {stringValue(row.entity.emoji)}</span>
+                <strong>{stringValue(row.entity.title)}</strong>
+              </button>)}
+              <button class="week-add" aria-label={`Thêm hoạt động ${DAY_LABELS[day.getDay()]} lúc ${timeLabel(hour * 60)}`}
+                onClick={() => setEditTask({ ...blankTask(profileId), hour, minute: 0, daysOfWeek: String(day.getDay() || 7) })}>+</button>
+            </div>;
+          })}
+        </Fragment>)}
       </div>
       <div class="actions">
         <button
@@ -1384,10 +1499,10 @@ function History({ data, profileId }: { data: DataState; profileId: string }) {
     ...completed,
   ].sort((a, b) => b.time - a.time);
   return (
-    <section class="page">
+    <section class="page history-page">
       <div class="eyebrow">NHÌN LẠI MỖI TUẦN</div>
       <h1>Đã hoàn thành</h1>
-      <div class="stats">
+      <div class="history-layout"><div class="history-chart"><div class="stats">
         <div>
           <strong>{bars.reduce((a, b) => a + b, 0)}</strong>
           <span>phút tuần này</span>
@@ -1423,7 +1538,7 @@ function History({ data, profileId }: { data: DataState; profileId: string }) {
           ))}
         </div>
       </div>
-      <h2>Nhật ký</h2>
+      </div><div class="history-detail"><h2>Nhật ký</h2>
       {entries.length ? (
         <div class="history-list">
           {entries.map((entry) => (
@@ -1443,7 +1558,7 @@ function History({ data, profileId }: { data: DataState; profileId: string }) {
         <div class="empty card">
           Chưa có lượt nào. Bắt đầu một hoạt động để lưu vào đây.
         </div>
-      )}
+      )}</div></div>
     </section>
   );
 }

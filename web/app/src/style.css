@@ -671,3 +671,99 @@ h2 {
   text-decoration: none;
   font-weight: 800;
 }
+
+/* Wider viewports keep the phone markup, with a persistent navigation rail. */
+.side-nav, .today-aside, .focus-side, .week-time-grid { display: none; }
+.daylog-chart, .wide-only { display: none; }
+.history-layout { min-width: 0; }
+@media (min-width: 600px) {
+  body, .app-shell { min-height: 100dvh; }
+  .app-shell { width: 100%; margin: 0; padding: 0 0 0 180px; }
+  .app-shell > header, .app-shell > .top-controls, .app-shell > main,
+  .app-shell > .warning, .app-shell > .toast { width: min(100%, 760px); margin-inline: auto; }
+  .side-nav {
+    display: flex; flex-direction: column; gap: 18px;
+    position: fixed; inset: 0 auto 0 0; width: 180px; z-index: 7;
+    min-height: 100dvh; overflow-y: auto;
+    padding: max(16px, env(safe-area-inset-top)) 12px max(16px, env(safe-area-inset-bottom));
+    background: #fff; border-right: 1px solid var(--border);
+  }
+  .side-nav .brand { font-size: 16px; }
+  .side-nav .mark { width: 38px; height: 38px; flex: none; }
+  .side-account { display: none; }
+  .side-links { display: grid; gap: 4px; }
+  .side-links button { display: flex; align-items: center; gap: 10px; width: 100%;
+    border: 0; text-align: left; background: transparent; }
+  .side-links button[aria-current="page"] { color: #2949c5; background: #e6edff; }
+  .side-links button:hover { background: #f0f4ff; }
+  .side-links button span:first-child { font-size: 22px; width: 28px; flex: none; }
+  .bottom-nav { display: none; }
+  .app-shell .topbar .brand, .header-actions > button:first-child { display: none; }
+  .topbar { min-height: 58px; justify-content: flex-end; }
+  .page { padding: 12px 24px 36px; min-width: 0; }
+  .week-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .day-card { flex: initial; }
+  .page > .history-list, .page > .card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .history-row, .day-card, .task-card { min-width: 0; }
+  .history-row > div, .history-row > span:last-child { min-width: 0; overflow-wrap: anywhere; }
+  .modal { max-height: min(93dvh, 900px); }
+}
+@media (min-width: 1024px) {
+  .app-shell { padding-left: 240px; }
+  .side-nav { width: 240px; padding-inline: 18px; }
+  .side-nav .brand { font-size: 20px; }
+  .side-account { display: grid; gap: 10px; }
+  .side-account .sync-chip { width: 100%; }
+  .app-shell > header, .app-shell > main, .app-shell > .warning,
+  .app-shell > .toast { width: min(100%, 1200px); }
+  .app-shell > .top-controls { display: none; }
+  .page { padding-inline: clamp(22px, 3vw, 42px); }
+  .today-layout { display: grid; grid-template-columns: minmax(0, 3fr) minmax(230px, 2fr); gap: 30px; align-items: start; }
+  .today-aside { display: block; }
+  .today-aside .card { margin-top: 0; }
+  .today-aside meter { width: 100%; height: 18px; }
+  .today-aside h3 { font-size: 15px; margin: 20px 0 4px; }
+  .today-aside ul { margin: 0; padding-left: 20px; }
+  .focus-layout { display: grid; grid-template-columns: minmax(0, 3fr) minmax(250px, 2fr); gap: 28px; align-items: start; }
+  .focus-main { min-width: 0; }
+  .focus-side { display: grid; gap: 9px; margin: 0; max-height: min(630px, calc(100dvh - 190px)); overflow-y: auto; }
+  .focus-side .history-row { width: 100%; }
+  .timer { font-size: clamp(75px, 9vw, 122px); margin: 20px 0 0; }
+  .history-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 26px; }
+  .daylog-layout { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 26px; align-items: start; }
+  .daylog-chart { display: block; margin: 0; }
+  .daylog-chart > strong { font-size: 32px; color: var(--blue); }
+  .category-bar { display: flex; gap: 8px; align-items: center; margin: 8px 0; font-size: 13px; }
+  .category-bar span { min-width: 90px; }
+  .category-bar meter { flex: 1; min-width: 0; }
+  .daylog-detail { min-width: 0; max-height: 72dvh; overflow-y: auto; }
+  .daylog-row { display: grid; grid-template-columns: 38px minmax(0, 1fr) 105px 70px; }
+  .daylog-row .wide-only { display: block; font-size: 12px; color: var(--muted); text-align: right; overflow-wrap: anywhere; }
+  .history-detail .history-list { max-height: 70dvh; overflow: auto; }
+  .history-detail .history-row small { overflow-wrap: anywhere; }
+  .history-page .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .week-grid { display: none; }
+  .week-time-grid {
+    display: grid; grid-template-columns: 58px repeat(7, minmax(0, 1fr));
+    border: 1px solid var(--border); border-radius: 16px; overflow: clip;
+    background: #fff;
+  }
+  .week-corner, .week-day-heading, .week-hour-heading, .week-hour-cell {
+    min-width: 0; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  }
+  .week-corner, .week-day-heading { position: sticky; top: 0; z-index: 2; background: #edf2ff; padding: 10px 5px; text-align: center; font-size: 13px; }
+  .week-day-heading strong { display: block; font-size: 19px; }
+  .week-hour-heading { padding: 12px 5px; color: var(--muted); font-size: 12px; }
+  .week-hour-cell { position: relative; padding: 4px 48px 4px 4px; min-height: 52px; }
+  .week-hour-cell .mini-item { min-height: 44px; font-size: 12px; margin-bottom: 2px; }
+  .week-add { position: absolute; top: 4px; right: 4px; display: block; width: 44px; min-height: 44px;
+    padding: 0; border: 0; color: var(--blue); background: transparent; opacity: .55; }
+  .week-add:hover, .week-add:focus-visible { opacity: 1; background: #e6edff; }
+  .modal-backdrop { align-items: stretch; justify-content: flex-end; }
+  .modal { width: min(430px, 100%); max-height: 100dvh; height: 100dvh;
+    border-radius: 20px 0 0 20px; padding: 26px; }
+  .page:has(>.settings-form), .page:has(>.history-list) { max-width: 720px; margin-inline: auto; }
+  .page:has(>.card>.settings-form) { max-width: 720px; margin-inline: auto; }
+  .settings-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .settings-form > .form-row, .settings-form > .actions { grid-column: 1 / -1; }
+}

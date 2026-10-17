@@ -140,6 +140,7 @@ class DayLogSyncTest {
             dayLogFromCloud(child.id, child.toDayLogCloud() + ("source" to "FUTURE_SOURCE"))?.source)
     }
     @Test fun bootstrapQueryIsBoundedAndExplicitHistoricalWeekIsFetchedWithoutErasingLocal()=runTest {
+        sync.allowAccount("a")
         assertSame(query,sync.recentQuery("a",LocalDate.parse("2026-09-29")))
         assertEquals(listOf("2026-07-31"),lowerBounds)
         val old=entry.copy(date=LocalDate.parse("2026-01-01"))

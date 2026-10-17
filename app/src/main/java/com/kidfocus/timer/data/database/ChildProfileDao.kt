@@ -7,6 +7,9 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ChildProfileDao {
+    @Query("DELETE FROM child_profiles WHERE id != 'default'")
+    suspend fun deleteAllExceptDefault()
+
     @Query("SELECT * FROM child_profiles WHERE archived = 0 ORDER BY created_at_millis ASC, id ASC")
     fun observeActive(): Flow<List<ChildProfileEntity>>
 

@@ -1,0 +1,12 @@
+{
+  "name": "KidFocus",
+  "short_name": "KidFocus",
+  "start_url": "/app/",
+  "scope": "/app/",
+  "display": "standalone",
+  "background_color": "#f5f8ff",
+  "theme_color": "#3858d6",
+  "icons": [
+    { "src": "/app/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

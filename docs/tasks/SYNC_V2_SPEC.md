@@ -33,8 +33,12 @@ a deleted item by re-uploading. Tombstones older than 90 days may be purged by t
 - Readers listen per collection; sessions are queried with `timestampMillis >= now - 400 days` (history pages older on demand).
 
 ## Migration (once per account, whichever v2 client logs in first)
-1. In a transaction read `sync/meta`. If `schemaVersion == 2` → done.
-2. Read `backups/current`; `migrateV1()` → batched writes (≤ 450 per batch), then `sync/meta` = 2.
+1. In a transaction read `sync/meta`. If `schemaVersion == 2` → done. Otherwise claim a 120-second lease
+   `{state:'migrating', by:deviceId, leaseUntil:now+120000}`. A live lease held by another device means
+   wait and re-check; an expired lease may be claimed. Renew the lease during a long import.
+2. Read `backups/current`; `migrateV1()` → write each item through the normal `pickWinner` transaction.
+   Never use blind batch writes: a newer v2 edit must survive an interleaved migration. Finalize
+   `sync/meta` as schema 2 in a transaction only while still holding the lease.
 3. v2 clients never write `backups/current` again. If its `updatedAtMillis > migratedAtMillis` (an old app version
    wrote later), show "Một máy đang dùng bản app cũ — hãy cập nhật để đồng bộ" and offer a one-tap re-import of that
    snapshot through `pickWinner` (never a blind overwrite).

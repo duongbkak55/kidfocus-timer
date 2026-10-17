@@ -8,7 +8,7 @@ Nhánh `feat/web-app`. Đã merge `feat/web-tuduy` sau khi sửa lỗi hoạt h�
 - `CloudSyncManager` dùng listeners cho `profiles`, `tasks`, `routines`, `sessions` (cửa sổ 400 ngày), `completions`, và `sync/settings`. Mỗi mục được ghi qua Firestore transaction đọc phiên bản hiện có rồi chọn winner; không còn upload `backups/current` hoặc `deleteAll`/nạp lại toàn bộ Room. `dayLogs` tiếp tục dùng đồng bộ từng tài liệu đã có.
 - Room v8 thêm duy nhất bảng `sync_records`, khoá `(ownerUid, collection, docId)`, giữ payload/phiên bản/tombstone/cờ dirty qua lần tắt app và mất mạng. Quan sát các DAO để tạo thay đổi từng mục; xóa lưu tombstone với đầy đủ entity fields. Lúc khởi động, so lại các mục đã theo dõi trước khi tải cloud để không mất thay đổi Room vừa thực hiện. Các mục local mới được đưa lên sau khi tải cloud ban đầu.
 - Task, routine và session mới dùng ID ngẫu nhiên 52-bit tường minh; ID cũ giữ nguyên. Session history cục bộ giữ 400 ngày để phù hợp truy vấn v2. Thay đổi task/routine từ cloud chỉ huỷ/lên lịch lại báo thức của mục đó. Cập nhật routine dùng `UPDATE` khi đã tồn tại để không kích hoạt FK cascade xoá completion.
-- Migration đọc `sync/meta` bằng transaction, chuyển `backups/current` schema 1 sang tài liệu từng mục theo batch tối đa 450 ghi rồi ghi meta schema 2. Nếu app cũ tiếp tục ghi snapshot mới, màn Đồng bộ hiện cảnh báo và có nút nhập lại; từng mục nhập lại vẫn qua `pickWinner`, không ghi đè mù.
+- Migration đọc `sync/meta` bằng transaction, claim lease 120 giây, chuyển `backups/current` schema 1 qua transaction `pickWinner` từng mục rồi chốt meta schema 2 nếu vẫn giữ lease. Nếu app cũ tiếp tục ghi snapshot mới, màn Đồng bộ hiện cảnh báo và có nút nhập lại; từng mục nhập lại vẫn qua `pickWinner`, không ghi đè mù.
 
 ## Kiểm tra
 
@@ -54,7 +54,7 @@ Các fixture Android mới xác nhận đúng 9 tài liệu migration và toàn 
 - Nhật ký ngày đọc/ghi `dayLogs/{uuid}` dạng snake_case như `DayLogCloud.kt`, kiểm UUID, ngày, tên, giờ, nguồn, tombstone và tie-break giống `newerDayLog`. Màn web cho thêm/sửa/xoá hoạt động đã diễn ra, gắn với task nếu có.
 - Hồ sơ bé cho thêm, đổi tên/biểu tượng/độ tuổi, lưu trữ. Cài đặt ghi `sync/settings`, giữ các trường opaque `scheduleAnchors` và `schedulePlans`; giao diện hỗ trợ thời lượng Focus/nghỉ, mục tiêu ngày, âm thanh, chế độ dịu mắt và thêm giờ.
 - `/tu-duy/` dùng `learning/{profileId}_tuduy` khi đã đăng nhập và hồ sơ hợp lệ; lưu `{stats,review}` theo LWW. Android WebView đọc, quan sát thay đổi và ghi cùng tài liệu. Snapshot cập nhật tiến bộ mà không đưa bé ra khỏi câu đang làm; phiên guest vẫn dùng localStorage như trước.
-- Không tự gán tiến bộ localStorage cũ vốn không có hồ sơ bé cho một hồ sơ cloud mới; dữ liệu local cũ vẫn nằm trên thiết bị. Cần review chính sách nhập dữ liệu này trước khi phát hành W2 nếu muốn giữ tiến bộ guest. Không có migration Room.
+- Tiến bộ localStorage guest không tự gán cho hồ sơ cloud. Phụ huynh có nút chuyển một lần trong màn Hồ sơ, chọn bé và xác nhận; transaction từ chối nếu bé đã có tiến bộ cloud. Dữ liệu guest gốc vẫn trên máy. Không có migration Room cho W2.
 
 | Kiểm tra Step C | Kết quả |
 | --- | --- |
@@ -68,3 +68,27 @@ Các fixture Android mới xác nhận đúng 9 tài liệu migration và toàn 
 Ảnh W2 390×844, chỉ dùng tài khoản emulator và hồ sơ giả Bé Na: [Nhật ký ngày](web-app-screenshots/w2-nhat-ky-390x844.png), [Hồ sơ bé](web-app-screenshots/w2-ho-so-390x844.png), [Cài đặt](web-app-screenshots/w2-cai-dat-390x844.png), [Luyện tư duy trong app web](web-app-screenshots/w2-luyen-tu-duy-link-390x844.png), [trang chơi Luyện tư duy](web-app-screenshots/w2-luyen-tu-duy-390x844.png).
 
 Smoke chỉ dùng project `demo-kidfocus-web` trên emulator. File cấu hình demo được tạo trong `web/dist/` bị gitignore; không có tài khoản thật, Firebase production hay deploy. Cấu hình web public `web/app/firebase-config.json` vẫn chờ Claude cung cấp trước triển khai thật.
+
+## Review 1 — sửa an toàn dữ liệu
+
+- Android lưu `room_owner_uid` và kiểm tra cả các `sync_records`/marker cũ trước khi quét Room. Đổi A → B xoá dữ liệu đồng bộ của A, dữ liệu local liên quan và record của tài khoản khác trước lần quét đầu; B chỉ tải cloud của B. Nếu có dữ liệu guest chưa có owner, hộp thoại ở cấp navigation hỏi nhập vào tài khoản hay bỏ dữ liệu máy. Máy mới không có dữ liệu sẽ không hỏi. `dayLogs` chỉ bắt đầu sync sau quyết định này.
+- Android và web claim lease 120 giây trên `sync/meta`, đợi lease còn hiệu lực của máy khác, gia hạn khi nhập dài; từng mục v1 dùng transaction `pickWinner`. Đã cập nhật [SYNC_V2_SPEC.md](SYNC_V2_SPEC.md). Test hai migrator xen một lần sửa mới xác nhận bản sửa không bị bản v1 ghi đè.
+- Android xử lý toàn bộ snapshot Firestore trong một mutex, một lần quét local và một lần upload; bỏ echo `hasPendingWrites`, bỏ doc có nội dung canonical trùng record. Test 2.000 sessions + 200 tasks xác nhận đúng hai lần quét cho hai snapshot, thay vì 2.200 lần.
+- Web đăng xuất hoặc tắt “Đây là máy của tôi” thì terminate Firestore, xoá IndexedDB persistence rồi reload. Hồ sơ có nút chọn bé và xác nhận chuyển tiến bộ guest một lần; transaction từ chối nếu bé đã có dữ liệu cloud.
+
+## Responsive — iPad và máy tính
+
+- Dưới 600 px giữ bottom nav và các bố cục điện thoại. Từ 600 px có rail trái với nhãn; từ 1024 px sidebar 240 px gồm hồ sơ, trạng thái đồng bộ, mọi mục điều hướng. Hôm nay chia timeline và panel Focus/mục tiêu/việc đến hạn; Focus chia đồng hồ và danh sách hoạt động; Lịch hiển thị lưới 7 cột theo giờ, thêm hoạt động tại ô sẽ điền sẵn ngày/giờ, form thành side panel. History và Nhật ký ngày có biểu đồ/danh sách song song; cài đặt và hồ sơ giới hạn chiều rộng.
+- Hỗ trợ focus ring, Space bắt đầu/tạm dừng Focus, mũi tên đổi tuần, Escape đóng dialog; đổi chiều màn hình không xoá bản nháp. PWA thêm manifest và apple-touch-icon, không có service worker. Trang `/tu-duy/` có chooser 3–4 cột, bàn phím tối đa 520 px và lời giải bên cạnh bài trên desktop; asset Tu Duy gốc được copy nguyên byte. Build learning tắt copy public asset của app để giữ giới hạn 1,5 MB.
+
+| Kiểm tra cuối | Kết quả |
+| --- | --- |
+| `./gradlew :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --offline` (JDK 17) | BUILD SUCCESSFUL; 376/376 test, 0 failure; APK và lint xanh |
+| `node --test shared/learning/tests/*.test.js shared/sync/test/*.test.js` | 100/100 pass, gồm 96 Learning Hub; không sửa 31 test Tu Duy cũ hoặc `shared/sync/` |
+| `npm --prefix web test` | 13/13 pass, gồm migration/guest mới; byte-identical asset và Chromium Tu Duy pass |
+| `node web/test/web-app-responsive.smoke.cjs` | PASS trên Brave + Auth/Firestore emulator: 70 ảnh ở 7 kích thước, không tràn ngang/cắt chữ; rail/sidebar đúng ngưỡng; bản nháp giữ khi xoay; Escape, mũi tên, Space và toggle cache pass. Thêm 3 ảnh lời giải desktop. |
+| `git diff --check` | Pass |
+
+Ảnh: [toàn bộ 73 ảnh và chỉ mục theo kích thước](web-app-responsive-screenshots/README.md); tiêu biểu [điện thoại 390×844](web-app-responsive-screenshots/today-390x844.png), [iPad 820×1180](web-app-responsive-screenshots/daylog-820x1180.png), [lịch desktop 1366×1024](web-app-responsive-screenshots/week-1366x1024.png), [lời giải bên cạnh bài](web-app-responsive-screenshots/tu-duy-explanation-1366x1024.png). Dữ liệu ảnh chỉ có hồ sơ giả Bé Na trong emulator `demo-kidfocus-web`.
+
+WebKit Playwright chưa cài trên Mac nên chưa chạy smoke Safari; Brave/Chromium đã pass ở kích thước iPad. Cấu hình Firebase web thật vẫn chờ Claude cung cấp cho G3; chưa push/deploy. `docs/tasks/g3/` sẵn có trong worktree được giữ nguyên và không đưa vào commit.

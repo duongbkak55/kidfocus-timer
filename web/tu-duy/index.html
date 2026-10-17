@@ -67,6 +67,22 @@
   #webConfetti span{position:absolute;left:50%;top:22%;width:9px;height:13px;border-radius:2px;background:var(--color);animation:burst .75s ease-out forwards}
   @keyframes burst{to{transform:translate(var(--dx),var(--dy)) rotate(360deg);opacity:0}}
   @media (max-width:360px){.wrap{padding-inline:11px}.bands button{padding-inline:7px;font-size:13px}}
+  @media (min-width:768px){
+    .wrap{width:min(100%,720px);min-height:100dvh;padding:24px 22px 42px}
+    #tuduy .td-pickgrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+    #tuduy .td-pad{max-width:520px;margin-inline:auto}
+    #tuduy .td-visual{font-size:1.08em}
+    #tuduy .td-visual svg{max-width:100%;height:auto}
+  }
+  @media (min-width:1024px){
+    .wrap{width:min(100%,1100px)}
+    .hero,.about,#tdChooser,#tdDone{max-width:720px;margin-inline:auto}
+    #tuduy .td-pickgrid{grid-template-columns:repeat(4,minmax(0,1fr))}
+    #tdQuiz{display:grid;grid-template-columns:minmax(0,720px) minmax(240px,1fr);column-gap:22px;align-items:start}
+    #tdQuiz > *:not(.td-explain){grid-column:1}
+    #tdQuiz > .td-explain:not([hidden]){grid-column:2;grid-row:1 / span 9;position:sticky;top:20px}
+    #tdQuiz[hidden]{display:none}
+  }
   @media (prefers-reduced-motion:reduce){#webConfetti span{animation:none;display:none}}
 </style>
 </head>

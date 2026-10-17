@@ -22,6 +22,15 @@ data class SyncRecordEntity(
 
 @Dao
 interface SyncRecordDao {
+    @Query("SELECT DISTINCT ownerUid FROM sync_records")
+    suspend fun owners(): List<String>
+
+    @Query("DELETE FROM sync_records WHERE ownerUid = :uid")
+    suspend fun deleteForUser(uid: String)
+
+    @Query("DELETE FROM sync_records WHERE ownerUid != :uid")
+    suspend fun deleteOtherUsers(uid: String)
+
     @Query("SELECT * FROM sync_records WHERE ownerUid = :uid")
     suspend fun forUser(uid: String): List<SyncRecordEntity>
 

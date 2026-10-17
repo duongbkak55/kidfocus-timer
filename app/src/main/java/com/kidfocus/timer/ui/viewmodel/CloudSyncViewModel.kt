@@ -20,6 +20,8 @@ class CloudSyncViewModel @Inject constructor(
     val account: StateFlow<CloudAccount> = cloudSyncManager.account
     val syncStatus: StateFlow<CloudSyncStatus> = cloudSyncManager.status
     val oldAppWarning: StateFlow<Boolean> = cloudSyncManager.oldAppWarning
+    val guestChoicePending: StateFlow<Boolean> = cloudSyncManager.guestChoicePending
+    fun chooseGuestData(merge: Boolean) = cloudSyncManager.chooseGuestData(merge)
 
     private val _formMessage = MutableStateFlow<String?>(null)
     val formMessage: StateFlow<String?> = _formMessage.asStateFlow()

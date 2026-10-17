@@ -1,6 +1,7 @@
 package com.kidfocus.timer.data.cloud
 
 import android.content.Context
+import androidx.room.withTransaction
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.ListenerRegistration
@@ -8,6 +9,7 @@ import com.google.firebase.firestore.Source
 import com.kidfocus.timer.alarm.AlarmScheduler
 import com.kidfocus.timer.data.database.ChildProfileDao
 import com.kidfocus.timer.data.database.ChildProfileEntity
+import com.kidfocus.timer.data.database.DayLogDao
 import com.kidfocus.timer.data.database.RoutineCompletionEntity
 import com.kidfocus.timer.data.database.RoutineCompletionPolicy
 import com.kidfocus.timer.data.database.RoutineDao
@@ -15,6 +17,7 @@ import com.kidfocus.timer.data.database.RoutineEntity
 import com.kidfocus.timer.data.database.ScheduledTaskDao
 import com.kidfocus.timer.data.database.ScheduledTaskEntity
 import com.kidfocus.timer.data.database.SessionDao
+import com.kidfocus.timer.data.database.SessionDatabase
 import com.kidfocus.timer.data.database.SessionEntity
 import com.kidfocus.timer.data.database.SyncRecordDao
 import com.kidfocus.timer.data.database.SyncRecordEntity
@@ -27,7 +30,9 @@ import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -66,6 +71,8 @@ class CloudSyncManager @Inject constructor(
     private val routineAlarmScheduler: RoutineAlarmScheduler,
     private val childProfileDao: ChildProfileDao,
     private val syncRecordDao: SyncRecordDao,
+    private val database: SessionDatabase,
+    private val dayLogDao: DayLogDao,
     private val schedulePlans: com.kidfocus.timer.data.schedule.SchedulePlansRepository,
     private val dayLogSync: com.kidfocus.timer.data.daylog.DayLogSyncManager,
     private val scheduleAnchors: com.kidfocus.timer.data.schedule.ScheduleAnchorsRepository,
@@ -80,6 +87,9 @@ class CloudSyncManager @Inject constructor(
     val status: StateFlow<CloudSyncStatus> = _status.asStateFlow()
     private val _oldAppWarning = MutableStateFlow(false)
     val oldAppWarning: StateFlow<Boolean> = _oldAppWarning.asStateFlow()
+    private val _guestChoicePending = MutableStateFlow(false)
+    val guestChoicePending: StateFlow<Boolean> = _guestChoicePending.asStateFlow()
+    @Volatile private var guestAnswer: CompletableDeferred<Boolean>? = null
     val account: StateFlow<CloudAccount> = accountRepository.account
     private var started = false
     private var activeUid: String? = null
@@ -88,6 +98,63 @@ class CloudSyncManager @Inject constructor(
     private var migratedAtMillis = 0L
     private val listeners = mutableListOf<ListenerRegistration>()
     private val pendingCompletions = mutableMapOf<String, Triple<String, String, Map<String, Any?>>>()
+    private val ownerGate = RoomOwnerGate(
+        currentOwner = ::storedRoomOwner,
+        saveOwner = { uid -> check(preferences.edit().putString("room_owner_uid", uid).commit()) },
+        clearLocal = ::clearLocalAccountData,
+        hasGuestData = ::hasGuestData,
+        askGuestMerge = ::awaitGuestChoice,
+    )
+
+    fun chooseGuestData(merge: Boolean) { guestAnswer?.complete(merge) }
+
+    private suspend fun storedRoomOwner(): String? {
+        preferences.getString("room_owner_uid", null)?.let { return it }
+        val recorded = syncRecordDao.owners().distinct()
+        if (recorded.isNotEmpty()) return recorded.singleOrNull() ?: "legacy-unknown"
+        val legacy = preferences.all.entries.mapNotNull { (key, value) ->
+            key.removePrefix("last_remote_").takeIf {
+                key.startsWith("last_remote_") && value is Long && value > 0
+            }
+        }.distinct()
+        return legacy.singleOrNull() ?: if (legacy.isNotEmpty()) "legacy-unknown" else null
+    }
+
+    private suspend fun awaitGuestChoice(): Boolean {
+        val answer = CompletableDeferred<Boolean>()
+        guestAnswer = answer
+        _guestChoicePending.value = true
+        return try { answer.await() } finally {
+            if (guestAnswer === answer) guestAnswer = null
+            _guestChoicePending.value = false
+        }
+    }
+
+    private suspend fun hasGuestData(): Boolean =
+        scheduledTaskDao.getAllForSync().isNotEmpty() || routineDao.getAllForSync().isNotEmpty() ||
+            sessionDao.getAllForSync().isNotEmpty() || dayLogDao.getAll().isNotEmpty() ||
+            childProfileDao.getAllForSync().any { it != ChildProfileEntity.default() } ||
+            settingsDataStore.settingsFlow.first().cloudHashCode() !=
+                com.kidfocus.timer.domain.model.TimerSettings().cloudHashCode() ||
+            scheduleAnchors.all.first().isNotEmpty() || schedulePlans.all.first().isNotEmpty()
+
+    private suspend fun clearLocalAccountData(oldOwner: String?, newOwner: String) {
+        check(oldOwner != newOwner)
+        check(preferences.edit().putBoolean("needs_fresh_pull_$newOwner", true).commit())
+        scheduledTaskDao.getAllForSync().forEach { runCatching { alarmScheduler.cancelTask(it.toDomain()) } }
+        routineDao.getAllForSync().forEach { routineAlarmScheduler.cancel(it.id) }
+        database.withTransaction {
+            routineDao.deleteAllCompletions()
+            routineDao.deleteAllRoutines()
+            scheduledTaskDao.deleteAll()
+            sessionDao.deleteAllSessions()
+            dayLogDao.deleteAll()
+            childProfileDao.deleteAllExceptDefault()
+            childProfileDao.upsert(ChildProfileEntity.default())
+            syncRecordDao.deleteOtherUsers(newOwner)
+        }
+        settingsDataStore.clearSyncedSettings()
+    }
 
     fun start() {
         if (started) return
@@ -107,7 +174,7 @@ class CloudSyncManager @Inject constructor(
 
     fun syncNow() {
         dayLogSync.syncNow()
-        activeUid?.let { uid -> scope.launch { upload(uid) } }
+        activeUid?.let { uid -> scope.launch { if (ready) upload(uid) else initialize(uid) } }
     }
 
     fun reimportOldAppSnapshot() {
@@ -136,6 +203,7 @@ class CloudSyncManager @Inject constructor(
     private fun observeAccount() {
         scope.launch {
             account.collectLatest { current ->
+                dayLogSync.allowAccount(null)
                 listeners.forEach(ListenerRegistration::remove); listeners.clear()
                 pendingCompletions.clear()
                 ready = false; activeUid = current.userId; _oldAppWarning.value = false
@@ -171,11 +239,17 @@ class CloudSyncManager @Inject constructor(
     private suspend fun initialize(uid: String) {
         _status.value = CloudSyncStatus.Syncing
         try {
+            ownerGate.prepare(uid)
+            val needsFreshPull = preferences.getBoolean("needs_fresh_pull_$uid", false)
+            if (uid != activeUid) return
+            dayLogSync.allowAccount(uid)
             val firstMigration = migrateOnce(uid)
             // Detect edits made just before process death before a remote pull can overwrite Room.
             // On the first v1 migration there are no records yet, but a prior v1 sync marker proves ownership.
-            if (firstMigration && preferences.getLong("last_remote_$uid", 0) > 0) scanLocal(uid)
-            else scanLocal(uid, onlyTracked = true)
+            if (!needsFreshPull) {
+                if (firstMigration && preferences.getLong("last_remote_$uid", 0) > 0) scanLocal(uid)
+                else scanLocal(uid, onlyTracked = true)
+            }
             for (collection in SyncV2Model.collections) {
                 val ref = userRef(uid).collection(collection)
                 val query = if (collection == "sessions") ref.whereGreaterThanOrEqualTo("timestampMillis",
@@ -186,12 +260,20 @@ class CloudSyncManager @Inject constructor(
             if (settings.exists()) receive(uid, "settings", "settings", settings.data)
             val backup = backupRef(uid).get(Source.SERVER).await()
             updateOldAppWarning(backup.data)
+            if (needsFreshPull) {
+                restoreDirtyRecords(uid)
+                check(preferences.edit().putBoolean("needs_fresh_pull_$uid", false).commit())
+            }
             ready = true
             upload(uid)
             listen(uid)
             if (_status.value is CloudSyncStatus.Syncing) _status.value = CloudSyncStatus.Synced(System.currentTimeMillis())
         } catch (error: Exception) {
             if (error is CancellationException) throw error
+            if (preferences.getBoolean("needs_fresh_pull_$uid", false)) {
+                _status.value = CloudSyncStatus.Error(error.userMessage())
+                return
+            }
             // The local queue is durable; reconnect or manual retry will flush it.
             scanLocal(uid)
             ready = true
@@ -200,33 +282,79 @@ class CloudSyncManager @Inject constructor(
         }
     }
 
+    private suspend fun restoreDirtyRecords(uid: String) {
+        for (record in syncRecordDao.dirty(uid)) {
+            val row = parsed(record.collection, record.docId, SyncV2Json.decode(record.payloadJson)) ?: continue
+            applyingRemote = true
+            try {
+                if (record.collection == "settings") applySettings(row.entity)
+                else applyEntity(record.collection, row)
+            } finally { applyingRemote = false }
+        }
+    }
+
     private suspend fun migrateOnce(uid: String): Boolean {
         val meta = metaRef(uid)
-        val current = accountRepository.database()!!.runTransaction { it.get(meta).data }.await()
-        if ((current?.get("schemaVersion") as? Number)?.toInt() == 2) {
-            migratedAtMillis = (current["migratedAtMillis"] as? Number)?.toLong() ?: 0
-            return false
+        val db = accountRepository.database()!!
+        migration@ while (true) {
+            val now = System.currentTimeMillis()
+            val decision = db.runTransaction { transaction ->
+                val current = transaction.get(meta).data.asStringMap()
+                MigrationLeasePolicy.decide(current, now, deviceId).also {
+                    if (it == MigrationLeasePolicy.Decision.Claim)
+                        transaction.set(meta, MigrationLeasePolicy.claim(now, deviceId))
+                }
+            }.await()
+            when (decision) {
+                is MigrationLeasePolicy.Decision.Ready -> {
+                    migratedAtMillis = decision.migratedAtMillis
+                    return false
+                }
+                is MigrationLeasePolicy.Decision.Wait -> {
+                    delay(minOf(1_000L, maxOf(100L, decision.untilMillis - now)))
+                    continue@migration
+                }
+                MigrationLeasePolicy.Decision.Claim -> Unit
+            }
+            val backup = backupRef(uid).get(Source.SERVER).await()
+            val snapshot = backup.data.asStringMap()
+            val migrated = if (snapshot != null && (snapshot["schemaVersion"] as? Number)?.toInt() == 1)
+                SyncV2Model.migrateV1(snapshot, now, deviceId) else null
+            val writes = migrated?.docs?.map { Triple(it.collection, it.id, it.data) }.orEmpty() +
+                listOfNotNull(migrated?.settings?.let { Triple("settings", "settings", it) })
+            for ((index, item) in writes.withIndex()) {
+                if (index > 0 && index % 40 == 0) {
+                    val renewed = db.runTransaction { transaction ->
+                        val current = transaction.get(meta)
+                        if (current.getString("state") != "migrating" || current.getString("by") != deviceId) false
+                        else {
+                            transaction.set(meta, MigrationLeasePolicy.claim(System.currentTimeMillis(), deviceId))
+                            true
+                        }
+                    }.await()
+                    if (!renewed) continue@migration
+                }
+                importCandidate(uid, item.first, item.second, item.third)
+            }
+            val at = (snapshot?.get("updatedAtMillis") as? Number)?.toLong() ?: now
+            val finishedAt = db.runTransaction { transaction ->
+                val current = transaction.get(meta)
+                when {
+                    (current.get("schemaVersion") as? Number)?.toInt() == 2 ->
+                        (current.get("migratedAtMillis") as? Number)?.toLong() ?: at
+                    current.getString("state") == "migrating" && current.getString("by") == deviceId -> {
+                        transaction.set(meta, mapOf("schemaVersion" to 2, "migratedAtMillis" to at,
+                            "migratedBy" to deviceId))
+                        at
+                    }
+                    else -> null
+                }
+            }.await()
+            if (finishedAt != null) {
+                migratedAtMillis = finishedAt
+                return true
+            }
         }
-        val backup = backupRef(uid).get(Source.SERVER).await()
-        val snapshot = backup.data.asStringMap()
-        val now = System.currentTimeMillis()
-        val migrated = if (snapshot != null && (snapshot["schemaVersion"] as? Number)?.toInt() == 1)
-            SyncV2Model.migrateV1(snapshot, now, deviceId) else null
-        val writes = migrated?.docs?.map { doc -> itemRef(uid, doc.collection, doc.id) to doc.data }.orEmpty() +
-            listOfNotNull(migrated?.settings?.let { settingsRef(uid) to it })
-        for (part in writes.chunked(450)) {
-            val batch = accountRepository.database()!!.batch()
-            part.forEach { (ref, data) -> batch.set(ref, data) }
-            batch.commit().await()
-        }
-        val at = (snapshot?.get("updatedAtMillis") as? Number)?.toLong() ?: now
-        val metaData = mapOf("schemaVersion" to 2, "migratedAtMillis" to at, "migratedBy" to deviceId)
-        accountRepository.database()!!.runTransaction { transaction ->
-            val existing = transaction.get(meta)
-            if ((existing.get("schemaVersion") as? Number)?.toInt() != 2) transaction.set(meta, metaData)
-        }.await()
-        migratedAtMillis = at
-        return true
     }
 
     private fun listen(uid: String) {
@@ -238,26 +366,35 @@ class CloudSyncManager @Inject constructor(
             listeners += query.addSnapshotListener { snapshot, error ->
                 if (uid != activeUid) return@addSnapshotListener
                 if (error != null) { _status.value = CloudSyncStatus.Error(error.userMessage()); return@addSnapshotListener }
-                snapshot?.documentChanges?.filter { it.type != DocumentChange.Type.REMOVED }?.forEach { change ->
-                    scope.launch {
-                        mutex.withLock {
-                            scanLocal(uid)
-                            receive(uid, collection, change.document.id, change.document.data)
-                        }
-                        upload(uid)
+                if (snapshot == null || snapshot.metadata.hasPendingWrites()) return@addSnapshotListener
+                val changes = snapshot.documentChanges.filter { it.type != DocumentChange.Type.REMOVED }
+                if (changes.isEmpty()) return@addSnapshotListener
+                scope.launch {
+                    mutex.withLock {
+                        if (uid != activeUid || !ready) return@withLock
+                        SnapshotBatch.apply(changes, { scanLocal(uid) }, { change ->
+                            val raw = change.document.data
+                            val stored = syncRecordDao.get(uid, collection, change.document.id)
+                            stored != null && SyncV2Json.canonical(SyncV2Json.decode(stored.payloadJson)) ==
+                                SyncV2Json.canonical(raw)
+                        }, { change -> receive(uid, collection, change.document.id, change.document.data) })
                     }
+                    upload(uid, scan = false)
                 }
-                if (snapshot != null && !snapshot.metadata.isFromCache) scope.launch { upload(uid) }
             }
         }
         listeners += settingsRef(uid).addSnapshotListener { snapshot, error ->
             if (uid != activeUid) return@addSnapshotListener
             if (error != null) { _status.value = CloudSyncStatus.Error(error.userMessage()); return@addSnapshotListener }
-            if (snapshot?.exists() == true) scope.launch {
+            if (snapshot?.exists() == true && !snapshot.metadata.hasPendingWrites()) scope.launch {
                 mutex.withLock {
                     scanLocal(uid)
-                    receive(uid, "settings", "settings", snapshot.data)
+                    val raw = snapshot.data
+                    val stored = syncRecordDao.get(uid, "settings", "settings")
+                    if (stored == null || SyncV2Json.canonical(SyncV2Json.decode(stored.payloadJson)) !=
+                        SyncV2Json.canonical(raw)) receive(uid, "settings", "settings", raw)
                 }
+                upload(uid, scan = false)
             }
         }
         listeners += backupRef(uid).addSnapshotListener { snapshot, error ->
@@ -269,11 +406,11 @@ class CloudSyncManager @Inject constructor(
         _oldAppWarning.value = ((raw?.get("updatedAtMillis") as? Number)?.toLong() ?: 0) > migratedAtMillis
     }
 
-    private suspend fun upload(uid: String) = mutex.withLock {
+    private suspend fun upload(uid: String, scan: Boolean = true) = mutex.withLock {
         if (uid != activeUid || !ready) return@withLock
         _status.value = CloudSyncStatus.Syncing
         try {
-            scanLocal(uid)
+            if (scan) scanLocal(uid)
             for (record in syncRecordDao.dirty(uid)) {
                 if (uid != activeUid) return@withLock
                 val localData = SyncV2Json.decode(record.payloadJson)

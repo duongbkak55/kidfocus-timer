@@ -6,6 +6,9 @@ import com.kidfocus.timer.domain.daylog.newerDayLog
 
 @Dao
 abstract class DayLogDao {
+    @Query("DELETE FROM day_log_entries")
+    abstract suspend fun deleteAll()
+
     @Query("SELECT * FROM day_log_entries WHERE profile_id = :profileId ORDER BY date, start_minute, id")
     abstract fun observeProfile(profileId: String): Flow<List<DayLogEntryEntity>>
     @Query("SELECT * FROM day_log_entries ORDER BY updated_at, id")

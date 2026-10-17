@@ -211,6 +211,24 @@ class SettingsDataStore @Inject constructor(
         }
     }
 
+    /** Remove account-owned settings while keeping the device PIN, onboarding and local preferences. */
+    suspend fun clearSyncedSettings() {
+        context.dataStore.edit { prefs ->
+            listOf(
+                Keys.FOCUS_DURATION, Keys.BREAK_DURATION, Keys.DAILY_GOAL_MINUTES,
+                Keys.SOUND_ENABLED, Keys.VIBRATION_ENABLED, Keys.LEARNING_AGE_BAND,
+                Keys.CALM_MODE_ENABLED, Keys.ALLOW_CHILD_EXTEND_FOCUS,
+                Keys.MAX_EXTRA_FOCUS_MINUTES, Keys.COMPLETED_FOCUS_SESSIONS,
+            ).forEach { prefs.remove(it) }
+            prefs.remove(Keys.APP_THEME)
+            prefs.remove(Keys.ACTIVE_CHILD_PROFILE_ID)
+            prefs.asMap().keys.map { it.name }.filter { name ->
+                name.startsWith("schedule_anchors_") || name.startsWith("schedule_plan_") ||
+                    name.startsWith("schedule_snapshot_")
+            }.forEach { prefs.remove(stringPreferencesKey(it)) }
+        }
+    }
+
     suspend fun saveGeminiApiKey(apiKey: String) {
         context.dataStore.edit { prefs ->
             if (apiKey.isBlank()) prefs.remove(Keys.GEMINI_API_KEY)

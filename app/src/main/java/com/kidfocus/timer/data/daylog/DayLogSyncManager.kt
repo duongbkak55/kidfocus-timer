@@ -26,14 +26,19 @@ class DayLogSyncManager @Inject constructor(
     private val mutex = Mutex()
     private var started = false
     private var listener: ListenerRegistration? = null
+    private val allowedUid = MutableStateFlow<String?>(null)
     private val historyInFlight = mutableSetOf<String>()
     private val _error = MutableStateFlow(false)
     val error: StateFlow<Boolean> = _error.asStateFlow()
+    /** The core sync owner decision must finish before day logs can upload guest rows. */
+    fun allowAccount(uid: String?) { allowedUid.value = uid }
     fun start() {
         if (started) return
         started = true
         scope.launch {
-            account.account.map { it.userId }.distinctUntilChanged().collectLatest { uid ->
+            combine(account.account.map { it.userId }, allowedUid) { signedIn, allowed ->
+                signedIn.takeIf { it != null && it == allowed }
+            }.distinctUntilChanged().collectLatest { uid ->
                 listener?.remove(); listener = null
                 _error.value = false
                 if (uid == null) return@collectLatest
@@ -65,6 +70,7 @@ class DayLogSyncManager @Inject constructor(
         val cutoff = LocalDate.now().minusDays(SYNC_WINDOW_DAYS)
         if (first >= cutoff || first > last) return
         val uid = account.account.value.userId ?: return
+        if (allowedUid.value != uid) return
         val boundedLast = minOf(last, cutoff.minusDays(1))
         val key = "$uid:$first:$boundedLast"
         if (!synchronized(historyInFlight) { historyInFlight.add(key) }) return
@@ -75,13 +81,14 @@ class DayLogSyncManager @Inject constructor(
         }
     }
     internal suspend fun fetchHistory(uid: String, first: LocalDate, last: LocalDate) {
-        if (account.account.value.userId != uid) return
+        if (account.account.value.userId != uid || allowedUid.value != uid) return
         val query = collection(uid)?.whereGreaterThanOrEqualTo("date", first.toString())
             ?.whereLessThanOrEqualTo("date", last.toString()) ?: return
         val snapshot = query.get(Source.SERVER).await()
         receive(uid, snapshot.documents.mapNotNull { dayLogFromCloud(it.id, it.data) })
     }
-    fun syncNow() { account.account.value.userId?.let { uid -> scope.launch { upload(uid) } } }
+    fun syncNow() { account.account.value.userId?.takeIf { it == allowedUid.value }
+        ?.let { uid -> scope.launch { upload(uid) } } }
     internal suspend fun receive(uid: String, rows: List<com.kidfocus.timer.domain.daylog.DayLogEntry>) = mutex.withLock {
         if (account.account.value.userId != uid) return@withLock
         for (entry in rows) {

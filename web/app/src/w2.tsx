@@ -1,6 +1,7 @@
 import { useEffect, useState } from "preact/hooks";
 import type { CloudStore, DataState } from "./cloud";
 import { dateKey, reference, timeLabel, type Entity } from "./model";
+import * as guestLearning from "./guest-learning.mjs";
 
 const ageBands = [
   ["2-3", "2–3 tuổi"],
@@ -23,6 +24,8 @@ const categories = [
 ];
 const str = (v: unknown) => (typeof v === "string" ? v : String(v ?? ""));
 const num = (v: unknown) => Number(v ?? 0);
+const sourceLabels: Record<string, string> = { MANUAL: "Ghi tay", AI: "AI", CHILD: "Bé ghi",
+  TIMER: "Đồng hồ", TIMER_DONE: "Đồng hồ", ROUTINE: "Việc hằng ngày", SKIP: "Bỏ qua" };
 const minutes = (value: string) => {
   const [h, m] = value.split(":").map(Number);
   return h * 60 + m;
@@ -98,11 +101,21 @@ export function DayLogs({
           + Ghi hoạt động
         </button>
       </div>
+      <div class="daylog-layout">
+      <aside class="daylog-chart card"><h2>Thời gian đã ghi</h2>
+        <strong>{rows.reduce((sum, row) => row.entity.end_minute == null ? sum : sum +
+          ((num(row.entity.end_minute) - num(row.entity.start_minute) + 1440) % 1440), 0)} phút</strong>
+        <p>{rows.length} hoạt động trong ngày</p>
+        {categories.map(([id, title]) => {
+          const count = rows.filter(row => row.entity.category === id).length;
+          return count ? <p class="category-bar"><span>{title}</span><meter min="0" max={Math.max(rows.length, 1)} value={count} /> <b>{count}</b></p> : null;
+        })}
+      </aside><div class="daylog-detail">
       {rows.length ? (
         <div class="history-list">
           {rows.map((row) => (
             <button
-              class="history-row edit-row"
+              class="history-row edit-row daylog-row"
               key={row.id}
               onClick={() => {
                 setDraft({ id: row.id, ...row.entity });
@@ -124,12 +137,14 @@ export function DayLogs({
                     "Khác"}
                 </small>
               </span>
+              <span class="wide-only">{timeLabel(num(row.entity.start_minute))} – {row.entity.end_minute == null ? "…" : timeLabel(num(row.entity.end_minute))}</span>
+              <span class="wide-only">{sourceLabels[str(row.entity.source)] ?? "Khác"}</span>
             </button>
           ))}
         </div>
       ) : (
         <div class="empty card">Chưa có ghi chép trong ngày này.</div>
-      )}
+      )}</div></div>
       {draft && (
         <div class="modal-backdrop" onClick={() => setDraft(null)}>
           <section
@@ -265,6 +280,9 @@ export function Profiles({
 }) {
   const [draft, setDraft] = useState<Entity | null>(null);
   const [confirmArchive, setConfirmArchive] = useState(false);
+  const [importChildId, setImportChildId] = useState(profileId);
+  const [importConfirm, setImportConfirm] = useState(false);
+  const [guestProgress, setGuestProgress] = useState(() => guestLearning.readGuestProgress(localStorage));
   const rows = data.profiles.filter((row) => !row.entity.archived);
   const update = (key: string, value: unknown) =>
     setDraft((old) => old && { ...old, [key]: value });
@@ -325,6 +343,31 @@ export function Profiles({
       >
         + Thêm hồ sơ
       </button>
+      {guestProgress && rows.length > 0 && (
+        <section class="card" aria-label="Chuyển tiến bộ chơi thử">
+          <h2>Tiến bộ Luyện tư duy trên máy này</h2>
+          <p class="muted">Chọn đúng bé để chuyển một lần. Tiến bộ đã đồng bộ của bé sẽ không bị ghi đè.</p>
+          <label>Chuyển cho bé
+            <select value={importChildId} onChange={event => { setImportChildId(event.currentTarget.value); setImportConfirm(false); }}>
+              {rows.map(row => <option value={row.id}>{str(row.entity.name)}</option>)}
+            </select>
+          </label>
+          <button disabled={!store || !guestLearning.canImport(importChildId, data.learning)}
+            onClick={async () => {
+              if (!store || !guestProgress) return;
+              if (!importConfirm) { setImportConfirm(true); return; }
+              try {
+                await store.importGuestLearning({ profileId: importChildId, ...guestProgress });
+                localStorage.setItem(guestLearning.IMPORTED_KEY, "yes");
+                setGuestProgress(null);
+                onNotice("Đã chuyển tiến bộ chơi thử cho bé.");
+              } catch (error) { onNotice(error instanceof Error ? error.message : String(error)); }
+            }}>
+            {importConfirm ? "Xác nhận chuyển cho bé đã chọn" : `Chuyển tiến bộ trên máy này cho bé ${str(rows.find(row => row.id === importChildId)?.entity.name)}`}
+          </button>
+          {!guestLearning.canImport(importChildId, data.learning) && <p class="muted">Bé đã có tiến bộ đồng bộ; không ghi đè dữ liệu đó.</p>}
+        </section>
+      )}
       {draft && (
         <div class="modal-backdrop" onClick={() => setDraft(null)}>
           <section

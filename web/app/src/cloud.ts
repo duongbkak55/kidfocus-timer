@@ -28,8 +28,9 @@ import {
   onSnapshot,
   query,
   runTransaction,
+  terminate,
+  clearIndexedDbPersistence,
   where,
-  writeBatch,
   type Firestore,
   type Unsubscribe,
 } from "firebase/firestore";
@@ -40,6 +41,7 @@ import {
   type Parsed,
 } from "./model";
 import * as extraSync from "./extra-sync.mjs";
+import * as migrationLease from "./migration-lease.mjs";
 
 export type ExtraCollection = "settings" | "dayLogs" | "learning";
 
@@ -130,7 +132,15 @@ export const loginEmail = (auth: Auth, email: string, password: string) =>
   signInWithEmailAndPassword(auth, email, password);
 export const resetPassword = (auth: Auth, email: string) =>
   sendPasswordResetEmail(auth, email);
-export const logout = (auth: Auth) => signOut(auth);
+export async function logout(auth: Auth, db?: Firestore): Promise<void> {
+  await signOut(auth);
+  if (db) await clearPrivateCache(db);
+}
+
+export async function clearPrivateCache(db: Firestore): Promise<void> {
+  await terminate(db);
+  await clearIndexedDbPersistence(db);
+}
 export async function loginGoogle(auth: Auth): Promise<void> {
   const provider = new GoogleAuthProvider();
   if (matchMedia("(max-width: 600px)").matches) {
@@ -156,39 +166,69 @@ export const checkRedirect = (auth: Auth) => getRedirectResult(auth);
 export async function ensureV2(db: Firestore, uid: string): Promise<number> {
   const root = doc(db, "users", uid);
   const meta = doc(root, "sync", "meta");
-  const existing = await runTransaction(db, (tx) => tx.get(meta));
-  if (existing.data()?.schemaVersion === 2)
-    return Number(existing.data()?.migratedAtMillis ?? 0);
-  const backup = await getDoc(doc(root, "backups", "current"));
-  const snapshot = backup.data();
-  const nowMillis = Date.now();
-  const migrated =
-    snapshot?.schemaVersion === 1
-      ? reference.migrateV1(snapshot, { nowMillis, deviceId: deviceId() })
-      : null;
-  const writes = [
-    ...(migrated?.docs ?? []).map(
-      (item) => [doc(root, item.collection, item.id), item.data] as const,
-    ),
-  ];
-  if (migrated?.settings)
-    writes.push([doc(root, "sync", "settings"), migrated.settings]);
-  for (let i = 0; i < writes.length; i += 450) {
-    const batch = writeBatch(db);
-    for (const [ref, data] of writes.slice(i, i + 450)) batch.set(ref, data);
-    await batch.commit();
-  }
-  const migratedAtMillis = Number(snapshot?.updatedAtMillis ?? nowMillis);
-  await runTransaction(db, async (tx) => {
-    const latest = await tx.get(meta);
-    if (latest.data()?.schemaVersion !== 2)
-      tx.set(meta, {
-        schemaVersion: 2,
-        migratedAtMillis,
-        migratedBy: deviceId(),
+  const worker = deviceId();
+  for (;;) {
+    const nowMillis = Date.now();
+    const decision = await runTransaction(db, async tx => {
+      const current = await tx.get(meta);
+      const result = migrationLease.decide(current.data(), nowMillis, worker);
+      if (result.kind === "claim") tx.set(meta, migrationLease.claim(nowMillis, worker));
+      return result;
+    });
+    if (decision.kind === "ready") return Number(decision.migratedAtMillis ?? 0);
+    if (decision.kind === "wait") {
+      await new Promise(resolve => setTimeout(resolve, Math.min(1000, Math.max(100, Number(decision.untilMillis ?? nowMillis) - nowMillis))));
+      continue;
+    }
+    const backup = await getDoc(doc(root, "backups", "current"));
+    const snapshot = backup.data();
+    const migrated = snapshot?.schemaVersion === 1
+      ? reference.migrateV1(snapshot, { nowMillis, deviceId: worker }) : null;
+    const writes = [
+      ...(migrated?.docs ?? []).map(item => ({
+        ref: doc(root, item.collection, item.id), collection: item.collection, id: item.id, data: item.data,
+      })),
+      ...(migrated?.settings ? [{ ref: doc(root, "sync", "settings"), collection: "settings",
+        id: "settings", data: migrated.settings }] : []),
+    ];
+    let leaseLost = false;
+    for (let index = 0; index < writes.length; index++) {
+      if (index > 0 && index % 40 === 0) {
+        const renewed = await runTransaction(db, async tx => {
+          const current = await tx.get(meta);
+          if (current.data()?.state !== "migrating" || current.data()?.by !== worker) return false;
+          tx.set(meta, migrationLease.claim(Date.now(), worker));
+          return true;
+        });
+        if (!renewed) { leaseLost = true; break; }
+      }
+      const item = writes[index];
+      const itemCollection = item.collection as CollectionName;
+      await runTransaction(db, async tx => {
+        const current = await tx.get(item.ref);
+        if (item.collection === "settings") {
+          const local = extraSync.fromDoc("settings", item.id, item.data);
+          const remote = current.exists() ? extraSync.fromDoc("settings", item.id, current.data()) : null;
+          if (extraSync.pickWinner("settings", local, remote) === "local") tx.set(item.ref, item.data);
+        } else {
+          const local = reference.fromDoc(itemCollection, item.id, item.data);
+          const remote = current.exists() ? reference.fromDoc(itemCollection, item.id, current.data()) : null;
+          if (reference.pickWinner(itemCollection, local, remote) === "local") tx.set(item.ref, item.data);
+        }
       });
-  });
-  return migratedAtMillis;
+    }
+    if (leaseLost) continue;
+    const migratedAtMillis = Number(snapshot?.updatedAtMillis ?? nowMillis);
+    const finished = await runTransaction(db, async tx => {
+      const current = await tx.get(meta);
+      if (current.data()?.schemaVersion === 2)
+        return Number(current.data()?.migratedAtMillis ?? migratedAtMillis);
+      if (current.data()?.state !== "migrating" || current.data()?.by !== worker) return null;
+      tx.set(meta, { schemaVersion: 2, migratedAtMillis, migratedBy: worker });
+      return migratedAtMillis;
+    });
+    if (finished !== null) return finished;
+  }
 }
 
 export class CloudStore {
@@ -374,6 +414,18 @@ export class CloudStore {
       this.fail(error);
       throw error;
     }
+  }
+  async importGuestLearning(entity: Entity): Promise<void> {
+    const candidate = extraSync.toDoc("learning", entity, {
+      nowMillis: Date.now(), deviceId: deviceId(),
+    });
+    if (!candidate) throw new Error("Tiến bộ trên máy không hợp lệ.");
+    const item = doc(this.root(), "learning", candidate.id);
+    await runTransaction(this.db, async tx => {
+      const remote = await tx.get(item);
+      if (remote.exists()) throw new Error("Bé đã có tiến bộ đồng bộ; không ghi đè.");
+      tx.set(item, candidate.data);
+    });
   }
   async reimport(): Promise<void> {
     const backup = await getDoc(doc(this.root(), "backups", "current"));
