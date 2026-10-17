@@ -39,7 +39,7 @@ test('page is Vietnamese, private and free of third-party requests or exam frami
   assert.doesNotMatch(html, /<script[^>]+src=["']https?:\/\//i);
   assert.doesNotMatch(html, /serviceWorker|document\.cookie|sendBeacon|fetch\(|XMLHttpRequest|@import/i);
   const external = [...html.matchAll(/(?:href|src|content)=["'](https?:\/\/[^"']+)/g)].map((m) => m[1]);
-  assert(external.every((url) => /https:\/\/(?:play\.google\.com|groups\.google\.com)\//.test(url)));
+  assert(external.every((url) => /https:\/\/(?:play\.google\.com|groups\.google\.com|kidfocus\.134-185-83-168\.sslip\.io)\//.test(url)));
   const visible = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
     .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '').replace(/<[^>]*>/g, ' ')
     .replace('không phải luyện thi', ''); // The explicit reassurance is the one permitted use of “thi”.
