@@ -34,6 +34,12 @@
           "type": 302
         }
       ],
+      "rewrites": [
+        {
+          "source": "/app/**",
+          "destination": "/app/index.html"
+        }
+      ],
       "headers": [
         {
           "source": "**",

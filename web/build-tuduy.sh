@@ -21,4 +21,9 @@ cp "$repo_root/site/terms.html" "$page_out/terms.html"
 cp -R "$repo_root/shared/learning/www/tuduy" "$page_out/tuduy"
 cp "$repo_root/web/beta/index.html" "$dist_root/beta/index.html"
 
+npm --prefix "$repo_root/web" run build:app
+if [[ -f "$repo_root/web/app/firebase-config.json" ]]; then
+  cp "$repo_root/web/app/firebase-config.json" "$dist_root/app/firebase-config.json"
+fi
+
 echo "Built $page_out ($(du -sk "$page_out" | awk '{print $1}') KiB)"
