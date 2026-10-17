@@ -77,6 +77,8 @@ test('real Chromium completes five questions in each band without external reque
   page.on('request', (request) => requests.push(request.url()));
   await page.goto(origin + '/tu-duy/', { waitUntil: 'networkidle' });
   assert.equal(await page.title(), 'Cho bé thử Luyện tư duy — KidFocus');
+  assert.equal(await page.locator('#webAppBack').getAttribute('href'), '/app/');
+  assert.equal(await page.locator('#webAppBack').isVisible(), true);
   async function checkTargets() {
     const tooSmall = await page.evaluate(() => [...document.querySelectorAll('button,a')].flatMap((element) => {
       const box = element.getBoundingClientRect();

@@ -22,7 +22,10 @@
   button,a{font:inherit}
   button{cursor:pointer}
   .wrap{width:min(100%,480px);margin:auto;padding:16px 14px 32px}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:8px}
   .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-weight:900;font-size:18px;min-height:44px}
+  .app-return{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 10px;border:1px solid var(--border);border-radius:12px;background:#fff;color:var(--blue);font-size:14px;font-weight:800;text-decoration:none;white-space:nowrap}
+  .app-return:focus-visible{outline:3px solid #ff9f43;outline-offset:2px}
   .mark{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,#3858d6,#7958db);color:#fff;font-size:25px;box-shadow:0 4px 10px #4256ae44}
   .hero{margin:18px 0 14px;padding:22px 20px;border-radius:24px;background:linear-gradient(135deg,#3858d6,#7554dd);color:#fff;box-shadow:0 12px 26px #3e52b33b}
   .eyebrow{font-size:12px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;opacity:.88;margin:0 0 6px}
@@ -88,7 +91,7 @@
 </head>
 <body>
 <div class="wrap">
-  <a class="brand" href="/tu-duy/" aria-label="KidFocus, trang chơi thử Luyện tư duy"><span class="mark" aria-hidden="true">K</span><span>KidFocus</span></a>
+  <nav class="topbar" aria-label="Điều hướng Luyện tư duy"><a class="brand" href="/tu-duy/" aria-label="KidFocus, trang chơi thử Luyện tư duy"><span class="mark" aria-hidden="true">K</span><span>KidFocus</span></a><a class="app-return" id="webAppBack" href="/app/">← Về KidFocus</a></nav>
   <header class="hero"><p class="eyebrow">Chơi mà nghĩ, nghĩ mà chơi</p><h1>Cho bé thử Luyện tư duy</h1><p>Trò chơi tư duy cho bé 5–7 tuổi, mỗi lượt 5 câu, có giải thích.</p></header>
   <div class="controls"><div class="bands" role="group" aria-label="Chọn độ tuổi"><button id="webBand56" type="button" aria-pressed="true">5–6 tuổi</button><button id="webBandL1" type="button" aria-pressed="false">Lớp 1</button></div><button id="webSound" type="button" class="sound" aria-pressed="true">🔊 Âm thanh</button></div>
   <p id="webSyncStatus" class="parent-note" role="status">Đang kết nối tiến bộ…</p>
