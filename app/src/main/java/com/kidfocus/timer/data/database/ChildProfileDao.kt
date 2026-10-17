@@ -19,6 +19,9 @@ interface ChildProfileDao {
     @Query("SELECT * FROM child_profiles WHERE id = :id LIMIT 1")
     suspend fun getById(id: String): ChildProfileEntity?
 
+    @Query("DELETE FROM child_profiles WHERE id = :id AND id != 'default'")
+    suspend fun deleteById(id: String)
+
     @Upsert
     suspend fun upsert(profile: ChildProfileEntity)
 

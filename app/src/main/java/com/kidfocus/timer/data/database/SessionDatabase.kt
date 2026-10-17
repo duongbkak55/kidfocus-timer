@@ -14,8 +14,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         LearningAttemptEntity::class,
         ChildProfileEntity::class,
         DayLogEntryEntity::class,
+        SyncRecordEntity::class,
     ],
-    version = 7,
+    version = 8,
     exportSchema = true,
 )
 abstract class SessionDatabase : RoomDatabase() {
@@ -26,6 +27,7 @@ abstract class SessionDatabase : RoomDatabase() {
     abstract fun learningAttemptDao(): LearningAttemptDao
     abstract fun dayLogDao(): DayLogDao
     abstract fun childProfileDao(): ChildProfileDao
+    abstract fun syncRecordDao(): SyncRecordDao
 
     companion object {
         const val DATABASE_NAME = "kidfocus_sessions.db"
@@ -150,6 +152,20 @@ abstract class SessionDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE sessions ADD COLUMN task_id TEXT")
                 db.execSQL("ALTER TABLE sessions ADD COLUMN task_title TEXT")
                 db.execSQL("ALTER TABLE sessions ADD COLUMN completed INTEGER NOT NULL DEFAULT 1")
+            }
+        }
+
+        val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS sync_records (
+                        ownerUid TEXT NOT NULL, collection TEXT NOT NULL, docId TEXT NOT NULL,
+                        payloadJson TEXT NOT NULL, fingerprint TEXT NOT NULL,
+                        updatedAtMillis INTEGER NOT NULL, deviceId TEXT NOT NULL,
+                        deleted INTEGER NOT NULL, dirty INTEGER NOT NULL,
+                        PRIMARY KEY(ownerUid, collection, docId)
+                    )
+                """.trimIndent())
             }
         }
 

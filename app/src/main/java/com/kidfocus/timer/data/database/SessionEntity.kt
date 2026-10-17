@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 /**
  * Room entity representing one finished or manually stopped timer session.
  *
- * @property id Auto-generated primary key.
+ * @property id Explicit random sync-safe key for new sessions; legacy rows keep their original key.
  * @property durationSeconds How many seconds the session lasted.
  * @property isFocus True for focus sessions, false for break sessions.
  * @property timestampMillis Unix epoch milliseconds when the session ended.

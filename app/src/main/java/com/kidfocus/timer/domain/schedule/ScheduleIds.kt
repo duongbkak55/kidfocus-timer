@@ -1,14 +1,11 @@
 package com.kidfocus.timer.domain.schedule
 
-import kotlin.random.Random
+import java.security.SecureRandom
 
 object ScheduleIds {
-    // Avoid same-millisecond collisions within this process as well as between devices.
-    private var lastId = 0L
+    private val random = SecureRandom()
+
+    // Random 52-bit IDs stay exact in JavaScript and avoid Room autoGenerate collisions across devices.
     @Synchronized
-    fun newId(): Long {
-        val candidate = System.currentTimeMillis() * 1000 + Random.nextInt(1000)
-        lastId = maxOf(candidate, lastId + 1)
-        return lastId
-    }
+    fun newId(): Long = (random.nextLong() ushr 12) + 1
 }

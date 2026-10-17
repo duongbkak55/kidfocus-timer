@@ -118,6 +118,12 @@ interface RoutineDao {
     @Query("SELECT * FROM routine_completions WHERE routine_id = :routineId AND occurrence_date = :date LIMIT 1")
     suspend fun getCompletion(routineId: Long, date: String): RoutineCompletionEntity?
 
+    @Query("DELETE FROM routine_completions WHERE routine_id = :routineId AND occurrence_date = :date")
+    suspend fun deleteCompletion(routineId: Long, date: String)
+
+    @Query("DELETE FROM routines WHERE id = :id")
+    suspend fun deleteById(id: Long)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveCompletionRaw(completion: RoutineCompletionEntity)
 

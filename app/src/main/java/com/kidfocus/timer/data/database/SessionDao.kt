@@ -12,19 +12,23 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface SessionDao {
 
-    /**
-     * Inserts a session record. Ignores conflicts (should not occur with auto-increment keys).
-     */
+    /** Inserts a session with a caller-generated sync-safe ID; ignores duplicate IDs. */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertSession(session: SessionEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSessions(sessions: List<SessionEntity>)
 
-    @Query("SELECT * FROM sessions ORDER BY timestamp_millis DESC LIMIT :limit")
-    suspend fun getAllForSync(limit: Int = 2000): List<SessionEntity>
+    @Query("SELECT * FROM sessions ORDER BY timestamp_millis DESC")
+    suspend fun getAllForSync(): List<SessionEntity>
 
-    @Query("SELECT * FROM sessions ORDER BY timestamp_millis DESC LIMIT 2000")
+    @Query("SELECT * FROM sessions WHERE id = :id LIMIT 1")
+    suspend fun getById(id: Long): SessionEntity?
+
+    @Query("DELETE FROM sessions WHERE id = :id")
+    suspend fun deleteById(id: Long)
+
+    @Query("SELECT * FROM sessions ORDER BY timestamp_millis DESC")
     fun observeAllForSync(): Flow<List<SessionEntity>>
 
     /**

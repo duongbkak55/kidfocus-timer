@@ -56,6 +56,7 @@ fun CloudSyncScreen(
     val context = LocalContext.current
     val account by viewModel.account.collectAsState()
     val status by viewModel.syncStatus.collectAsState()
+    val oldAppWarning by viewModel.oldAppWarning.collectAsState()
     val message by viewModel.formMessage.collectAsState()
     val working by viewModel.working.collectAsState()
     var email by remember { mutableStateOf("") }
@@ -182,6 +183,14 @@ fun CloudSyncScreen(
                 }
                 Spacer(Modifier.height(16.dp))
                 SyncStatusText(status)
+                if (oldAppWarning) {
+                    Spacer(Modifier.height(12.dp))
+                    Text("Một máy đang dùng bản app cũ — hãy cập nhật để đồng bộ", color = MaterialTheme.colorScheme.error)
+                    OutlinedButton(onClick = viewModel::reimportOldAppSnapshot,
+                        modifier = Modifier.fillMaxWidth().height(52.dp)) {
+                        Text("Nhập lại bản sao từ máy cũ")
+                    }
+                }
                 Spacer(Modifier.height(20.dp))
                 Button(
                     onClick = viewModel::syncNow,

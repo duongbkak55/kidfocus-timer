@@ -8,6 +8,7 @@ import com.kidfocus.timer.data.database.SessionDatabase
 import com.kidfocus.timer.data.database.RoutineDao
 import com.kidfocus.timer.data.database.LearningAttemptDao
 import com.kidfocus.timer.data.database.ChildProfileDao
+import com.kidfocus.timer.data.database.SyncRecordDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -50,6 +51,7 @@ object DataModule {
             SessionDatabase.MIGRATION_4_5,
             SessionDatabase.MIGRATION_5_6,
             SessionDatabase.MIGRATION_6_7,
+            SessionDatabase.MIGRATION_7_8,
         )
         .build()
 
@@ -81,4 +83,7 @@ object DataModule {
     @Singleton
     fun provideChildProfileDao(database: SessionDatabase): ChildProfileDao =
         database.childProfileDao()
+
+    @Provides
+    fun provideSyncRecordDao(database: SessionDatabase): SyncRecordDao = database.syncRecordDao()
 }

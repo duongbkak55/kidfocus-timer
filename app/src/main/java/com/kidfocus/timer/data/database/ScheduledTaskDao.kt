@@ -16,6 +16,9 @@ interface ScheduledTaskDao {
     @Query("SELECT * FROM scheduled_tasks ORDER BY id ASC")
     suspend fun getAllForSync(): List<ScheduledTaskEntity>
 
+    @Query("SELECT * FROM scheduled_tasks WHERE id = :id LIMIT 1")
+    suspend fun getById(id: Long): ScheduledTaskEntity?
+
     @Query("SELECT * FROM scheduled_tasks WHERE enabled = 1")
     suspend fun getAllEnabled(): List<ScheduledTaskEntity>
 

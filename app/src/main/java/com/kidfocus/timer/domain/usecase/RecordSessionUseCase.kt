@@ -3,6 +3,7 @@ package com.kidfocus.timer.domain.usecase
 import com.kidfocus.timer.data.database.SessionEntity
 import com.kidfocus.timer.data.repository.SessionRepository
 import com.kidfocus.timer.data.repository.ChildProfileRepository
+import com.kidfocus.timer.domain.schedule.ScheduleIds
 import javax.inject.Inject
 
 /**
@@ -32,6 +33,7 @@ class RecordSessionUseCase @Inject constructor(
     ) {
         if (durationSeconds <= 0) return
         val entity = SessionEntity(
+            id = ScheduleIds.newId(),
             durationSeconds = durationSeconds,
             isFocus = isFocus,
             timestampMillis = timestampMillis,
@@ -42,7 +44,7 @@ class RecordSessionUseCase @Inject constructor(
             completed = completed,
         )
         sessionRepository.insertSession(entity)
-        val cutoffMillis = System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000
+        val cutoffMillis = System.currentTimeMillis() - 400L * 24 * 60 * 60 * 1000
         sessionRepository.pruneOldSessions(cutoffMillis)
     }
 }

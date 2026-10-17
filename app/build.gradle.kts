@@ -136,6 +136,7 @@ android {
     sourceSets {
         getByName("main").assets.srcDir(rootProject.file("shared/learning/www"))
         getByName("androidTest").assets.srcDir("$projectDir/schemas")
+        getByName("test").resources.srcDir(layout.buildDirectory.dir("generated/syncFixtures"))
     }
 
     // Firebase values are safe client identifiers. OpenRouter secrets live only in Cloud Functions.
@@ -151,6 +152,13 @@ android {
         }
     }
 }
+
+val copySyncFixturesForTest by tasks.registering(Copy::class) {
+    from(rootProject.file("shared/sync/fixtures"))
+    into(layout.buildDirectory.dir("generated/syncFixtures/sync"))
+}
+tasks.withType<Test>().configureEach { dependsOn(copySyncFixturesForTest) }
+tasks.matching { it.name.endsWith("UnitTestJavaRes") }.configureEach { dependsOn(copySyncFixturesForTest) }
 
 ksp {
     arg("room.schemaLocation", "$projectDir/schemas")

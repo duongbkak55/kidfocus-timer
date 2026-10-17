@@ -19,6 +19,7 @@ class CloudSyncViewModel @Inject constructor(
 ) : ViewModel() {
     val account: StateFlow<CloudAccount> = cloudSyncManager.account
     val syncStatus: StateFlow<CloudSyncStatus> = cloudSyncManager.status
+    val oldAppWarning: StateFlow<Boolean> = cloudSyncManager.oldAppWarning
 
     private val _formMessage = MutableStateFlow<String?>(null)
     val formMessage: StateFlow<String?> = _formMessage.asStateFlow()
@@ -66,6 +67,8 @@ class CloudSyncViewModel @Inject constructor(
         cloudSyncManager.syncNow()
         _formMessage.value = null
     }
+
+    fun reimportOldAppSnapshot() = cloudSyncManager.reimportOldAppSnapshot()
 
     private fun runAccountAction(block: suspend () -> Unit) {
         if (_working.value) return
