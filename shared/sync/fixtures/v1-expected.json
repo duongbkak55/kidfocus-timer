@@ -1,0 +1,12 @@
+{
+  "profiles": ["default", "p3"],
+  "profileAgeBands": {"default": "5-6", "p3": "4-5"},
+  "tasks": {"1": {"hour": 19, "minute": 30, "daysOfWeek": "2,3,4,5,6", "focusDurationMinutes": 20},
+            "2": {"hour": 23, "minute": 59, "daysOfWeek": "1,7", "focusDurationMinutes": 120, "breakDurationMinutes": 1, "enabled": false}},
+  "routines": {"10": {"deadlineMinutes": 1260, "repeatDaysMask": 127, "linkedTimerMinutes": null},
+               "11": {"deadlineMinutes": 1439, "repeatDaysMask": 1, "reminderMinutesBefore": 180, "linkedTimerMinutes": 5}},
+  "completions": {"10_2026-10-15": {"status": "ON_TIME", "completedAtMillis": 1791989500000}},
+  "sessions": {"1000": {"taskId": "1", "completed": true}, "1001": {"durationSeconds": 0, "taskId": null, "taskTitle": null, "completed": true}},
+  "settings": {"dailyGoalMinutes": 30, "learningAgeBand": "5-6", "hasAnchors": true},
+  "docCount": 9
+}

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1, "updatedAtMillis": 1792000000000, "deviceId": "pixel-abc",
+  "childProfiles": [
+    {"id": "default", "name": "Bé Na", "avatarEmoji": "🐼", "ageBand": "5-6", "createdAtMillis": 1790000000000, "archived": false},
+    {"id": "p2", "name": "", "avatarEmoji": "🐣", "ageBand": "l1", "createdAtMillis": 1, "archived": false},
+    {"id": "p3", "name": "Bé Bi", "avatarEmoji": "🐯", "ageBand": "9-10", "createdAtMillis": 1790000000001, "archived": true}
+  ],
+  "scheduledTasks": [
+    {"id": 1, "taskType": "HOMEWORK", "name": "Làm bài tập", "emoji": "📚", "hour": 19, "minute": 30, "daysOfWeek": "2,3,4,5,6", "focusDurationMinutes": 20, "breakDurationMinutes": 5, "enabled": true, "isCustom": false, "childProfileId": "default"},
+    {"id": 2, "taskType": "CUSTOM", "name": "Đọc sách", "emoji": "📖", "hour": 25, "minute": 70, "daysOfWeek": "7, 1, 1, 9", "focusDurationMinutes": 500, "breakDurationMinutes": 0, "enabled": false, "isCustom": true, "childProfileId": "default"},
+    {"id": 0, "taskType": "CUSTOM", "name": "No id", "emoji": "❓", "hour": 1, "minute": 1, "daysOfWeek": "2", "childProfileId": "default"}
+  ],
+  "routines": [
+    {"id": 10, "title": "Đánh răng", "emoji": "🪥", "deadlineMinutes": 1260, "repeatDaysMask": 127, "reminderMinutesBefore": 15, "enabled": true, "linkedTimerMinutes": null, "createdAtMillis": 1790000000000, "childProfileId": "default"},
+    {"id": 11, "title": "Tắm", "emoji": "🛁", "deadlineMinutes": 2000, "repeatDaysMask": 0, "reminderMinutesBefore": 999, "enabled": true, "linkedTimerMinutes": 3, "createdAtMillis": 1790000000000, "childProfileId": "default"}
+  ],
+  "routineCompletions": [
+    {"id": 100, "routineId": 10, "occurrenceDate": "2026-10-15", "scheduledDeadlineMillis": 1791990000000, "completedAtMillis": 1791989000000, "status": "LATE"},
+    {"id": 101, "routineId": 10, "occurrenceDate": "2026-10-15", "scheduledDeadlineMillis": 1791990000000, "completedAtMillis": 1791989500000, "status": "ON_TIME"},
+    {"id": 102, "routineId": 99, "occurrenceDate": "2026-10-15", "scheduledDeadlineMillis": 1, "completedAtMillis": 1, "status": "ON_TIME"},
+    {"id": 103, "routineId": 11, "occurrenceDate": "15/10/2026", "scheduledDeadlineMillis": 1, "completedAtMillis": 1, "status": "ON_TIME"}
+  ],
+  "sessions": [
+    {"id": 1000, "durationSeconds": 1200, "isFocus": true, "timestampMillis": 1791900000000, "childProfileId": "default", "taskId": "1", "taskTitle": "Làm bài tập", "completed": true},
+    {"id": 1001, "durationSeconds": -5, "isFocus": false, "timestampMillis": 1791900100000, "childProfileId": "default", "taskId": "", "taskTitle": " "},
+    {"id": 1002, "durationSeconds": 60, "isFocus": true, "timestampMillis": 0, "childProfileId": "default"}
+  ],
+  "settings": {"focusDurationMinutes": 20, "breakDurationMinutes": 5, "dailyGoalMinutes": 10, "appTheme": "OCEAN", "soundEnabled": true, "vibrationEnabled": false, "learningAgeBand": "5-6", "calmModeEnabled": false, "allowChildExtendFocus": true, "maxExtraFocusMinutes": 10, "scheduleAnchors": {"default": {"wake": {"MONDAY": "06:15"}, "bed": {"MONDAY": "21:00"}}}, "schedulePlans": {"default": null}}
+}

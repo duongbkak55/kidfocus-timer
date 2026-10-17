@@ -1,0 +1,11 @@
+[
+  {"name": "newer remote wins", "collection": "tasks", "local": {"updatedAtMillis": 100, "deviceId": "a"}, "remote": {"updatedAtMillis": 200, "deviceId": "b"}, "winner": "remote"},
+  {"name": "newer local wins", "collection": "tasks", "local": {"updatedAtMillis": 300, "deviceId": "a"}, "remote": {"updatedAtMillis": 200, "deviceId": "b"}, "winner": "local"},
+  {"name": "tie breaks on deviceId", "collection": "routines", "local": {"updatedAtMillis": 200, "deviceId": "web-1"}, "remote": {"updatedAtMillis": 200, "deviceId": "android-9"}, "winner": "local"},
+  {"name": "tombstone newer wins", "collection": "tasks", "local": {"updatedAtMillis": 100, "deviceId": "a"}, "remote": {"updatedAtMillis": 150, "deviceId": "b", "deleted": true}, "winner": "remote"},
+  {"name": "edit after delete resurrects", "collection": "tasks", "local": {"updatedAtMillis": 400, "deviceId": "a"}, "remote": {"updatedAtMillis": 150, "deviceId": "b", "deleted": true}, "winner": "local"},
+  {"name": "completion ON_TIME beats newer LATE", "collection": "completions", "local": {"updatedAtMillis": 100, "deviceId": "a", "status": "ON_TIME", "completedAtMillis": 50}, "remote": {"updatedAtMillis": 900, "deviceId": "b", "status": "LATE", "completedAtMillis": 40}, "winner": "local"},
+  {"name": "completion earlier wins when same status", "collection": "completions", "local": {"updatedAtMillis": 100, "deviceId": "a", "status": "LATE", "completedAtMillis": 70}, "remote": {"updatedAtMillis": 50, "deviceId": "b", "status": "LATE", "completedAtMillis": 60}, "winner": "remote"},
+  {"name": "completion delete uses LWW", "collection": "completions", "local": {"updatedAtMillis": 100, "deviceId": "a", "status": "ON_TIME", "completedAtMillis": 50}, "remote": {"updatedAtMillis": 200, "deviceId": "b", "status": "ON_TIME", "completedAtMillis": 50, "deleted": true}, "winner": "remote"},
+  {"name": "missing local", "collection": "sessions", "local": null, "remote": {"updatedAtMillis": 1, "deviceId": "b"}, "winner": "remote"}
+]
