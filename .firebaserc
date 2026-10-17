@@ -5,7 +5,12 @@
   "targets": {
     "kid-focus-app": {
       "hosting": {
-        "legal": ["kidfocus-studio"]
+        "legal": [
+          "kidfocus-studio"
+        ],
+        "demo": [
+          "kidfocus"
+        ]
       }
     }
   }
