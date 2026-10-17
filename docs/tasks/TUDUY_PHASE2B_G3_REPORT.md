@@ -16,7 +16,7 @@ Screenshots: `Ý tưởng dự án/kidfocus-tuduy-staging/g3/phase2b/` (5-6-L2-*
   states the right answer. All answers checked by eye against the picture: correct.
 
 ## Must fix
-1. **insideOut — objects sit on the square's border.** In 3 of 4 captures the object meant to be "in the square, outside
+1. **insideOut — objects sit on the square's border.** In all 3 two-shape captures the object meant to be "in the square, outside
    the circle" (or outside both) is drawn across the square's right edge (🍎 / ⭐ / 🚗 at x ≈ 205 with the edge at 220;
    emoji are ~28 px wide). A child cannot tell inside from outside. Keep every object's whole glyph box ≥ 10 px inside
    or outside every boundary (test with the glyph half-size, not the centre point).
