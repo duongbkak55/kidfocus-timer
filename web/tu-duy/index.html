@@ -75,6 +75,7 @@
   <a class="brand" href="/tu-duy/" aria-label="KidFocus, trang chơi thử Luyện tư duy"><span class="mark" aria-hidden="true">K</span><span>KidFocus</span></a>
   <header class="hero"><p class="eyebrow">Chơi mà nghĩ, nghĩ mà chơi</p><h1>Cho bé thử Luyện tư duy</h1><p>Trò chơi tư duy cho bé 5–7 tuổi, mỗi lượt 5 câu, có giải thích.</p></header>
   <div class="controls"><div class="bands" role="group" aria-label="Chọn độ tuổi"><button id="webBand56" type="button" aria-pressed="true">5–6 tuổi</button><button id="webBandL1" type="button" aria-pressed="false">Lớp 1</button></div><button id="webSound" type="button" class="sound" aria-pressed="true">🔊 Âm thanh</button></div>
+  <p id="webSyncStatus" class="parent-note" role="status">Đang kết nối tiến bộ…</p>
   <main id="tuduy">
     <section class="card" id="tdChooser"><div class="qprompt">Hôm nay con muốn chơi dạng nào?</div><p class="play-note">Làm chưa đúng cũng được: con có gợi ý và cách làm.</p><div class="td-pickgrid" id="tdPick"></div></section>
     <section class="card" id="tdQuiz" hidden><button type="button" class="td-quiz-back" id="webBack">← Chọn dạng khác</button><div class="td-top"><span id="tdCount"></span><span id="tdStars"></span></div><div class="td-prompt"><span id="tdPrompt"></span><button class="td-say" id="webSpeak" type="button" aria-label="Nghe câu hỏi">🔊</button></div><div class="td-visual" id="tdVisual"></div><div class="td-pad" id="tdPad" role="group" aria-label="Bàn phím số"></div><div class="td-actions"><button type="button" class="rbtn next" id="tdCheck">✔ Xong rồi</button><button type="button" class="rbtn next" id="tdNext" hidden>Câu tiếp ▶</button></div><div class="fb" id="tdFb" role="status" aria-live="polite"></div><div class="td-explain" id="tdExplain" hidden></div></section>
@@ -86,7 +87,7 @@
 <div id="webConfetti" aria-hidden="true"></div>
 <script>
 var ageBand = '5-6';
-window.TuDuyPageOptions = { storageKey: 'tuduy.web.v1', sessionLength: 5 };
+window.TuDuyPageOptions = { storageKey: 'tuduy.web.v1' + ((new URLSearchParams(location.search).get('profile') || '') ? '.' + new URLSearchParams(location.search).get('profile') : ''), sessionLength: 5 };
 </script>
 <script src="tuduy/tuduy-arithmetic.js"></script>
 <script src="tuduy/tuduy-core.js"></script>
@@ -150,6 +151,7 @@ window.TuDuyPageOptions = { storageKey: 'tuduy.web.v1', sessionLength: 5 };
     $('webBandL1').setAttribute('aria-pressed', String(value === 'l1'));
     window.TuDuyUI.open();
   }
+  window.KidFocusTuDuySetBand = band;
   $('webBand56').onclick = () => band('5-6');
   $('webBandL1').onclick = () => band('l1');
   $('webSound').onclick = () => {
@@ -166,5 +168,6 @@ window.TuDuyPageOptions = { storageKey: 'tuduy.web.v1', sessionLength: 5 };
   window.TuDuyUI.open();
 })();
 </script>
+<script type="module" src="/tu-duy/learning-sync.mjs"></script>
 </body>
 </html>

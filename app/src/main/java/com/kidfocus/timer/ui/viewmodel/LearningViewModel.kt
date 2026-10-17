@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kidfocus.timer.data.billing.SubscriptionManager
 import com.kidfocus.timer.data.cloud.FirebaseAccountRepository
+import com.kidfocus.timer.data.cloud.TuduyCloudStore
+import com.google.firebase.firestore.ListenerRegistration
 import com.kidfocus.timer.data.datastore.SettingsDataStore
 import com.kidfocus.timer.data.repository.LearningProgress
 import com.kidfocus.timer.data.repository.LearningRepository
@@ -20,6 +22,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 data class LearningNativeConfig(
+    val profileId: String = "default",
     val ageBand: String = TimerSettings.DEFAULT_LEARNING_AGE_BAND,
     val soundEnabled: Boolean = true,
     val premium: Boolean = false,
@@ -33,6 +36,7 @@ class LearningViewModel @Inject constructor(
     subscriptionManager: SubscriptionManager,
     accountRepository: FirebaseAccountRepository,
     private val childProfileRepository: ChildProfileRepository,
+    private val tuduyCloudStore: TuduyCloudStore? = null,
 ) : ViewModel() {
     val progress: StateFlow<List<LearningProgress>> = repository.progress.stateIn(
         viewModelScope,
@@ -47,6 +51,7 @@ class LearningViewModel @Inject constructor(
         childProfileRepository.activeProfile,
     ) { settings, subscription, account, profile ->
         LearningNativeConfig(
+            profileId = profile.id,
             ageBand = profile.ageBand,
             soundEnabled = settings.soundEnabled,
             premium = subscription.premium,
@@ -72,5 +77,18 @@ class LearningViewModel @Inject constructor(
     }
 
     fun syncNow() = repository.syncNow()
+
+    suspend fun loadTuduyStore(profileId: String): String? = runCatching {
+        tuduyCloudStore?.load(profileId)
+    }.getOrNull()
+
+    fun observeTuduyStore(profileId: String, onStore: (String) -> Unit): ListenerRegistration? =
+        tuduyCloudStore?.observe(profileId, onStore)
+
+    fun saveTuduyStore(profileId: String, rawStore: String, onWinner: (String) -> Unit) {
+        viewModelScope.launch {
+            runCatching { tuduyCloudStore?.save(profileId, rawStore) }.getOrNull()?.let(onWinner)
+        }
+    }
 
 }

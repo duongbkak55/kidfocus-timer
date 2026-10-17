@@ -15,7 +15,13 @@
 
   /* ---------- persistence (per-viewer convenience; never required) ---------- */
   function load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } }
-  function save(st) { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) { /* storage unavailable */ } }
+  function save(st) {
+    if (options.cloudMode) {
+      if (typeof options.onStoreChanged === 'function') options.onStoreChanged({ stats: st.stats, review: st.review });
+      return;
+    }
+    try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) { /* storage unavailable */ }
+  }
   let store = load();
   store.stats = store.stats || {};
   store.review = store.review || [];
@@ -565,6 +571,20 @@
 
   window.TuDuyUI = {
     open() { buildPad(currentMax()); open(); },
+    setCloudMode(onChanged) { options.cloudMode = true; options.onStoreChanged = onChanged; },
+    applyStore(next) {
+      if (!next || typeof next !== 'object' || Array.isArray(next) || !next.stats ||
+        typeof next.stats !== 'object' || Array.isArray(next.stats) || !Array.isArray(next.review)) return false;
+      options.cloudMode = true;
+      if (JSON.stringify({ stats: store.stats, review: store.review }) === JSON.stringify(next)) return true;
+      const choosing = !$('tdChooser').hidden;
+      if (choosing) stopAnim();
+      store = { stats: next.stats, review: next.review };
+      if (choosing) open();
+      return true;
+    },
+    exportStore() { return { stats: store.stats, review: store.review }; },
+    useLocalStore() { if (!options.cloudMode) return; options.cloudMode = false; options.onStoreChanged = null; store = load(); open(); },
     backToChooser() {
       if ($('tdQuiz').hidden && $('tdDone').hidden) return false;
       open(); return true;

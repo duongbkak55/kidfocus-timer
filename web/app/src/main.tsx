@@ -29,8 +29,17 @@ import {
   type Parsed,
 } from "./model";
 import "./style.css";
+import { DayLogs, LearningLink, Profiles, Settings } from "./w2";
 
-type Tab = "today" | "week" | "focus" | "history";
+type Tab =
+  | "today"
+  | "week"
+  | "focus"
+  | "history"
+  | "daylog"
+  | "profiles"
+  | "settings"
+  | "learning";
 type FocusRun = {
   task: Entity;
   startedAt: number;
@@ -85,6 +94,7 @@ function App() {
   const [store, setStore] = useState<CloudStore | null>(null);
   const [profileId, setProfileId] = useState("default");
   const [tab, setTab] = useState<Tab>("today");
+  const [menuOpen, setMenuOpen] = useState(false);
   const [notice, setNotice] = useState("");
   const [selectedTask, setSelectedTask] = useState<Entity | null>(null);
   const [focusMinutes, setFocusMinutes] = useState(25);
@@ -316,7 +326,6 @@ function App() {
     );
   if (!user) return <Login auth={auth} notice={notice} onError={report} />;
 
-  const currentProfile = profiles.find((profile) => profile.id === profileId);
   return (
     <div class="app-shell">
       <header class="topbar">
@@ -324,10 +333,43 @@ function App() {
           <span class="mark">K</span>
           <span>KidFocus</span>
         </div>
-        <button class="text-button" onClick={() => logout(auth).catch(report)}>
-          Đăng xuất
-        </button>
+        <div class="header-actions">
+          <button
+            aria-expanded={menuOpen}
+            aria-controls="more-menu"
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            ☰ Thêm
+          </button>
+          <button
+            class="text-button"
+            onClick={() => logout(auth).catch(report)}
+          >
+            Đăng xuất
+          </button>
+        </div>
       </header>
+      {menuOpen && (
+        <nav class="more-menu" id="more-menu" aria-label="Mục khác">
+          {(
+            [
+              ["daylog", "📝 Nhật ký ngày"],
+              ["profiles", "🐣 Hồ sơ bé"],
+              ["settings", "⚙️ Cài đặt"],
+              ["learning", "🧠 Luyện tư duy"],
+            ] as const
+          ).map(([target, label]) => (
+            <button
+              onClick={() => {
+                setTab(target);
+                setMenuOpen(false);
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
+      )}
       <div class="top-controls">
         <label class="profile-picker">
           Hồ sơ bé
@@ -505,6 +547,29 @@ function App() {
           </section>
         )}
         {tab === "history" && <History data={data} profileId={profileId} />}
+        {tab === "daylog" && (
+          <DayLogs
+            data={data}
+            profileId={profileId}
+            store={store}
+            onNotice={setNotice}
+          />
+        )}
+        {tab === "profiles" && (
+          <Profiles
+            data={data}
+            profileId={profileId}
+            store={store}
+            onSelect={setProfileId}
+            onNotice={setNotice}
+          />
+        )}
+        {tab === "settings" && (
+          <Settings data={data} store={store} onNotice={setNotice} />
+        )}
+        {tab === "learning" && (
+          <LearningLink data={data} profileId={profileId} />
+        )}
       </main>
       <nav class="bottom-nav" aria-label="Điều hướng">
         <NavButton

@@ -123,3 +123,19 @@ test("web focus session keeps task link and early stop; tombstone wins a stale i
     "local",
   );
 });
+
+test("web profile add, rename, age band and archive use the reference winner policy", () => {
+  const added = sync.toDoc("profiles", {
+    id: "be-bin", name: "Bé Bin", avatarEmoji: "🐻", ageBand: "5-6",
+    createdAtMillis: 1000, archived: false,
+  }, ctx);
+  const renamed = sync.toDoc("profiles", { ...added.data, name: "Bé Bình", ageBand: "l1" },
+    { ...ctx, nowMillis: 2000 });
+  const archived = sync.toDoc("profiles", { ...renamed.data, archived: true },
+    { ...ctx, nowMillis: 3000 });
+  assert.equal(sync.fromDoc("profiles", renamed.id, renamed.data).entity.name, "Bé Bình");
+  assert.equal(sync.fromDoc("profiles", renamed.id, renamed.data).entity.ageBand, "l1");
+  assert.equal(sync.pickWinner("profiles", sync.fromDoc("profiles", archived.id, archived.data),
+    sync.fromDoc("profiles", renamed.id, renamed.data)), "local");
+  assert.equal(archived.data.archived, true);
+});

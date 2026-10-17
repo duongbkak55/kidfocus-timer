@@ -623,3 +623,51 @@ h2 {
   top: 17px;
   margin: 0;
 }
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.header-actions button {
+  white-space: nowrap;
+}
+.more-menu {
+  position: absolute;
+  z-index: 6;
+  top: 68px;
+  right: max(12px, calc((100vw - 1000px) / 2 + 18px));
+  width: min(250px, calc(100vw - 24px));
+  display: grid;
+  gap: 4px;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 12px 28px #33477633;
+}
+.more-menu button {
+  text-align: left;
+  border: 0;
+}
+.edit-row {
+  width: 100%;
+  text-align: left;
+  min-height: 64px;
+}
+.edit-row .emoji {
+  font-size: 28px;
+}
+.settings-form {
+  display: grid;
+  gap: 14px;
+}
+.link-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 13px;
+  text-decoration: none;
+  font-weight: 800;
+}

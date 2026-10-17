@@ -22,6 +22,7 @@ cp -R "$repo_root/shared/learning/www/tuduy" "$page_out/tuduy"
 cp "$repo_root/web/beta/index.html" "$dist_root/beta/index.html"
 
 npm --prefix "$repo_root/web" run build:app
+npm --prefix "$repo_root/web" run build:learning
 if [[ -f "$repo_root/web/app/firebase-config.json" ]]; then
   cp "$repo_root/web/app/firebase-config.json" "$dist_root/app/firebase-config.json"
 fi

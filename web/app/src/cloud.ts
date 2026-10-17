@@ -39,9 +39,15 @@ import {
   type Entity,
   type Parsed,
 } from "./model";
+import * as extraSync from "./extra-sync.mjs";
+
+export type ExtraCollection = "settings" | "dayLogs" | "learning";
 
 export type SyncState = "Đang đồng bộ" | "Đã đồng bộ" | "Lỗi";
 export type DataState = { [K in CollectionName]: Parsed[] } & {
+  dayLogs: Parsed[];
+  learning: Parsed[];
+  settings: Entity | null;
   warning: boolean;
   sync: SyncState;
   error: string;
@@ -52,6 +58,9 @@ export const emptyData = (): DataState => ({
   completions: [],
   sessions: [],
   profiles: [],
+  dayLogs: [],
+  learning: [],
+  settings: null,
   warning: false,
   sync: "Đang đồng bộ",
   error: "",
@@ -237,6 +246,40 @@ export class CloudStore {
       }
       this.listeners.push(
         onSnapshot(
+          doc(this.root(), "sync", "settings"),
+          (snapshot) => {
+            this.data.settings = snapshot.exists()
+              ? (extraSync.fromDoc("settings", "settings", snapshot.data())
+                  ?.entity ?? null)
+              : null;
+            this.emit();
+          },
+          (error) => this.fail(error),
+        ),
+      );
+      for (const name of ["dayLogs", "learning"] as const) {
+        this.listeners.push(
+          onSnapshot(
+            collection(this.root(), name),
+            (snapshot) => {
+              this.data[name] = snapshot.docs
+                .map(
+                  (item) =>
+                    extraSync.fromDoc(
+                      name,
+                      item.id,
+                      item.data(),
+                    ) as Parsed | null,
+                )
+                .filter((item): item is Parsed => !!item && !item.deleted);
+              this.emit();
+            },
+            (error) => this.fail(error),
+          ),
+        );
+      }
+      this.listeners.push(
+        onSnapshot(
           doc(this.root(), "backups", "current"),
           (snapshot) => {
             this.data.warning =
@@ -297,6 +340,41 @@ export class CloudStore {
       throw error;
     }
   }
+  async writeExtra(
+    name: ExtraCollection,
+    entity: Entity,
+    deleted = false,
+  ): Promise<void> {
+    const candidate = extraSync.toDoc(name, entity, {
+      nowMillis: Date.now(),
+      deviceId: deviceId(),
+      deleted,
+    });
+    if (!candidate)
+      throw new Error("Dữ liệu không hợp lệ. Kiểm tra tên, ngày và thời gian.");
+    const item =
+      name === "settings"
+        ? doc(this.root(), "sync", "settings")
+        : doc(this.root(), name, candidate.id);
+    this.data.sync = "Đang đồng bộ";
+    this.emit();
+    try {
+      await runTransaction(this.db, async (tx) => {
+        const snapshot = await tx.get(item);
+        const remote = snapshot.exists()
+          ? extraSync.fromDoc(name, candidate.id, snapshot.data())
+          : null;
+        const local = extraSync.fromDoc(name, candidate.id, candidate.data);
+        if (extraSync.pickWinner(name, local, remote) === "local")
+          tx.set(item, candidate.data);
+      });
+      this.data.sync = "Đã đồng bộ";
+      this.emit();
+    } catch (error) {
+      this.fail(error);
+      throw error;
+    }
+  }
   async reimport(): Promise<void> {
     const backup = await getDoc(doc(this.root(), "backups", "current"));
     if (backup.data()?.schemaVersion !== 1) return;
@@ -307,18 +385,20 @@ export class CloudStore {
     for (const item of imported.docs)
       await this.write(item.collection, item.data);
     if (imported.settings) {
+      const candidate = extraSync.toDoc("settings", imported.settings, {
+        nowMillis: Number(imported.settings.updatedAtMillis),
+        deviceId: String(imported.settings.deviceId),
+      });
+      if (!candidate) throw new Error("Cài đặt nhập lại không hợp lệ.");
       const settingsRef = doc(this.root(), "sync", "settings");
       await runTransaction(this.db, async (tx) => {
         const current = await tx.get(settingsRef);
-        const remote = current.data();
-        const next = imported.settings!;
-        if (
-          !remote ||
-          Number(next.updatedAtMillis) > Number(remote.updatedAtMillis ?? 0) ||
-          (Number(next.updatedAtMillis) === Number(remote.updatedAtMillis) &&
-            String(next.deviceId) > String(remote.deviceId ?? ""))
-        )
-          tx.set(settingsRef, next);
+        const remote = current.exists()
+          ? extraSync.fromDoc("settings", "settings", current.data())
+          : null;
+        const local = extraSync.fromDoc("settings", "settings", candidate.data);
+        if (extraSync.pickWinner("settings", local, remote) === "local")
+          tx.set(settingsRef, candidate.data);
       });
     }
     this.migratedAtMillis = Number(backup.data()?.updatedAtMillis ?? 0);

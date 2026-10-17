@@ -1,6 +1,6 @@
-# Web app / sync v2 — báo cáo Step A và B
+# Web app / sync v2 — báo cáo Step A–C
 
-Nhánh `feat/web-app`. Đã merge `feat/web-tuduy` sau khi sửa lỗi hoạt hình cũ. Step A và Step B đã triển khai. Chưa push hoặc deploy. Không sửa `shared/sync/`.
+Nhánh `feat/web-app`. Đã merge `feat/web-tuduy` sau khi sửa lỗi hoạt hình cũ. Step A, B và C đã triển khai. Chưa push hoặc deploy. Không sửa `shared/sync/`.
 
 ## Phần app đã làm
 
@@ -48,6 +48,23 @@ Các fixture Android mới xác nhận đúng 9 tài liệu migration và toàn 
 
 Ảnh test 390×844 với tài khoản emulator và hồ sơ giả **Bé Na**: [Hôm nay](web-app-screenshots/w1-hom-nay-390x844.png), [Lịch](web-app-screenshots/w1-lich-390x844.png), [Tập trung](web-app-screenshots/w1-tap-trung-390x844.png), [Đã hoàn thành](web-app-screenshots/w1-da-hoan-thanh-390x844.png).
 
-### Vướng mắc cần quyết định trước Step C
+## Step C — web app W2
 
-`WEB_APP_CODEX_TASK.md` yêu cầu test **mọi** đường ghi, gồm `settings`, `dayLog` và `learning`, phải qua `toDoc`/`pickWinner`. Nhưng reference `shared/sync/sync-v2.js` chỉ định nghĩa 5 collection `tasks`, `routines`, `completions`, `sessions`, `profiles`; `toDoc('settings' | 'dayLogs' | 'learning', …)` ném lỗi. Đồng thời file này Claude-owned, cấm thay đổi hành vi. Đề xuất: giữ reference nguyên vẹn và dùng adapter riêng theo format app hiện có cho ba loại W2, với test giao dịch/winner tương ứng. Chờ xác nhận contract trước khi làm Step C; không tự thay reference.
+- Duong xác nhận dùng adapter riêng cho `settings`, `dayLogs`, `learning` vì reference `shared/sync/sync-v2.js` chỉ hỗ trợ năm collection W1. `web/app/src/extra-sync.mjs` có `toDoc`/`fromDoc`/`pickWinner` cho ba loại W2; đường ghi dùng Firestore transaction. Năm loại W1 tiếp tục dùng reference gốc. Không thay đổi `shared/sync/`.
+- Nhật ký ngày đọc/ghi `dayLogs/{uuid}` dạng snake_case như `DayLogCloud.kt`, kiểm UUID, ngày, tên, giờ, nguồn, tombstone và tie-break giống `newerDayLog`. Màn web cho thêm/sửa/xoá hoạt động đã diễn ra, gắn với task nếu có.
+- Hồ sơ bé cho thêm, đổi tên/biểu tượng/độ tuổi, lưu trữ. Cài đặt ghi `sync/settings`, giữ các trường opaque `scheduleAnchors` và `schedulePlans`; giao diện hỗ trợ thời lượng Focus/nghỉ, mục tiêu ngày, âm thanh, chế độ dịu mắt và thêm giờ.
+- `/tu-duy/` dùng `learning/{profileId}_tuduy` khi đã đăng nhập và hồ sơ hợp lệ; lưu `{stats,review}` theo LWW. Android WebView đọc, quan sát thay đổi và ghi cùng tài liệu. Snapshot cập nhật tiến bộ mà không đưa bé ra khỏi câu đang làm; phiên guest vẫn dùng localStorage như trước.
+- Không tự gán tiến bộ localStorage cũ vốn không có hồ sơ bé cho một hồ sơ cloud mới; dữ liệu local cũ vẫn nằm trên thiết bị. Cần review chính sách nhập dữ liệu này trước khi phát hành W2 nếu muốn giữ tiến bộ guest. Không có migration Room.
+
+| Kiểm tra Step C | Kết quả |
+| --- | --- |
+| `./gradlew testDebugUnitTest lintDebug assembleDebug` | BUILD SUCCESSFUL; 370/370 Android test, 0 failure/error; lint và APK debug xanh |
+| `npm --prefix web test` | 11/11 pass, gồm adapter W2, mọi đường ghi W1/W2 qua `toDoc`/`pickWinner`, test Tu Duy Chromium |
+| `node --test shared/learning/tests/*.test.js shared/sync/test/*.test.js` | 100/100 pass; 31 test Tu Duy gốc không sửa |
+| Smoke Brave + Auth/Firestore emulator W1 | PASS: đăng nhập, task/routine, completion, Focus 1 phút, history, UID khác bị chặn, 360/412 px |
+| Smoke Brave + Auth/Firestore emulator W2 | PASS: thêm hồ sơ, lưu settings, thêm/xoá dayLog, hoàn thành một câu để tạo learning doc; snapshot mới không ngắt câu đang làm; UID khác không đọc được settings/dayLog/learning; không lỗi trang hoặc tràn ngang 390 px |
+| `git diff --check` | Pass |
+
+Ảnh W2 390×844, chỉ dùng tài khoản emulator và hồ sơ giả Bé Na: [Nhật ký ngày](web-app-screenshots/w2-nhat-ky-390x844.png), [Hồ sơ bé](web-app-screenshots/w2-ho-so-390x844.png), [Cài đặt](web-app-screenshots/w2-cai-dat-390x844.png), [Luyện tư duy trong app web](web-app-screenshots/w2-luyen-tu-duy-link-390x844.png), [trang chơi Luyện tư duy](web-app-screenshots/w2-luyen-tu-duy-390x844.png).
+
+Smoke chỉ dùng project `demo-kidfocus-web` trên emulator. File cấu hình demo được tạo trong `web/dist/` bị gitignore; không có tài khoản thật, Firebase production hay deploy. Cấu hình web public `web/app/firebase-config.json` vẫn chờ Claude cung cấp trước triển khai thật.

@@ -4,6 +4,7 @@
   "scripts": {
     "build": "bash build-tuduy.sh",
     "build:app": "tsc --project app/tsconfig.json && vite build --config app/vite.config.mts",
+    "build:learning": "tsc --project app/tsconfig.json && vite build --config app/vite.learning.config.mts",
     "test": "bash build-tuduy.sh && node --test test/*.test.js"
   },
   "devDependencies": {

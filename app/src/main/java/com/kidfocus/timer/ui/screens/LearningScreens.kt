@@ -43,6 +43,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -70,6 +71,7 @@ import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
 import org.json.JSONObject
+import kotlinx.coroutines.launch
 
 private const val LEARNING_ORIGIN = "https://appassets.androidplatform.net"
 private const val LEARNING_URL = "$LEARNING_ORIGIN/assets/index.html?embedded=1"
@@ -87,6 +89,7 @@ fun LearningHubScreen(
     var currentScreen by remember { mutableStateOf("home") }
     var webView by remember { mutableStateOf<WebView?>(null) }
     val tts = remember { LearningTtsController(context.applicationContext) }
+    val scope = rememberCoroutineScope()
 
     fun handleBack() {
         if (currentScreen == "home") {
@@ -112,6 +115,15 @@ fun LearningHubScreen(
     }
     LaunchedEffect(webView, config) {
         webView?.applyLearningConfig(config)
+    }
+    DisposableEffect(webView, config.profileId, config.signedIn) {
+        val view = webView
+        val listener = if (view != null && config.signedIn)
+            viewModel.observeTuduyStore(config.profileId) { store ->
+                view.evaluateJavascript("window.TuDuyUI?.applyStore($store)", null)
+            }
+        else null
+        onDispose { listener?.remove() }
     }
 
     Scaffold(
@@ -157,7 +169,21 @@ fun LearningHubScreen(
                     onScreenChanged = { currentScreen = it },
                     onResult = viewModel::recordResult,
                     onAgeBandChanged = viewModel::setAgeBand,
-                    onReady = { view -> view.applyLearningConfig(config) },
+                    onTuduyStoreChanged = { raw ->
+                        val profileId = viewModel.config.value.profileId
+                        viewModel.saveTuduyStore(profileId, raw) { winner ->
+                            webView?.evaluateJavascript("window.TuDuyUI?.applyStore($winner)", null)
+                        }
+                    },
+                    onReady = { view ->
+                        val current = viewModel.config.value
+                        view.applyLearningConfig(current)
+                        if (current.signedIn) scope.launch {
+                            viewModel.loadTuduyStore(current.profileId)?.let { store ->
+                                view.evaluateJavascript("window.TuDuyUI?.applyStore($store)", null)
+                            }
+                        }
+                    },
                 ).also { webView = it }
             },
         )
@@ -171,6 +197,7 @@ private fun createLearningWebView(
     onScreenChanged: (String) -> Unit,
     onResult: (LearningResult) -> Unit,
     onAgeBandChanged: (String) -> Unit,
+    onTuduyStoreChanged: (String) -> Unit,
     onReady: (WebView) -> Unit,
 ): WebView {
     val assetLoader = WebViewAssetLoader.Builder()
@@ -221,6 +248,7 @@ private fun createLearningWebView(
                 onScreenChanged = onScreenChanged,
                 onResult = onResult,
                 onAgeBandChanged = onAgeBandChanged,
+                onTuduyStoreChanged = onTuduyStoreChanged,
                 onReady = onReady,
             )
         }
@@ -236,6 +264,7 @@ private fun handleLearningMessage(
     onScreenChanged: (String) -> Unit,
     onResult: (LearningResult) -> Unit,
     onAgeBandChanged: (String) -> Unit,
+    onTuduyStoreChanged: (String) -> Unit,
     onReady: (WebView) -> Unit,
 ) {
     val rawMessage = message.data ?: return
@@ -245,6 +274,7 @@ private fun handleLearningMessage(
         "ready" -> onReady(view)
         "screenChanged" -> onScreenChanged(payload.optString("screenId", "home").take(48))
         "profileChanged" -> onAgeBandChanged(payload.optString("ageBand"))
+        "tuduyStoreChanged" -> if (payload.toString().length <= 131_072) onTuduyStoreChanged(payload.toString())
         "learningResult" -> {
             val total = payload.nullableInt("totalQuestions")
             onResult(
@@ -283,10 +313,14 @@ private fun WebView.applyLearningConfig(config: LearningNativeConfig) {
         .put("soundEnabled", config.soundEnabled)
         .put("premium", config.premium)
         .put("signedIn", config.signedIn)
+        .put("profileId", config.profileId)
         .put("locale", Locale.getDefault().toLanguageTag())
+    val cloudScript = if (config.signedIn)
+        "window.TuDuyUI.setCloudMode(function(store){nativePost('tuduyStoreChanged',store);});"
+    else "window.TuDuyUI.useLocalStore();"
     evaluateJavascript(
-        "if(window.KidFocusHost){window.KidFocusHost.applyConfig(${json});}",
-        null,
+        "if(window.KidFocusHost){window.KidFocusHost.applyConfig(${json});}" +
+            "if(window.TuDuyUI){$cloudScript}", null,
     )
 }
 
