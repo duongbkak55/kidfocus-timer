@@ -1,0 +1,11 @@
+{
+  "name": "kidfocus-web-tuduy",
+  "private": true,
+  "scripts": {
+    "build": "bash build-tuduy.sh",
+    "test": "bash build-tuduy.sh && node --test test/*.test.js"
+  },
+  "devDependencies": {
+    "playwright-core": "1.62.1"
+  }
+}

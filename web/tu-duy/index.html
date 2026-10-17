@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#3858d6">
+<title>Cho bé thử Luyện tư duy — KidFocus</title>
+<meta name="description" content="Trò chơi tư duy cho bé 5–7 tuổi: quan sát, tìm quy luật, so sánh và suy luận. Mỗi lượt 5 câu, có gợi ý và giải thích.">
+<meta property="og:title" content="Cho bé thử Luyện tư duy — KidFocus">
+<meta property="og:description" content="Cùng bé chơi 5 câu tư duy ngay trên web, có gợi ý và cách làm sau mỗi câu.">
+<meta property="og:image" content="/tu-duy/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="tuduy/tuduy.css">
+<style>
+  :root{color-scheme:light;--ink:#202b50;--muted:#536183;--blue:#3858d6;--paper:#fff;--border:#dce5fb}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(circle at 15% 0%,#dfe9ff 0,transparent 44%),#f5f8ff;color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+  button,a{font:inherit}
+  button{cursor:pointer}
+  .wrap{width:min(100%,480px);margin:auto;padding:16px 14px 32px}
+  .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-weight:900;font-size:18px;min-height:44px}
+  .mark{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,#3858d6,#7958db);color:#fff;font-size:25px;box-shadow:0 4px 10px #4256ae44}
+  .hero{margin:18px 0 14px;padding:22px 20px;border-radius:24px;background:linear-gradient(135deg,#3858d6,#7554dd);color:#fff;box-shadow:0 12px 26px #3e52b33b}
+  .eyebrow{font-size:12px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;opacity:.88;margin:0 0 6px}
+  h1{font-size:clamp(25px,7vw,34px);line-height:1.13;margin:0 0 8px}
+  .hero p:last-child{margin:0;font-size:15px;line-height:1.45}
+  body:has(#tdQuiz:not([hidden])) .hero,body:has(#tdDone:not([hidden])) .hero{display:none}
+  body:has(#tdQuiz:not([hidden])) .about,body:has(#tdDone:not([hidden])) .about{display:none}
+  body:has(#tdQuiz:not([hidden])) .bands{display:none}
+  .controls{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:14px 0}
+  .bands{display:flex;gap:5px;padding:4px;border:1px solid var(--border);border-radius:14px;background:#fff}
+  .bands button{border:0;border-radius:10px;min-height:44px;padding:8px 10px;background:transparent;color:var(--ink);font-weight:800;font-size:14px}
+  .bands button[aria-pressed="true"]{background:#e6edff;color:#2949c5}
+  .sound{min-height:44px;border:1px solid var(--border);border-radius:12px;background:#fff;color:var(--ink);padding:6px 10px;font-weight:800;font-size:14px}
+  .card{background:var(--paper);border:1px solid var(--border);border-radius:22px;padding:17px 14px;margin:12px 0;box-shadow:0 5px 16px #33477614}
+  .qprompt{font-size:19px;font-weight:850;text-align:center;margin:3px 0 7px}
+  .play-note{text-align:center;color:var(--muted);font-size:14px;margin:0 0 14px}
+  .rbtn{display:inline-flex;align-items:center;justify-content:center;min-height:46px;border:0;border-radius:13px;padding:10px 16px;background:#3858d6;color:#fff;font-weight:850;text-decoration:none;text-align:center}
+  .rbtn.prev{background:#e9eeff;color:#2c46b8}
+  .rbtn:focus-visible,.bands button:focus-visible,.sound:focus-visible,.td-pick:focus-visible,.td-key:focus-visible{outline:3px solid #ff9f43;outline-offset:2px}
+  #tuduy .td-say{min-width:44px;min-height:44px}
+  #tuduy .td-quiz-back{min-height:44px;border:0;background:none;color:var(--blue);font-weight:800;padding:8px 0}
+  #tuduy .td-pick{min-height:104px}
+  #tuduy .td-actions .rbtn{min-height:48px}
+  #tuduy .td-car{min-width:44px;height:44px}
+  #tuduy .td-seq .td-box,#tuduy .td-order-source .td-choice{min-width:44px}
+  #tuduy .td-signs .td-box{min-width:44px;width:44px;height:44px}
+  #tuduy .td-line-equation .td-box{min-width:44px}
+  #tuduy .td-ring-node .td-box{min-width:44px;width:44px;height:44px}
+  #tuduy .td-position,#tuduy .td-queue{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}
+  #tuduy .td-position .td-choice,#tuduy .td-queue .td-choice{flex:0 0 46px;min-width:46px}
+  #tuduy .td-region-object:not(.chosen){paint-order:stroke;stroke:transparent;stroke-width:20px;pointer-events:visiblePainted}
+  .td-done .td-big{font-size:40px;text-align:center}
+  .done-actions{display:grid;gap:9px;margin:18px 0 10px}
+  .parent-note{font-size:14px;color:var(--muted);line-height:1.5;margin:12px 1px 0}
+  .parent-note strong{color:var(--ink)}
+  .about{padding:17px 18px;border-radius:17px;background:#eaf0ff;color:#314066;margin-top:18px;font-size:14px}
+  .about p{margin:0}
+  footer{text-align:center;color:var(--muted);font-size:13px;margin-top:22px;line-height:2}
+  footer a{display:inline-flex;align-items:center;min-height:44px;color:var(--blue);font-weight:700}
+  footer span{padding:0 4px}
+  #webConfetti{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+  #webConfetti span{position:absolute;left:50%;top:22%;width:9px;height:13px;border-radius:2px;background:var(--color);animation:burst .75s ease-out forwards}
+  @keyframes burst{to{transform:translate(var(--dx),var(--dy)) rotate(360deg);opacity:0}}
+  @media (max-width:360px){.wrap{padding-inline:11px}.bands button{padding-inline:7px;font-size:13px}}
+  @media (prefers-reduced-motion:reduce){#webConfetti span{animation:none;display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="brand" href="/tu-duy/" aria-label="KidFocus, trang chơi thử Luyện tư duy"><span class="mark" aria-hidden="true">K</span><span>KidFocus</span></a>
+  <header class="hero"><p class="eyebrow">Chơi mà nghĩ, nghĩ mà chơi</p><h1>Cho bé thử Luyện tư duy</h1><p>Trò chơi tư duy cho bé 5–7 tuổi, mỗi lượt 5 câu, có giải thích.</p></header>
+  <div class="controls"><div class="bands" role="group" aria-label="Chọn độ tuổi"><button id="webBand56" type="button" aria-pressed="true">5–6 tuổi</button><button id="webBandL1" type="button" aria-pressed="false">Lớp 1</button></div><button id="webSound" type="button" class="sound" aria-pressed="true">🔊 Âm thanh</button></div>
+  <main id="tuduy">
+    <section class="card" id="tdChooser"><div class="qprompt">Hôm nay con muốn chơi dạng nào?</div><p class="play-note">Làm chưa đúng cũng được: con có gợi ý và cách làm.</p><div class="td-pickgrid" id="tdPick"></div></section>
+    <section class="card" id="tdQuiz" hidden><button type="button" class="td-quiz-back" id="webBack">← Chọn dạng khác</button><div class="td-top"><span id="tdCount"></span><span id="tdStars"></span></div><div class="td-prompt"><span id="tdPrompt"></span><button class="td-say" id="webSpeak" type="button" aria-label="Nghe câu hỏi">🔊</button></div><div class="td-visual" id="tdVisual"></div><div class="td-pad" id="tdPad" role="group" aria-label="Bàn phím số"></div><div class="td-actions"><button type="button" class="rbtn next" id="tdCheck">✔ Xong rồi</button><button type="button" class="rbtn next" id="tdNext" hidden>Câu tiếp ▶</button></div><div class="fb" id="tdFb" role="status" aria-live="polite"></div><div class="td-explain" id="tdExplain" hidden></div></section>
+    <section class="card td-done" id="tdDone" hidden><div class="td-big" id="tdDoneStars"></div><div class="qprompt" id="tdDoneText"></div><div class="done-actions"><a class="rbtn" id="webInstall" href="/beta/">Tải KidFocus để luyện tiếp mỗi ngày</a><button type="button" class="rbtn prev" id="webAgain">Chơi thêm 5 câu</button></div><p class="parent-note">Trong app còn có <strong>lịch sinh hoạt và đồng hồ tập trung</strong>, theo dõi tiến bộ theo từng dạng và làm lại câu chưa đúng.</p></section>
+  </main>
+  <aside class="about"><p>Cho bé quan sát, tìm quy luật, so sánh và suy luận qua trò chơi. Đây không phải luyện thi.</p></aside>
+  <footer><a href="privacy.html">Quyền riêng tư</a><span>·</span><a href="terms.html">Điều khoản</a><span>·</span><a href="mailto:kidfocusstudio@gmail.com">kidfocusstudio@gmail.com</a></footer>
+</div>
+<div id="webConfetti" aria-hidden="true"></div>
+<script>
+var ageBand = '5-6';
+window.TuDuyPageOptions = { storageKey: 'tuduy.web.v1', sessionLength: 5 };
+</script>
+<script src="tuduy/tuduy-arithmetic.js"></script>
+<script src="tuduy/tuduy-core.js"></script>
+<script src="tuduy/tuduy-phase2-core.js"></script>
+<script src="tuduy/tuduy-phase2b-core.js"></script>
+<script src="tuduy/tuduy-visual-layout.js"></script>
+<script src="tuduy/tuduy-ui.js"></script>
+<script>
+(() => {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  let soundOn = true, armed = false, audio;
+  document.addEventListener('pointerdown', () => { armed = true; }, { once: true });
+  function beep(hz, duration) {
+    if (!soundOn || !armed) return;
+    try {
+      const Audio = window.AudioContext || window.webkitAudioContext;
+      if (!Audio) return;
+      audio ||= new Audio();
+      const tone = audio.createOscillator(), gain = audio.createGain();
+      tone.type = 'sine'; tone.frequency.value = hz;
+      gain.gain.setValueAtTime(0.025, audio.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + duration);
+      tone.connect(gain).connect(audio.destination);
+      tone.start(); tone.stop(audio.currentTime + duration);
+    } catch (_) { /* Audio is optional. */ }
+  }
+  window.sndTap = () => beep(540, 0.045);
+  window.sndRight = () => beep(750, 0.12);
+  window.sndWrong = () => beep(250, 0.09);
+  window.confetti = () => {
+    const root = $('webConfetti');
+    root.replaceChildren();
+    for (let i = 0; i < 12; i++) {
+      const bit = document.createElement('span');
+      bit.style.setProperty('--dx', `${(i - 5.5) * 24}px`);
+      bit.style.setProperty('--dy', `${80 + (i % 4) * 24}px`);
+      bit.style.setProperty('--color', ['#ffba53', '#7c5cff', '#1dd1a1'][i % 3]);
+      root.append(bit);
+    }
+    setTimeout(() => root.replaceChildren(), 800);
+  };
+  window.speakText = (text) => new Promise((resolve) => {
+    try {
+      if (!soundOn || !window.speechSynthesis || !window.SpeechSynthesisUtterance) return resolve();
+      const synth = window.speechSynthesis;
+      const voice = synth.getVoices().find((v) => /^vi[-_]/i.test(v.lang) && v.localService !== false);
+      if (!voice) return resolve();
+      const utterance = new SpeechSynthesisUtterance(String(text));
+      utterance.voice = voice; utterance.lang = 'vi-VN';
+      let finished = false;
+      const done = () => { if (!finished) { finished = true; resolve(); } };
+      utterance.onend = done; utterance.onerror = done;
+      synth.speak(utterance);
+      setTimeout(done, 12000);
+    } catch (_) { resolve(); }
+  });
+  function band(value) {
+    ageBand = value;
+    $('webBand56').setAttribute('aria-pressed', String(value === '5-6'));
+    $('webBandL1').setAttribute('aria-pressed', String(value === 'l1'));
+    window.TuDuyUI.open();
+  }
+  $('webBand56').onclick = () => band('5-6');
+  $('webBandL1').onclick = () => band('l1');
+  $('webSound').onclick = () => {
+    soundOn = !soundOn;
+    $('webSound').setAttribute('aria-pressed', String(soundOn));
+    $('webSound').textContent = soundOn ? '🔊 Âm thanh' : '🔇 Tắt tiếng';
+    if (!soundOn) window.speechSynthesis?.cancel();
+  };
+  $('webBack').onclick = () => window.TuDuyUI.open();
+  $('webSpeak').onclick = () => window.TuDuyUI.speakPrompt();
+  $('tdCheck').onclick = () => window.TuDuyUI.check();
+  $('tdNext').onclick = () => window.TuDuyUI.next();
+  $('webAgain').onclick = () => window.TuDuyUI.start('mix');
+  window.TuDuyUI.open();
+})();
+</script>
+</body>
+</html>

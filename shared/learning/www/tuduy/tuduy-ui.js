@@ -6,8 +6,9 @@
   'use strict';
   const T = window.TuDuy;
   const Layout = window.TuDuyVisualLayout;
-  const KEY = 'tuduy.v1';
-  const SESSION_N = 8;
+  const options = window.TuDuyPageOptions || {};
+  const KEY = typeof options.storageKey === 'string' && options.storageKey ? options.storageKey : 'tuduy.v1';
+  const SESSION_N = Number.isInteger(options.sessionLength) && options.sessionLength > 0 ? options.sessionLength : 8;
   const $ = (id) => document.getElementById(id);
   const call = (name, ...a) => { try { if (typeof window[name] === 'function') return window[name](...a); } catch (e) { /* host helper failed */ } return undefined; };
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
