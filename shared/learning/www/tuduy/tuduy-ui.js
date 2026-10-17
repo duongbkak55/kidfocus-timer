@@ -33,6 +33,7 @@
   const currentMax = () => (typeof ageBand !== 'undefined' && ageBand === '5-6' ? 10 : 20);
 
   function open() {
+    stopAnim();
     $('tdQuiz').hidden = true; $('tdDone').hidden = true; $('tdChooser').hidden = false;
     const box = $('tdPick'); box.innerHTML = '';
     const mk = (emoji, name, sub, onClick, cls) => {
@@ -55,6 +56,7 @@
 
   function levelFor(t) { return (store.stats[t] && store.stats[t].level) || 2; }
   function start(m) {
+    stopAnim();
     call('sndTap');
     mode = m; idx = 0; score = 0;
     if (m === 'review') items = store.review.slice(0, SESSION_N);
@@ -401,6 +403,7 @@
     $('tdNext').textContent = idx + 1 < items.length ? 'Câu tiếp ▶' : 'Xem kết quả ▶';
   }
   function next() {
+    stopAnim();
     call('sndTap');
     if (idx + 1 < items.length) { idx += 1; show(); return; }
     $('tdQuiz').hidden = true; $('tdDone').hidden = false;
@@ -421,14 +424,16 @@
     $('tdPlay').onclick = () => animate(item);
     const lis = [...box.querySelectorAll('li')];
     lis.forEach((li, i) => { li.style.animationDelay = (i * 0.45) + 's'; });
-    if (auto) setTimeout(() => animate(item), 400);
+    if (auto) after(400, item, () => animate(item));
   }
 
   let animTimers = [];
-  function after(ms, fn) { animTimers.push(setTimeout(fn, ms)); }
+  const isCurrent = (item) => item === items[idx] && !$('tdQuiz').hidden;
+  function after(ms, item, fn) { animTimers.push(setTimeout(() => { if (isCurrent(item)) fn(); }, ms)); }
   function stopAnim() { animTimers.forEach(clearTimeout); animTimers = []; }
 
   function animate(item) {
+    if (!isCurrent(item)) return;
     stopAnim();
     const vis = $('tdVisual');
     const a = item.anim;
@@ -439,22 +444,22 @@
       const renderedStep = line.step * frog.ownerSVGElement.getBoundingClientRect().width / 300;
       frog.style.transform = 'translateX(0px)';
       for (let hop = 1; hop <= Math.abs(v.to - v.from); hop++) {
-        after(300 + hop * 350, () => { frog.style.transform = `translateX(${renderedStep * direction * hop}px)`; call('sndTap'); });
+        after(300 + hop * 350, item, () => { frog.style.transform = `translateX(${renderedStep * direction * hop}px)`; call('sndTap'); });
       }
       return;
     }
     if (a.kind === 'ring') {
       const nodes = [...vis.querySelectorAll('.td-ring-node')];
-      nodes.forEach((node, i) => after(300 + i * 500, () => { nodes.forEach((x) => x.classList.remove('glow')); node.classList.add('glow'); call('sndTap'); }));
-      after(500 + nodes.length * 500, () => nodes.forEach((x) => x.classList.remove('glow')));
+      nodes.forEach((node, i) => after(300 + i * 500, item, () => { nodes.forEach((x) => x.classList.remove('glow')); node.classList.add('glow'); call('sndTap'); }));
+      after(500 + nodes.length * 500, item, () => nodes.forEach((x) => x.classList.remove('glow')));
       return;
     }
     if (['compare', 'order', 'position', 'insideOut', 'triSum'].includes(a.kind)) {
       const selectors = { compare: '.td-side', order: '.td-order-slot', position: '.td-position .td-choice', insideOut: '.td-region-object', triSum: '.td-tri-cell' };
       const nodes = [...vis.querySelectorAll(selectors[a.kind])];
       nodes.forEach((node) => node.classList.remove('glow'));
-      nodes.forEach((node, i) => after(300 + i * 500, () => { node.classList.add('glow'); call('sndTap'); }));
-      after(700 + nodes.length * 500, () => nodes.forEach((node) => node.classList.remove('glow')));
+      nodes.forEach((node, i) => after(300 + i * 500, item, () => { node.classList.add('glow'); call('sndTap'); }));
+      after(700 + nodes.length * 500, item, () => nodes.forEach((node) => node.classList.remove('glow')));
       return;
     }
     if (a.kind === 'pyramid') {
@@ -474,9 +479,9 @@
           if (unknown.length !== 1) continue;
           const u = unknown[0];
           const parts = [si, x, y].filter((i) => i !== u);
-          after(t, () => parts.forEach((p) => cellEl(p).classList.add('glow')));
-          after(t + 700, () => { const el = cellEl(u); el.textContent = a.cells[u]; el.classList.add('shown', 'pop'); call('sndTap'); });
-          after(t + 1300, () => parts.forEach((p) => cellEl(p).classList.remove('glow')));
+          after(t, item, () => parts.forEach((p) => cellEl(p).classList.add('glow')));
+          after(t + 700, item, () => { const el = cellEl(u); el.textContent = a.cells[u]; el.classList.add('shown', 'pop'); call('sndTap'); });
+          after(t + 1300, item, () => parts.forEach((p) => cellEl(p).classList.remove('glow')));
           filled.add(u); t += 1500;
         }
       }
@@ -494,7 +499,7 @@
         ? [...Array(a.values.length).keys()].reverse()
         : [...Array(a.values.length).keys()];
       seqIdx.forEach((i, k) => {
-        after(t, () => {
+        after(t, item, () => {
           cars.forEach((c) => c.classList.remove('glow'));
           cars[i].classList.add('glow');
           if (train) { const cr = cars[i].getBoundingClientRect(), pr = train.parentElement.getBoundingClientRect(); train.style.transform = `translate(${cr.left - pr.left}px, ${cr.top - pr.top - 30}px)`; }
@@ -503,7 +508,7 @@
         });
         t += 800;
       });
-      after(t, () => { cars.forEach((c) => c.classList.remove('glow')); arrows.forEach((x) => x.classList.remove('glow')); });
+      after(t, item, () => { cars.forEach((c) => c.classList.remove('glow')); arrows.forEach((x) => x.classList.remove('glow')); });
       return;
     }
     if (a.kind === 'highlight') {
@@ -514,7 +519,7 @@
       vis.querySelector('.td-fig').appendChild(counter);
       let t = 300;
       a.shapes.forEach((s, i) => {
-        after(t, () => {
+        after(t, item, () => {
           let shape;
           if (v.kind === 'fan') {
             const fg = fanGeom(v.segments);
@@ -529,14 +534,14 @@
         });
         t += 1000;
       });
-      after(t, () => { g.innerHTML = ''; counter.textContent = `Tất cả: ${a.shapes.length}`; });
+      after(t, item, () => { g.innerHTML = ''; counter.textContent = `Tất cả: ${a.shapes.length}`; });
       return;
     }
     // equation / sequence / scales: step through the explanation lines
     const lis = [...$('tdExplain').querySelectorAll('li')];
     lis.forEach((li) => li.classList.remove('lit'));
-    lis.forEach((li, i) => after(300 + i * 1200, () => { lis.forEach((x) => x.classList.remove('lit')); li.classList.add('lit'); }));
-    after(300 + lis.length * 1200, () => lis.forEach((x) => x.classList.remove('lit')));
+    lis.forEach((li, i) => after(300 + i * 1200, item, () => { lis.forEach((x) => x.classList.remove('lit')); li.classList.add('lit'); }));
+    after(300 + lis.length * 1200, item, () => lis.forEach((x) => x.classList.remove('lit')));
   }
 
   /* ---------- speech ---------- */
@@ -559,10 +564,10 @@
   }
 
   window.TuDuyUI = {
-    open() { buildPad(currentMax()); stopAnim(); open(); },
+    open() { buildPad(currentMax()); open(); },
     backToChooser() {
       if ($('tdQuiz').hidden && $('tdDone').hidden) return false;
-      stopAnim(); open(); return true;
+      open(); return true;
     },
     check, next, speakPrompt, start,
   };
