@@ -1,6 +1,6 @@
 {
   "apiKey": "PUBLIC_WEB_API_KEY",
-  "authDomain": "kid-focus-app.firebaseapp.com",
+  "authDomain": "kidfocus.web.app",
   "projectId": "kid-focus-app",
   "appId": "PUBLIC_WEB_APP_ID"
 }
