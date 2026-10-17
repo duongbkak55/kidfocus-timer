@@ -1,5 +1,5 @@
 import { useEffect, useState } from "preact/hooks";
-import type { CloudStore, DataState } from "./cloud";
+import type { AppStore, DataState } from "./cloud";
 import { dateKey, reference, timeLabel, type Entity } from "./model";
 import * as guestLearning from "./guest-learning.mjs";
 
@@ -39,7 +39,7 @@ export function DayLogs({
 }: {
   data: DataState;
   profileId: string;
-  store: CloudStore | null;
+  store: AppStore | null;
   onNotice: (message: string) => void;
 }) {
   const [day, setDay] = useState(dateKey(new Date()));
@@ -269,12 +269,14 @@ export function Profiles({
   data,
   profileId,
   store,
+  guestMode,
   onSelect,
   onNotice,
 }: {
   data: DataState;
   profileId: string;
-  store: CloudStore | null;
+  store: AppStore | null;
+  guestMode: boolean;
   onSelect: (id: string) => void;
   onNotice: (message: string) => void;
 }) {
@@ -343,7 +345,7 @@ export function Profiles({
       >
         + Thêm hồ sơ
       </button>
-      {guestProgress && rows.length > 0 && (
+      {!guestMode && guestProgress && rows.length > 0 && (
         <section class="card" aria-label="Chuyển tiến bộ chơi thử">
           <h2>Tiến bộ Luyện tư duy trên máy này</h2>
           <p class="muted">Chọn đúng bé để chuyển một lần. Tiến bộ đã đồng bộ của bé sẽ không bị ghi đè.</p>
@@ -449,7 +451,7 @@ export function Settings({
   onNotice,
 }: {
   data: DataState;
-  store: CloudStore | null;
+  store: AppStore | null;
   onNotice: (message: string) => void;
 }) {
   const [draft, setDraft] = useState<Entity>(
@@ -579,9 +581,11 @@ export function Settings({
 export function LearningLink({
   profileId,
   data,
+  guestMode,
 }: {
   profileId: string;
   data: DataState;
+  guestMode: boolean;
 }) {
   const profile = data.profiles.find((row) => row.id === profileId)?.entity;
   const canPlay = ["5-6", "l1", "l2", "l3"].includes(str(profile?.ageBand));
@@ -595,10 +599,9 @@ export function LearningLink({
       <div class="eyebrow">LUYỆN TƯ DUY</div>
       <h1>Chơi mà nghĩ</h1>
       <div class="card">
-        <p>
-          Tiến bộ của {str(profile?.name ?? "bé")} được đồng bộ giữa web và app
-          khi đăng nhập.
-        </p>
+        <p>{guestMode
+          ? `Tiến bộ của ${str(profile?.name ?? "bé")} chỉ lưu trên trình duyệt này.`
+          : `Tiến bộ của ${str(profile?.name ?? "bé")} được đồng bộ giữa web và app khi đăng nhập.`}</p>
         {canPlay ? (
           <a
             class="primary link-button"

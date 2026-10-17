@@ -45,7 +45,7 @@ import * as migrationLease from "./migration-lease.mjs";
 
 export type ExtraCollection = "settings" | "dayLogs" | "learning";
 
-export type SyncState = "Đang đồng bộ" | "Đã đồng bộ" | "Lỗi";
+export type SyncState = "Đang đồng bộ" | "Đã đồng bộ" | "Lỗi" | "Chỉ trên máy";
 export type DataState = { [K in CollectionName]: Parsed[] } & {
   dayLogs: Parsed[];
   learning: Parsed[];
@@ -467,3 +467,6 @@ export class CloudStore {
     this.emit();
   }
 }
+
+export type AppStore = Pick<CloudStore,
+  "write" | "writeExtra" | "retry" | "reimport" | "importGuestLearning">;

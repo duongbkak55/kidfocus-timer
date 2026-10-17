@@ -13,8 +13,10 @@ import {
   logout,
   resetPassword,
   watchAuth,
+  type AppStore,
   type DataState,
 } from "./cloud";
+import { GuestStore, GUEST_DATA_KEY, GUEST_MODE_KEY } from "./guest-store.mjs";
 import {
   atMinutes,
   dateKey,
@@ -87,12 +89,16 @@ const alive = (rows: Parsed[], profileId: string) =>
   rows.filter((row) => row.entity.childProfileId === profileId);
 
 function App() {
+  const [guestMode, setGuestMode] = useState(() => {
+    try { return localStorage.getItem(GUEST_MODE_KEY) === "yes"; }
+    catch { return false; }
+  });
   const [auth, setAuth] = useState<Auth | null>(null);
   const [db, setDb] = useState<Firestore | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [startupError, setStartupError] = useState("");
   const [data, setData] = useState<DataState>(emptyData());
-  const [store, setStore] = useState<CloudStore | null>(null);
+  const [store, setStore] = useState<AppStore | null>(null);
   const [profileId, setProfileId] = useState("default");
   const [tab, setTab] = useState<Tab>("today");
   const [menuOpen, setMenuOpen] = useState(false);
@@ -107,18 +113,35 @@ function App() {
   const audioRef = useRef<AudioContext | null>(null);
 
   useEffect(() => {
+    if (guestMode) return;
     let unsubscribe = () => {};
+    let cancelled = false;
     loadFirebase()
       .then(({ auth: readyAuth, db: readyDb }) => {
+        if (cancelled) return;
+        setStartupError("");
         setAuth(readyAuth);
         setDb(readyDb);
         checkRedirect(readyAuth).catch((error) => setNotice(error.message));
         unsubscribe = watchAuth(readyAuth, setUser);
       })
-      .catch((error) => setStartupError(error.message));
-    return () => unsubscribe();
-  }, []);
+      .catch((error) => { if (!cancelled) setStartupError(error.message); });
+    return () => { cancelled = true; unsubscribe(); };
+  }, [guestMode]);
   useEffect(() => {
+    if (guestMode) {
+      try {
+        const next = new GuestStore(localStorage);
+        setStore(next);
+        next.start(setData);
+        return () => next.stop();
+      } catch (error) {
+        report(error);
+        setGuestMode(false);
+        try { localStorage.removeItem(GUEST_MODE_KEY); } catch { /* Storage is unavailable. */ }
+        return;
+      }
+    }
     if (!db || !user) {
       setStore(null);
       setData(emptyData());
@@ -128,7 +151,7 @@ function App() {
     setStore(next);
     next.start(setData);
     return () => next.stop();
-  }, [db, user?.uid]);
+  }, [guestMode, db, user?.uid]);
   const profiles = data.profiles
     .map((row) => row.entity)
     .filter((entity) => !entity.archived);
@@ -194,6 +217,29 @@ function App() {
   function report(error: unknown) {
     setNotice(error instanceof Error ? error.message : String(error));
   }
+  function enterGuest() {
+    try {
+      localStorage.setItem(GUEST_MODE_KEY, "yes");
+      setStore(null);
+      setData(emptyData());
+      setGuestMode(true);
+      setNotice("");
+      setTab("today");
+    } catch (error) { report(error); }
+  }
+  function leaveGuest() {
+    try { localStorage.removeItem(GUEST_MODE_KEY); }
+    catch (error) { report(error); return; }
+    setRun(null);
+    runRef.current = null;
+    setSelectedTask(null);
+    setStore(null);
+    setData(emptyData());
+    setGuestMode(false);
+    setStartupError("");
+    setNotice("");
+    setTab("today");
+  }
   async function write(
     name: "tasks" | "routines" | "completions" | "sessions",
     entity: Entity,
@@ -202,7 +248,7 @@ function App() {
     if (!store) return;
     try {
       await store.write(name, entity, deleted);
-      setNotice(deleted ? "Đã xoá mục." : "Đã lưu và đồng bộ.");
+      setNotice(deleted ? "Đã xoá mục." : guestMode ? "Đã lưu trên máy này." : "Đã lưu và đồng bộ.");
     } catch (error) {
       report(error);
     }
@@ -319,7 +365,7 @@ function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, [tab, run, selectedTask, focusMinutes]);
 
-  if (startupError)
+  if (startupError && !guestMode)
     return (
       <main class="setup">
         <div class="brand">
@@ -331,9 +377,10 @@ function App() {
           Bản web cần cấu hình Firebase public của dự án. Ứng dụng Android vẫn
           hoạt động bình thường.
         </p>
+        <button class="primary full" onClick={enterGuest}>Dùng thử không cần đăng nhập</button>
       </main>
     );
-  if (!auth)
+  if (!auth && !guestMode)
     return (
       <main class="setup">
         <div class="brand">
@@ -342,7 +389,7 @@ function App() {
         <p>Đang mở ứng dụng…</p>
       </main>
     );
-  if (!user) return <Login auth={auth} db={db} notice={notice} onError={report} />;
+  if (!user && !guestMode) return <Login auth={auth!} db={db} notice={notice} onError={report} onGuest={enterGuest} />;
 
   return (
     <div class="app-shell">
@@ -358,7 +405,8 @@ function App() {
             </select>
           </label>
           <button class={`sync-chip ${data.sync === "Lỗi" ? "error" : ""}`}
-            onClick={() => store?.retry()} title={data.error || "Đồng bộ lại"}>
+            onClick={() => store?.retry()} disabled={guestMode}
+            title={guestMode ? "Dữ liệu chỉ lưu trên trình duyệt này" : data.error || "Đồng bộ lại"}>
             {data.sync === "Lỗi" ? "↻" : data.sync === "Đã đồng bộ" ? "✓" : "◌"} {data.sync}
           </button>
         </div>
@@ -389,9 +437,9 @@ function App() {
           </button>
           <button
             class="text-button"
-            onClick={() => logout(auth, db ?? undefined).then(() => location.reload()).catch(report)}
+            onClick={() => guestMode ? leaveGuest() : auth && logout(auth, db ?? undefined).then(() => location.reload()).catch(report)}
           >
-            Đăng xuất
+            {guestMode ? "Đăng nhập" : "Đăng xuất"}
           </button>
         </div>
       </header>
@@ -439,8 +487,8 @@ function App() {
         </label>
         <button
           class={`sync-chip ${data.sync === "Lỗi" ? "error" : ""}`}
-          onClick={() => store?.retry()}
-          title={data.error || "Chạm để đồng bộ lại"}
+          onClick={() => store?.retry()} disabled={guestMode}
+          title={guestMode ? "Dữ liệu chỉ lưu trên trình duyệt này" : data.error || "Chạm để đồng bộ lại"}
         >
           {data.sync === "Lỗi"
             ? "↻ "
@@ -450,6 +498,12 @@ function App() {
           {data.sync}
         </button>
       </div>
+      {guestMode && (
+        <aside class="guest-banner">
+          <span><strong>Chế độ khách.</strong> Dữ liệu chỉ ở trình duyệt này; ai dùng chung máy cũng có thể xem. Xóa dữ liệu trình duyệt sẽ mất dữ liệu khách. Đăng nhập không tự chuyển dữ liệu khách.</span>
+          <button onClick={leaveGuest}>Đăng nhập</button>
+        </aside>
+      )}
       {data.warning && (
         <aside class="warning">
           <strong>
@@ -616,6 +670,7 @@ function App() {
             data={data}
             profileId={profileId}
             store={store}
+            guestMode={guestMode}
             onSelect={setProfileId}
             onNotice={setNotice}
           />
@@ -624,7 +679,7 @@ function App() {
           <Settings data={data} store={store} onNotice={setNotice} />
         )}
         {tab === "learning" && (
-          <LearningLink data={data} profileId={profileId} />
+          <LearningLink data={data} profileId={profileId} guestMode={guestMode} />
         )}
       </main>
       <nav class="bottom-nav" aria-label="Điều hướng">
@@ -666,11 +721,13 @@ function Login({
   db,
   notice,
   onError,
+  onGuest,
 }: {
   auth: Auth;
   db: Firestore | null;
   notice: string;
   onError: (error: unknown) => void;
+  onGuest: () => void;
 }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -678,6 +735,7 @@ function Login({
   const [trusted, setTrusted] = useState(
     localStorage.getItem("kidfocus-trusted-device") === "yes",
   );
+  const [hasGuestData] = useState(() => localStorage.getItem(GUEST_DATA_KEY) !== null);
   async function submit(event: Event) {
     event.preventDefault();
     setBusy(true);
@@ -697,7 +755,11 @@ function Login({
       <section class="login-card">
         <div class="eyebrow">CÙNG CON BẮT ĐẦU</div>
         <h1>Lịch sinh hoạt rõ ràng hơn mỗi ngày</h1>
-        <p class="muted">Đăng nhập tài khoản KidFocus của gia đình.</p>
+        <p class="muted">Đăng nhập để đồng bộ, hoặc dùng thử trên máy này.</p>
+        <button class="guest-entry full" onClick={onGuest}>
+          {hasGuestData ? "Tiếp tục chế độ khách" : "Dùng thử không cần đăng nhập"}
+        </button>
+        <p class="guest-note">Dữ liệu khách chỉ ở trình duyệt này; ai dùng chung máy cũng có thể xem. Xóa dữ liệu trình duyệt sẽ mất dữ liệu và đăng nhập không tự chuyển vào tài khoản.</p>
         {notice && (
           <p role="alert" class="error-text">
             {notice}
