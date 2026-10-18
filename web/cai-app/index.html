@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hướng dẫn cài KidFocus (bản thử nghiệm Android)</title>
+<meta name="description" content="Cài KidFocus bản thử nghiệm kín trên Android trong 3 bước, kèm cách xử lý lỗi thường gặp.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://kidfocus.web.app/cai-app/">
+<meta property="og:title" content="Hướng dẫn cài KidFocus – bản thử nghiệm Android">
+<meta property="og:description" content="3 bước cài app lịch sinh hoạt & đồng hồ tập trung cho bé, kèm cách xử lý lỗi thường gặp.">
+<meta property="og:image" content="https://kidfocus.web.app/tu-duy/og.png">
+<meta name="theme-color" content="#3858d6">
+<link rel="icon" href="/tu-duy/favicon.svg" type="image/svg+xml">
+<style>
+  :root{color-scheme:light;--bg:#f5f8ff;--card:#fff;--ink:#202b50;--muted:#536183;--brand:#3858d6;--brand2:#7554dd;--ok:#18a058;--warn:#b35c00;--line:#dce5fb}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(circle at 15% 0%,#dfe9ff 0,transparent 44%),var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  .wrap{width:min(100%,720px);margin:auto;padding:16px 16px 40px}
+  .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-weight:900;font-size:18px;min-height:44px}
+  .mark{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;font-size:25px}
+  .hero{margin:16px 0;padding:22px 20px;border-radius:24px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff}
+  .hero h1{font-size:clamp(24px,6vw,32px);line-height:1.15;margin:0 0 8px}
+  .hero p{margin:0;opacity:.95}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;margin:14px 0}
+  h2{font-size:19px;margin:0 0 8px;display:flex;gap:10px;align-items:center}
+  .num{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--brand);color:#fff;font-size:16px}
+  p,li{color:var(--muted)} b{color:var(--ink)}
+  ol,ul{padding-left:22px;margin:6px 0 12px}
+  .btn{display:flex;align-items:center;justify-content:center;min-height:50px;text-decoration:none;font-weight:800;font-size:17px;padding:12px 16px;border-radius:14px;color:#fff;background:linear-gradient(135deg,var(--brand),var(--brand2))}
+  .btn.ghost{background:#e9eeff;color:#2c46b8}
+  .row{display:grid;gap:10px}
+  @media (min-width:600px){.row{grid-template-columns:1fr 1fr}}
+  .warn{border-color:#ffd9a8;background:#fff8ee}
+  .warn h2{color:var(--warn)}
+  details{border-top:1px solid var(--line);padding:10px 0}
+  details:first-of-type{border-top:0}
+  summary{cursor:pointer;font-weight:800;color:var(--ink);min-height:32px}
+  footer{text-align:center;color:var(--muted);font-size:14px;margin-top:22px;line-height:2}
+  footer a{color:var(--brand);font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="brand" href="/tu-duy/"><span class="mark">K</span><span>KidFocus</span></a>
+
+  <header class="hero">
+    <h1>Hướng dẫn cài KidFocus</h1>
+    <p>KidFocus đang ở giai đoạn <b style="color:#fff">thử nghiệm kín trên Google Play</b> (chỉ Android). Ba bước dưới đây mất khoảng 2 phút. Cảm ơn anh/chị đã cùng thử nghiệm!</p>
+  </header>
+
+  <section class="card">
+    <h2>Trước khi bắt đầu</h2>
+    <ul>
+      <li>Điện thoại hoặc máy tính bảng <b>Android</b> đã đăng nhập Google Play.</li>
+      <li>Chuẩn bị <b>Gmail đang dùng trên Google Play</b> của máy đó — cả 3 bước phải dùng <b>cùng một Gmail</b>.</li>
+      <li>iPhone/iPad chưa cài được app. Trong lúc chờ, bé có thể <a href="/tu-duy/">chơi Luyện tư duy trên web</a>.</li>
+    </ul>
+  </section>
+
+  <section class="card" id="b1">
+    <h2><span class="num">1</span>Tham gia nhóm thử nghiệm</h2>
+    <p>Mở link, đăng nhập đúng Gmail ở trên, bấm <b>“Tham gia nhóm”</b> (Join group). Không cần đăng bài hay nhận email từ nhóm.</p>
+    <a class="btn" href="https://groups.google.com/g/kidfocus-beta" target="_blank" rel="noopener">Tham gia nhóm kidfocus-beta</a>
+  </section>
+
+  <section class="card" id="b2">
+    <h2><span class="num">2</span>Đăng ký người thử nghiệm</h2>
+    <p>Mở link, bấm <b>“Trở thành người thử nghiệm”</b> (Become a tester). Màn hình sẽ báo “Bạn là người thử nghiệm”.</p>
+    <a class="btn" href="https://play.google.com/apps/testing/com.kidfocusstudio.timer" target="_blank" rel="noopener">Trở thành người thử nghiệm</a>
+  </section>
+
+  <section class="card" id="b3">
+    <h2><span class="num">3</span>Cài app từ Google Play</h2>
+    <p>Trên cùng trang đó, bấm <b>“tải xuống trên Google Play”</b> rồi <b>Cài đặt</b>. Hoặc mở thẳng trang app:</p>
+    <a class="btn" href="https://play.google.com/store/apps/details?id=com.kidfocusstudio.timer" target="_blank" rel="noopener">Mở KidFocus trên Google Play</a>
+    <p style="margin-top:12px">Mở app lần đầu, làm theo hướng dẫn trên màn hình và <b>cho phép thông báo</b> để app nhắc giờ đúng lúc.</p>
+  </section>
+
+  <section class="card warn">
+    <h2>Giúp KidFocus ra mắt chính thức</h2>
+    <p>Google yêu cầu app mới phải có đủ người thử nghiệm <b>giữ app trên máy ít nhất 14 ngày liên tục</b> trước khi được phát hành rộng rãi. Anh/chị vui lòng <b>không gỡ app</b> trong 14 ngày đầu — mở app vài lần mỗi tuần là đủ.</p>
+  </section>
+
+  <section class="card">
+    <h2>Gặp lỗi?</h2>
+    <details><summary>Google Play báo “Không tìm thấy mục này” / không thấy nút Cài đặt</summary>
+      <p>Thường do dùng khác Gmail giữa các bước, hoặc Google chưa cập nhật danh sách. Kiểm tra lại bước 1 và 2 bằng đúng Gmail đang dùng trên Play, đợi 10–30 phút rồi thử lại. Nếu máy có nhiều tài khoản Google, trong Play Store bấm ảnh đại diện → chọn đúng tài khoản.</p></details>
+    <details><summary>Mở link từ Facebook, TikTok, Zalo không được</summary>
+      <p>Bấm <b>⋯</b> (góc trên) → <b>Mở bằng trình duyệt</b> (Chrome), rồi làm lại bước đang dở.</p></details>
+    <details><summary>Máy có nhiều tài khoản Google</summary>
+      <p>Mở link trong Chrome đang đăng nhập đúng Gmail, hoặc dùng cửa sổ ẩn danh và đăng nhập Gmail đó. Bước 3 phải cài từ Play Store đang chọn cùng tài khoản.</p></details>
+    <details><summary>Muốn cập nhật bản mới</summary>
+      <p>Bản thử nghiệm cập nhật như app bình thường qua Google Play → Quản lý ứng dụng → Cập nhật.</p></details>
+    <details><summary>Muốn thôi tham gia</summary>
+      <p>Mở lại link ở bước 2, bấm <b>“Rời khỏi chương trình”</b>, rồi gỡ app. Có thể gửi email để xoá tài khoản và dữ liệu.</p></details>
+  </section>
+
+  <section class="card">
+    <h2>Góp ý cho KidFocus</h2>
+    <p>Mọi góp ý, lỗi gặp phải hoặc ảnh chụp màn hình, xin gửi về <b>kidfocusstudio@gmail.com</b>. Ghi kèm loại máy và phiên bản Android giúp sửa nhanh hơn.</p>
+    <div class="row">
+      <a class="btn ghost" href="mailto:kidfocusstudio@gmail.com?subject=G%C3%B3p%20%C3%BD%20KidFocus">Gửi email góp ý</a>
+      <a class="btn ghost" href="/tu-duy/">Cho bé chơi thử Luyện tư duy</a>
+    </div>
+  </section>
+
+  <footer>
+    <a href="/tu-duy/privacy.html">Quyền riêng tư</a> · <a href="/tu-duy/terms.html">Điều khoản</a><br>
+    kidfocusstudio@gmail.com
+  </footer>
+</div>
+</body>
+</html>

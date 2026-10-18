@@ -20,6 +20,7 @@ cp "$repo_root/site/privacy.html" "$page_out/privacy.html"
 cp "$repo_root/site/terms.html" "$page_out/terms.html"
 cp -R "$repo_root/shared/learning/www/tuduy" "$page_out/tuduy"
 cp "$repo_root/web/beta/index.html" "$dist_root/beta/index.html"
+rm -rf "$dist_root/cai-app" && mkdir -p "$dist_root/cai-app" && cp "$repo_root/web/cai-app/index.html" "$dist_root/cai-app/index.html"
 
 npm --prefix "$repo_root/web" run build:app
 npm --prefix "$repo_root/web" run build:learning
