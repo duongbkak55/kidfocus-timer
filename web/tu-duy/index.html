@@ -23,14 +23,20 @@
   button{cursor:pointer}
   .wrap{width:min(100%,480px);margin:auto;padding:16px 14px 32px}
   .topbar{display:flex;align-items:center;justify-content:space-between;gap:8px}
-  .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-weight:900;font-size:18px;min-height:44px}
+  .brand{display:flex;align-items:center;gap:10px;min-width:44px;min-height:44px;text-decoration:none;color:var(--ink);font-weight:900;font-size:18px}
   .app-return{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 10px;border:1px solid var(--border);border-radius:12px;background:#fff;color:var(--blue);font-size:14px;font-weight:800;text-decoration:none;white-space:nowrap}
   .app-return:focus-visible{outline:3px solid #ff9f43;outline-offset:2px}
+  .top-actions{display:flex;align-items:center;gap:8px}
+  .install-top{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:8px 14px;border-radius:12px;background:linear-gradient(135deg,#ff8a3d,#ff6b6b);color:#fff;font-size:15px;font-weight:900;text-decoration:none;white-space:nowrap;box-shadow:0 4px 12px #ff6b6b40}
+  .install-top:focus-visible,.hero-cta:focus-visible{outline:3px solid #ff9f43;outline-offset:2px}
+  .hero-cta{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:50px;margin-top:14px;padding:12px 20px;border-radius:14px;background:#fff;color:#2c46b8;font-size:17px;font-weight:900;text-decoration:none;box-shadow:0 6px 16px #1c2b7a33}
+  @media (max-width:600px){.hero-cta{display:flex;width:100%;padding:12px;font-size:16px;text-align:center}}
+  @media (max-width:440px){.brand .brand-name{display:none}.install-top{padding-inline:11px}.app-return{padding-inline:8px}}
   .mark{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,#3858d6,#7958db);color:#fff;font-size:25px;box-shadow:0 4px 10px #4256ae44}
   .hero{margin:18px 0 14px;padding:22px 20px;border-radius:24px;background:linear-gradient(135deg,#3858d6,#7554dd);color:#fff;box-shadow:0 12px 26px #3e52b33b}
   .eyebrow{font-size:12px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;opacity:.88;margin:0 0 6px}
   h1{font-size:clamp(25px,7vw,34px);line-height:1.13;margin:0 0 8px}
-  .hero p:last-child{margin:0;font-size:15px;line-height:1.45}
+  .hero p:not(.eyebrow){margin:0;font-size:15px;line-height:1.45}
   body:has(#tdQuiz:not([hidden])) .hero,body:has(#tdDone:not([hidden])) .hero{display:none}
   body:has(#tdQuiz:not([hidden])) .about,body:has(#tdDone:not([hidden])) .about{display:none}
   body:has(#tdQuiz:not([hidden])) .bands{display:none}
@@ -91,8 +97,8 @@
 </head>
 <body>
 <div class="wrap">
-  <nav class="topbar" aria-label="Điều hướng Luyện tư duy"><a class="brand" href="/tu-duy/" aria-label="KidFocus, trang chơi thử Luyện tư duy"><span class="mark" aria-hidden="true">K</span><span>KidFocus</span></a><a class="app-return" id="webAppBack" href="/app/">← Về KidFocus</a></nav>
-  <header class="hero"><p class="eyebrow">Chơi mà nghĩ, nghĩ mà chơi</p><h1>Cho bé thử Luyện tư duy</h1><p>Trò chơi tư duy cho bé 5–7 tuổi, mỗi lượt 5 câu, có giải thích.</p></header>
+  <nav class="topbar" aria-label="Điều hướng Luyện tư duy"><a class="brand" href="/tu-duy/" aria-label="KidFocus, trang chơi thử Luyện tư duy"><span class="mark" aria-hidden="true">K</span><span class="brand-name">KidFocus</span></a><div class="top-actions"><a class="install-top" id="webInstallTop" href="/cai-app/"><span aria-hidden="true">📲</span>Cài app</a><a class="app-return" id="webAppBack" href="/app/">← Về KidFocus</a></div></nav>
+  <header class="hero"><p class="eyebrow">Chơi mà nghĩ, nghĩ mà chơi</p><h1>Cho bé thử Luyện tư duy</h1><p>Trò chơi tư duy cho bé 5–7 tuổi, mỗi lượt 5 câu, có giải thích.</p><a class="hero-cta" id="webInstallHero" href="/cai-app/"><span aria-hidden="true">📲</span>Cài app trên Android</a></header>
   <div class="controls"><div class="bands" role="group" aria-label="Chọn độ tuổi"><button id="webBand56" type="button" aria-pressed="true">5–6 tuổi</button><button id="webBandL1" type="button" aria-pressed="false">Lớp 1</button></div><button id="webSound" type="button" class="sound" aria-pressed="true">🔊 Âm thanh</button></div>
   <p id="webSyncStatus" class="parent-note" role="status">Đang kết nối tiến bộ…</p>
   <main id="tuduy">
