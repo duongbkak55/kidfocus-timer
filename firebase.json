@@ -29,16 +29,6 @@
       "trailingSlash": true,
       "redirects": [
         {
-          "source": "/cai-app",
-          "destination": "/beta/",
-          "type": 302
-        },
-        {
-          "source": "/cai-app/**",
-          "destination": "/beta/",
-          "type": 302
-        },
-        {
           "source": "/",
           "destination": "/tu-duy/",
           "type": 302

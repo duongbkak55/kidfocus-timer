@@ -32,6 +32,20 @@ test('build copies every shipped Tu Duy asset byte-for-byte within the size budg
   assert.equal(digest(path.join(pageDir, 'terms.html')), digest(path.join(root, 'site/terms.html')));
 });
 
+test('installation guide is built and reachable from the short beta page', () => {
+  const guide = path.join(dist, 'cai-app/index.html');
+  assert.equal(digest(guide), digest(path.join(root, 'web/cai-app/index.html')));
+  assert.match(read(guide), /href="https:\/\/groups\.google\.com\/g\/kidfocus-beta"/);
+  assert.match(read(guide), /href="https:\/\/play\.google\.com\/apps\/testing\/com\.kidfocusstudio\.timer"/);
+  const beta = read(path.join(dist, 'beta/index.html'));
+  assert.match(beta, /href="\/cai-app\/">Hướng dẫn chi tiết/);
+  assert.doesNotMatch(beta, /href="https:\/\/(?:groups\.google\.com|play\.google\.com)/);
+  assert.match(read(path.join(pageDir, 'index.html')), /<footer><a href="\/cai-app\/">Cài app<\/a>/);
+  const demo = JSON.parse(read(path.join(root, 'firebase.json'))).hosting.find((site) => site.target === 'demo');
+  assert(demo);
+  assert(!demo.redirects.some((redirect) => redirect.source === '/cai-app' || redirect.source.startsWith('/cai-app/')));
+});
+
 test('page is Vietnamese, private and free of third-party requests or exam framing', () => {
   const html = read(path.join(pageDir, 'index.html'));
   assert.match(html, /<html lang="vi">/);
