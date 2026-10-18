@@ -17,6 +17,8 @@
   const TYPES = ['pyramid', 'balance', 'chain', 'sequence', 'scale', 'shapes'];
   const PHASE2_TYPES = ['compare', 'order', 'neighbor', 'position', 'condition', 'shapePattern', 'grid', 'oddOne', 'insideOut', 'code', 'triSum'];
   const PHASE2B_TYPES = ['latin', 'magic', 'signs', 'triCenter', 'sumSplit', 'addTable', 'numberLine', 'ring', 'match'];
+  const LEVEL1_TYPES = ['shapes', 'compare', 'order', 'neighbor', 'sequence', 'shapePattern', 'oddOne',
+    'position', 'insideOut', 'match', 'chain', 'balance', 'latin'];
   const TYPE_INFO = {
     pyramid:  { name: 'Tháp số', emoji: '🔺' },
     balance:  { name: 'Ô trống cân bằng', emoji: '⚖️' },
@@ -421,6 +423,11 @@
 
   const GENS = { pyramid: genPyramid, balance: genBalance, chain: genChain, sequence: genSequence, scale: genScale, shapes: genShapes };
   function generate(type, level, rng, opts) {
+    if (level === 1) {
+      const starter = typeof module !== 'undefined' && module.exports ? require('./tuduy-level1-core.js') : root.TuDuyLevel1;
+      if (!starter) throw new Error('level 1 engine is unavailable');
+      return starter.generate(type, level, rng, opts);
+    }
     const phase2 = PHASE2_TYPES.includes(type), phase2b = PHASE2B_TYPES.includes(type);
     if (!GENS[type] && !phase2 && !phase2b) throw new Error('unknown type ' + type);
     if (level !== 2 && level !== 3) throw new Error('level must be 2 or 3');
@@ -473,7 +480,7 @@
     return v.op === '-' && values[0] === v.from && values[1] === distance;
   }
 
-  const api = { MAX: 10, TYPES, PHASE2_TYPES, PHASE2B_TYPES, TYPE_INFO, mkRng, generate, updateStat, nextLevel, numberLineCorrect,
+  const api = { MAX: 10, TYPES, PHASE2_TYPES, PHASE2B_TYPES, LEVEL1_TYPES, TYPE_INFO, mkRng, generate, updateStat, nextLevel, numberLineCorrect,
     _internal: { step: arithmetic.step, pyramidSolve, pyramidBrute, balanceSolutions, evalSide, fanTriangles, stripRects, gridRects } };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.TuDuy = api;

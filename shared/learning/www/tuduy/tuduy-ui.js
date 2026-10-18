@@ -1,4 +1,4 @@
-/* Luyện tư duy — UI for the Learning Hub (5–6 tuổi and up).
+/* Luyện tư duy — UI for the Learning Hub (4–5 tuổi and up).
  * Depends on tuduy-core.js (window.TuDuy). Uses the hub's helpers when present:
  * sndTap/sndRight/sndWrong/confetti/speakText/recordLearningResult.
  */
@@ -28,7 +28,11 @@
 
   /* ---------- session state ---------- */
   let items = [], idx = 0, score = 0, tries = 0, active = null, answers = {}, mode = 'mix', locked = false;
-  const allTypes = () => T.TYPES.concat(T.PHASE2_TYPES, T.PHASE2B_TYPES).filter((t) =>
+  const isLevel1 = () => typeof ageBand !== 'undefined' && ageBand === '4-5';
+  const sessionLength = () => isLevel1() ? 5 : SESSION_N;
+  const statKey = (type, level) => level === 1 ? 'l1:' + type : type;
+  const reviewItems = () => store.review.filter((item) => (item.level === 1) === isLevel1());
+  const allTypes = () => isLevel1() ? (T.LEVEL1_TYPES || []).slice() : T.TYPES.concat(T.PHASE2_TYPES, T.PHASE2B_TYPES).filter((t) =>
     (t !== 'triSum' && t !== 'addTable') || (typeof ageBand !== 'undefined' && ageBand !== '5-6'));
   const SHELVES = [
     ['Số & phép tính', ['balance', 'chain', 'compare', 'order', 'neighbor', 'condition', 'signs', 'sumSplit', 'addTable', 'numberLine']],
@@ -36,10 +40,11 @@
     ['Hình & vị trí', ['shapes', 'position', 'insideOut', 'grid']],
     ['Câu đố ô số', ['pyramid', 'scale', 'code', 'triSum', 'latin', 'magic', 'triCenter']],
   ];
-  const currentMax = () => (typeof ageBand !== 'undefined' && ageBand === '5-6' ? 10 : 20);
+  const currentMax = () => (typeof ageBand !== 'undefined' && (ageBand === '5-6' || ageBand === '4-5') ? 10 : 20);
 
   function open() {
     stopAnim();
+    const root = $('tuduy'); if (root && root.classList) root.classList.toggle('td-level1', isLevel1());
     $('tdQuiz').hidden = true; $('tdDone').hidden = true; $('tdChooser').hidden = false;
     const box = $('tdPick'); box.innerHTML = '';
     const mk = (emoji, name, sub, onClick, cls) => {
@@ -48,30 +53,32 @@
       b.innerHTML = `<span class="td-em">${emoji}</span><span class="td-name">${esc(name)}</span><span class="td-sub">${esc(sub)}</span>`;
       b.onclick = onClick; box.appendChild(b);
     };
-    mk('🎲', 'Trộn các dạng', SESSION_N + ' câu', () => start('mix'), 'mix');
+    mk('🎲', 'Trộn các dạng', sessionLength() + ' câu', () => start('mix'), 'mix');
     for (const [title, types] of SHELVES) {
+      const visible = types.filter((type) => allTypes().includes(type));
+      if (!visible.length) continue;
       const heading = document.createElement('h3'); heading.className = 'td-shelf'; heading.textContent = title; box.appendChild(heading);
-      for (const t of types.filter((x) => allTypes().includes(x))) {
-        const s = store.stats[t] || {};
+      for (const t of visible) {
+        const s = store.stats[statKey(t, isLevel1() ? 1 : 2)] || {};
         const stars = s.seen ? '⭐'.repeat(Math.min(3, Math.floor((s.right || 0) / 4))) || '·' : 'mới';
-        mk(T.TYPE_INFO[t].emoji, T.TYPE_INFO[t].name, `${(s.level || 2) === 3 ? 'Khó' : 'Dễ'} · ${stars}`, () => start(t));
+        mk(T.TYPE_INFO[t].emoji, T.TYPE_INFO[t].name, `${isLevel1() ? 'Làm quen' : (s.level || 2) === 3 ? 'Khó' : 'Dễ'} · ${stars}`, () => start(t));
       }
     }
-    if (store.review.length) mk('🔁', 'Làm lại câu chưa đúng', store.review.length + ' câu', () => start('review'), 'review');
+    if (reviewItems().length) mk('🔁', 'Làm lại câu chưa đúng', reviewItems().length + ' câu', () => start('review'), 'review');
   }
 
-  function levelFor(t) { return (store.stats[t] && store.stats[t].level) || 2; }
+  function levelFor(t) { return isLevel1() ? 1 : (store.stats[t] && store.stats[t].level) || 2; }
   function start(m) {
     stopAnim();
     call('sndTap');
     mode = m; idx = 0; score = 0;
-    if (m === 'review') items = store.review.slice(0, SESSION_N);
+    if (m === 'review') items = reviewItems().slice(0, sessionLength());
     else {
       const mixed = allTypes();
       if (m === 'mix') for (let i = mixed.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1)); [mixed[i], mixed[j]] = [mixed[j], mixed[i]];
       }
-      items = Array.from({ length: SESSION_N }, (_, i) => {
+      items = Array.from({ length: sessionLength() }, (_, i) => {
         const t = m === 'mix' ? mixed[i % mixed.length] : m;
         return T.generate(t, levelFor(t), undefined, { max: currentMax(), phase2b: true });
       });
@@ -102,7 +109,27 @@
     return ['→', '↘', '↓', '↙', '←', '↖', '↑', '↗'][Math.round(tangent / (Math.PI / 4)) % 8];
   }
 
+  function renderLevel1(item) {
+    const v = item.visual, dots = (count, icon) => `<span class="td-l1-dots" aria-label="${count} hình">${Array.from({ length: count }, () => `<span>${esc(icon)}</span>`).join('')}</span>`;
+    const answer = () => `<div class="td-l1-answer">${blankBox(item.blanks[0].id)}</div>`;
+    if (v.kind === 'l1Shapes') return dots(v.count, v.icon) + answer();
+    if (v.kind === 'l1Compare') return `<div class="td-l1-groups"><div><b>Trái</b>${dots(v.left, v.icon)}</div><div><b>Phải</b>${dots(v.right, v.icon)}</div></div>`;
+    if (v.kind === 'l1Order') return `<div class="td-l1-row">${v.values.map((n) => `<span class="td-l1-number">${n == null ? '?' : n}</span>`).join('<span>→</span>')}</div>${dots(v.dots, '●')}`;
+    if (v.kind === 'l1Neighbor') return `<div class="td-l1-row">${v.direction === 'before' ? `<span class="td-l1-number">?</span><span>←</span><span class="td-l1-number">${v.number}</span>` : `<span class="td-l1-number">${v.number}</span><span>→</span><span class="td-l1-number">?</span>`}</div>${dots(v.number, '●')}${answer()}`;
+    if (v.kind === 'l1Sequence') return `<div class="td-l1-row">${v.values.map((n) => `<span class="td-l1-number">${n == null ? '?' : n}</span>`).join('')}</div>${answer()}`;
+    if (v.kind === 'l1Pattern') return `<div class="td-l1-row">${v.shown.map((s) => `<span class="td-l1-symbol">${esc(s)}</span>`).join('')}<span class="td-l1-symbol">?</span></div>`;
+    if (v.kind === 'l1Odd') return `<div class="td-l1-row">${v.pictures.map((s, i) => `<button class="td-l1-symbol td-choice" data-choice="${i}" aria-label="Hình ${i + 1}">${esc(s)}<small>${i + 1}</small></button>`).join('')}</div>`;
+    if (v.kind === 'l1Position') return `<div class="td-l1-row${v.vertical ? ' vertical' : ''}">${v.pictures.map((s, i) => `<button class="td-l1-symbol td-choice" data-choice="${i}" aria-label="Con ${i + 1}">${esc(s)}<small>${i + 1}</small></button>`).join('')}</div>`;
+    if (v.kind === 'l1Inside') return `<div class="td-l1-inside"><div class="td-l1-circle">${dots(v.inside, v.icon)}</div>${dots(v.outside, v.icon)}</div>${answer()}`;
+    if (v.kind === 'l1Match') return `<div class="td-l1-match">${v.pairs.map((pair) => `<div>${dots(pair.count, '●')}<span>↔</span>${pair.number == null ? blankBox(item.blanks[0].id) : `<span class="td-l1-number">${pair.number}</span>`}</div>`).join('')}</div>`;
+    if (v.kind === 'l1Chain') return `<div class="td-l1-row"><span>🚂</span>${v.values.map((n, i) => `${i ? `<span>+${v.steps[i - 1]} →</span>` : ''}${n == null ? blankBox(item.blanks[0].id) : `<span class="td-l1-number">${n}</span>`}`).join('')}</div>`;
+    if (v.kind === 'l1Balance') return `<div class="td-l1-row">${dots(v.a, v.icon)}<span>+</span>${dots(v.b, v.icon)}<span>=</span>${blankBox(item.blanks[0].id)}</div>`;
+    if (v.kind === 'l1Latin') return `<div class="td-l1-latin" role="group" aria-label="Bảng ba hàng ba cột">${v.cells.map((s) => `<span>${s == null ? '?' : esc(s)}</span>`).join('')}</div>`;
+    return '';
+  }
+
   function renderVisual(item) {
+    if (item.level === 1) return renderLevel1(item);
     const v = item.visual, B = (i) => item.blanks.find((b) => b.cell === i);
     if (v.kind === 'pyramid') {
       const cell = (i) => (B(i) ? blankBox(B(i).id) : numBox(v.cells[i]));
@@ -320,7 +347,7 @@
       return;
     }
     const v = item.answer;
-    if (item.input === 'sign' || item.type === 'shapePattern') {
+    if (item.input === 'sign' || (item.type === 'shapePattern' && item.level !== 1)) {
       $('tdPad').querySelectorAll('.td-choice').forEach((b, i) => b.classList.toggle('shown', (item.input === 'sign' ? ['>', '<', '='][i] : item.choices[i]) === v));
     } else {
       document.querySelectorAll('#tuduy [data-choice]').forEach((b) => b.classList.toggle('shown', Number(b.dataset.choice) === v));
@@ -330,7 +357,7 @@
   function buildChoicePad(item) {
     const pad = $('tdPad'); pad.innerHTML = ''; pad.dataset.built = '';
     pad.className = 'td-pad';
-    if (item.input === 'order' || item.input === 'multi' || item.input === 'pairs' || item.type === 'position' || item.type === 'oddOne' || (item.type === 'insideOut' && item.visual.kind !== 'venn3')) {
+    if (item.input === 'order' || item.input === 'multi' || item.input === 'pairs' || item.type === 'position' || item.type === 'oddOne' || (item.level !== 1 && item.type === 'insideOut' && item.visual.kind !== 'venn3')) {
       pad.hidden = true; return;
     }
     pad.hidden = false;
@@ -342,7 +369,7 @@
       b.dataset.choice = item.input === 'sign' ? i : i;
       b.innerHTML = item.visual.kind === 'dotPattern' ? dotTile(choice) : item.visual.kind === 'dotGrid' ? dotShapeTile(choice) : item.type === 'grid' ? tileSvg(choice) : esc(choice);
       b.onclick = () => {
-        answers.choice = item.input === 'sign' ? choice : item.type === 'shapePattern' ? choice : i;
+        answers.choice = item.input === 'sign' ? choice : item.type === 'shapePattern' && item.level !== 1 ? choice : i;
         call('sndTap');
         pad.querySelectorAll('.td-choice').forEach((x) => x.classList.toggle('chosen', x === b));
       };
@@ -398,7 +425,11 @@
   }
 
   function record(item, firstTry) {
-    store.stats[item.type] = T.updateStat(store.stats[item.type], firstTry);
+    const key = statKey(item.type, item.level);
+    if (item.level === 1) {
+      const s = store.stats[key] || { level: 1, seen: 0, right: 0 };
+      store.stats[key] = { level: 1, seen: s.seen + 1, right: s.right + (firstTry ? 1 : 0) };
+    } else store.stats[key] = T.updateStat(store.stats[key], firstTry);
     if (!firstTry && mode !== 'review') store.review = [item].concat(store.review).slice(0, 12);
     if (firstTry && mode === 'review') store.review = store.review.filter((x) => x !== item && JSON.stringify(x) !== JSON.stringify(item));
     save(store);

@@ -588,7 +588,8 @@ export function LearningLink({
   guestMode: boolean;
 }) {
   const profile = data.profiles.find((row) => row.id === profileId)?.entity;
-  const canPlay = ["5-6", "l1", "l2", "l3"].includes(str(profile?.ageBand));
+  const ageBand = str(profile?.ageBand);
+  const canPlay = ["4-5", "5-6", "l1", "l2", "l3"].includes(ageBand);
   const emulator =
     ["localhost", "127.0.0.1"].includes(location.hostname) &&
     new URLSearchParams(location.search).has("emulator")
@@ -605,12 +606,12 @@ export function LearningLink({
         {canPlay ? (
           <a
             class="primary link-button"
-            href={`/tu-duy/?profile=${encodeURIComponent(profileId)}${emulator}`}
+            href={`/tu-duy/?profile=${encodeURIComponent(profileId)}${ageBand === "4-5" ? "&band=4-5" : ""}${emulator}`}
           >
             Mở Luyện tư duy
           </a>
         ) : (
-          <p class="muted">Luyện tư duy dành cho bé từ 5–6 tuổi trở lên.</p>
+          <p class="muted">Luyện tư duy dành cho bé từ 4–5 tuổi trở lên.</p>
         )}
       </div>
     </section>

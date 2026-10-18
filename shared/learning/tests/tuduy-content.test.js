@@ -174,7 +174,7 @@ test('shipped UI text has no exam or pre-Grade-1 framing', () => {
   for (const s of strings) assert.doesNotMatch(s, /(^|[^\p{L}])thi([^\p{L}]|$)|lớp 1|sẵn sàng vào/iu, s);
 });
 
-test('tuduy is shown from 5–6 tuổi upward and never to 2–3 or 4–5', () => {
+test('tuduy is shown from 4–5 tuổi upward and never to 2–3', () => {
   const html = fs.readFileSync(path.join(WWW, 'index.html'), 'utf8');
   const start = html.indexOf('const AGE_BANDS=');
   assert.ok(start > 0);
@@ -185,7 +185,7 @@ test('tuduy is shown from 5–6 tuổi upward and never to 2–3 or 4–5', () =
   while ((m = re.exec(block))) visibleByBand[m[1]] = m[2];
   assert.ok(visibleByBand['5-6'], 'band 5-6 exists');
   for (const [band, list] of Object.entries(visibleByBand)) {
-    const shouldShow = ['5-6', 'l1', 'l2', 'l3'].includes(band);
+    const shouldShow = ['4-5', '5-6', 'l1', 'l2', 'l3'].includes(band);
     assert.equal(/'tuduy'/.test(list), shouldShow, `band ${band} tuduy visibility`);
   }
 });

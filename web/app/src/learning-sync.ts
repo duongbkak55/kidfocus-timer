@@ -95,8 +95,8 @@ else
             return;
           }
           const ageBand = String(profile.data()?.ageBand ?? "5-6");
-          if (["5-6", "l1", "l2", "l3"].includes(ageBand))
-            window.KidFocusTuDuySetBand?.(ageBand === "5-6" ? "5-6" : "l1");
+          if (["4-5", "5-6", "l1", "l2", "l3"].includes(ageBand))
+            window.KidFocusTuDuySetBand?.(ageBand === "4-5" ? "4-5" : ageBand === "5-6" ? "5-6" : "l1");
           const ref = doc(root, "learning", `${profileId}_tuduy`);
           let applied: ReturnType<typeof extraSync.fromDoc> = null;
           window.TuDuyUI.setCloudMode(async (store) => {

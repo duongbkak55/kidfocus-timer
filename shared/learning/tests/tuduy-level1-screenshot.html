@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Luyện tư duy · Làm quen</title>
+<link rel="stylesheet" href="../www/tuduy/tuduy.css">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#eaf2ff;color:#283158;font:16px system-ui,sans-serif}
+#tuduy{width:390px;max-width:100%;min-height:844px;margin:auto;padding:12px}
+.card{background:#fff;border-radius:20px;padding:16px;margin:8px 0;box-shadow:0 4px 18px #273e611c}
+.rbtn{border:0;border-radius:12px;background:#567cf2;color:#fff;padding:10px 16px;font:inherit;font-weight:800}
+.fb{margin-top:8px;min-height:24px}h1{font-size:20px;margin:0 0 6px}.eyebrow{font-weight:900;color:#3858d6;font-size:13px}
+</style>
+</head>
+<body>
+<div id="tuduy">
+  <div class="card" id="tdChooser"><h1>Luyện tư duy · Làm quen</h1><div class="td-pickgrid" id="tdPick"></div></div>
+  <div class="card" id="tdQuiz" hidden>
+    <div class="eyebrow">4–5 tuổi · Luyện tư duy</div>
+    <div class="td-top"><span id="tdCount"></span><span id="tdStars"></span></div>
+    <div class="td-prompt"><span id="tdPrompt"></span></div>
+    <div class="td-visual" id="tdVisual"></div>
+    <div class="td-pad" id="tdPad"></div>
+    <div class="td-actions"><button class="rbtn" id="tdCheck">✔ Xong rồi</button><button class="rbtn" id="tdNext" hidden>Câu tiếp ▶</button></div>
+    <div id="tdFb" class="fb"></div><div id="tdExplain" class="td-explain" hidden></div>
+  </div>
+  <div class="card" id="tdDone" hidden><span id="tdDoneStars"></span><span id="tdDoneText"></span></div>
+</div>
+<script>let ageBand='4-5';window.TuDuyPageOptions={sessionLength:5};window.speakText=()=>Promise.resolve();</script>
+<script src="../www/tuduy/tuduy-arithmetic.js"></script>
+<script src="../www/tuduy/tuduy-core.js"></script>
+<script src="../www/tuduy/tuduy-level1-core.js"></script>
+<script src="../www/tuduy/tuduy-phase2-core.js"></script>
+<script src="../www/tuduy/tuduy-phase2b-core.js"></script>
+<script src="../www/tuduy/tuduy-visual-layout.js"></script>
+<script src="../www/tuduy/tuduy-ui.js"></script>
+<script>
+Math.random=TuDuy.mkRng(1729);
+TuDuyUI.open();TuDuyUI.start(new URLSearchParams(location.search).get('type')||'shapes');
+</script>
+</body>
+</html>
