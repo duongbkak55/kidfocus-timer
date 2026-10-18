@@ -1,0 +1,4 @@
+• Đồng bộ mới: dữ liệu trên app và web (kidfocus.web.app) đồng bộ từng mục, sửa trên máy này không ghi đè máy kia.
+• Luyện tư duy có mức "Làm quen" cho bé 4–5 tuổi: 13 dạng bài bằng hình, số trong phạm vi 10.
+• Nhãn mức chơi đổi thành Dễ / Khó cho dễ hiểu.
+• Sửa lỗi nhỏ và cải thiện hiển thị.
