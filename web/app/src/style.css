@@ -789,3 +789,17 @@ h2 {
   .settings-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .settings-form > .form-row, .settings-form > .actions { grid-column: 1 / -1; }
 }
+
+/* Install CTA (links to the closed-test guide) */
+.login-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.install-pill {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 44px; padding: 8px 14px; border-radius: 12px; white-space: nowrap;
+  background: linear-gradient(135deg, #ff8a3d, #ff6b6b); color: #fff;
+  font-weight: 900; text-decoration: none; box-shadow: 0 4px 12px #ff6b6b40;
+}
+.install-pill:focus-visible { outline: 3px solid #ff9f43; outline-offset: 2px; }
+@media (max-width: 440px) {
+  .app-shell .topbar .brand-name { display: none; }
+  .header-actions .install-pill { padding-inline: 10px; }
+}

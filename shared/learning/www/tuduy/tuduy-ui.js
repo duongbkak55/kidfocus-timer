@@ -54,7 +54,7 @@
       for (const t of types.filter((x) => allTypes().includes(x))) {
         const s = store.stats[t] || {};
         const stars = s.seen ? '⭐'.repeat(Math.min(3, Math.floor((s.right || 0) / 4))) || '·' : 'mới';
-        mk(T.TYPE_INFO[t].emoji, T.TYPE_INFO[t].name, `Mức ${s.level || 2} · ${stars}`, () => start(t));
+        mk(T.TYPE_INFO[t].emoji, T.TYPE_INFO[t].name, `${(s.level || 2) === 3 ? 'Khó' : 'Dễ'} · ${stars}`, () => start(t));
       }
     }
     if (store.review.length) mk('🔁', 'Làm lại câu chưa đúng', store.review.length + ' câu', () => start('review'), 'review');
