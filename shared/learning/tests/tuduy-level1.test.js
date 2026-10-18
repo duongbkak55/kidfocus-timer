@@ -94,3 +94,40 @@ for (const type of expectedTypes) test(`${type} level 1: ${N} independent seeded
     }
   }
 });
+
+test('picture patterns continue with either symbol across 2,000 seeds', () => {
+  const counts = { first: 0, second: 0 };
+  for (let seed = 1; seed <= N; seed++) {
+    const item = T.generate('shapePattern', 1, T.mkRng(seed), { max: 10 });
+    assert(item.visual.shown.length >= 4 && item.visual.shown.length <= 6);
+    const answer = item.choices[item.answer];
+    counts[answer === item.visual.shown[0] ? 'first' : 'second']++;
+  }
+  assert(counts.first >= N * .35 && counts.second >= N * .35, JSON.stringify(counts));
+});
+
+test('position uses natural directions in prompt and explanation', () => {
+  const directions = new Set();
+  for (let seed = 1; seed <= N; seed++) {
+    const item = T.generate('position', 1, T.mkRng(seed), { max: 10 });
+    const direction = item.prompt.replace('Con nào ở ', '').replace('?', '');
+    assert(['bên trái', 'bên phải', 'giữa', 'trên cùng', 'dưới cùng'].includes(direction));
+    assert(item.explain[1].endsWith(`ở ${direction}.`));
+    assert.equal(item.visual.vertical, direction === 'trên cùng' || direction === 'dưới cùng');
+    directions.add(direction);
+  }
+  assert.equal(directions.size, 5);
+});
+
+test('sequence favors counting and odd-one includes a different kind', () => {
+  let counting = 0, picturePattern = 0, kind = 0;
+  for (let seed = 1; seed <= N; seed++) {
+    const sequence = T.generate('sequence', 1, T.mkRng(seed), { max: 10 });
+    if (sequence.visual.kind === 'l1Sequence') counting++;
+    else picturePattern++;
+    const odd = T.generate('oddOne', 1, T.mkRng(seed), { max: 10 });
+    if (odd.visual.pictures.some((picture) => ['🍎', '🐱', '🚗'].includes(picture))) kind++;
+  }
+  assert(counting >= N * .65 && counting <= N * .75, `${counting} counting questions`);
+  assert(picturePattern > 0 && kind > 0, `${picturePattern} picture patterns, ${kind} kinds`);
+});

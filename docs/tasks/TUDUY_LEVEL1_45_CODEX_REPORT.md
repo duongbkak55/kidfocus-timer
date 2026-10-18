@@ -12,7 +12,7 @@ Nhánh `feat/web-app`, trên `f8834f9`. Chưa push, merge hoặc deploy. Chờ C
 
 ## Kiểm tra
 
-- `node --test shared/learning/tests/*.test.js`: **110/110** xanh, gồm 13 × 2.000 seed level 1, kiểm lại đáp án độc lập, biên số, độ dài câu hỏi và whitelist. 96 test cũ vẫn chạy.
+- `node --test shared/learning/tests/*.test.js`: **113/113** xanh, gồm 13 × 2.000 seed level 1, kiểm lại đáp án độc lập, biên số, độ dài câu hỏi và whitelist. 96 test cũ vẫn chạy.
 - So với `f8834f9`, đầu ra level 2/3 **giống hệt JSON** ở 2.000 ca seed (mọi dạng, max 10/20 hợp lệ, extension bật).
 - `npm --prefix web test`: **20/20** xanh. Chromium chơi đủ 5 câu của từng dạng ở 4–5; kiểm 320/360/412px không tràn ngang, đáp án ≥64px và không có request ra ngoài.
 - `env JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home ./gradlew testDebugUnitTest assembleDebug`: **376/376** unit test Android xanh; build debug thành công.
@@ -39,3 +39,32 @@ Theo mục **Decision** trong task, chỉ assertion visibility cũ ở `tuduy-co
 | Sudoku nhí (`latin`) | ![Sudoku nhí](tuduy-level1-screenshots/latin.jpg) |
 
 Ảnh dùng seed cố định 1729 trong `shared/learning/tests/tuduy-level1-screenshot.html`. G3 trên Pixel do Claude thực hiện sau review.
+
+## Sửa theo G2 review `db0fcca`
+
+- Hình/chấm đếm: ô **48×48px**, font **40px**; nhóm 6–10 xếp tối đa **5 ô/hàng**. Bài so sánh 10 và 8 hình tại 320px: [ảnh kiểm bố cục](tuduy-level1-screenshots/compare-ten-320.jpg), không tràn ngang. Kí hiệu quy luật và Sudoku font 40px; mũi tên font 28px; nút chạm tối thiểu 64px.
+- Quy luật hình hiện 4–6 kí hiệu thay vì luôn 5; qua 2.000 seed, đáp án là kí hiệu đầu **1.108** lần, kí hiệu thứ hai **892** lần. Dãy số chọn bước đếm +1 khoảng 70%, hình khoảng 30%.
+- Vị trí dùng “bên trái”, “bên phải”, “giữa”, “trên cùng”, “dưới cùng” trong câu hỏi và giải thích. Khác loại có thêm nhóm trái cây/con vật hoặc con vật/xe, vẫn đúng một hình khác.
+- Đã xoá `.l1sheet.jpg` ở gốc worktree. File review của Claude và `docs/tasks/g3/` được giữ ngoài commit.
+
+Kiểm tra lại: **113/113** JS shared, **20/20** web, **376/376** Android; `assembleDebug` và `git diff --check` đều đạt. Web test kiểm cỡ hình, mũi tên, vùng chạm, 320/360/412px không tràn; kiểm riêng nhóm 10 hình có đúng hai hàng 5.
+
+Ảnh mới chụp ở viewport **320×640**, dùng full-page cho bài cần cuộn dọc:
+
+| Dạng | Ảnh 320px |
+| --- | --- |
+| Đếm hình | ![Đếm hình 320px](tuduy-level1-screenshots/shapes-320.jpg) |
+| So sánh | ![So sánh 320px](tuduy-level1-screenshots/compare-320.jpg) |
+| Sắp xếp | ![Sắp xếp 320px](tuduy-level1-screenshots/order-320.jpg) |
+| Số liền kề | ![Số liền kề 320px](tuduy-level1-screenshots/neighbor-320.jpg) |
+| Quy luật dãy số | ![Quy luật dãy số 320px](tuduy-level1-screenshots/sequence-320.jpg) |
+| Quy luật hình | ![Quy luật hình 320px](tuduy-level1-screenshots/shapePattern-320.jpg) |
+| Khác loại | ![Khác loại 320px](tuduy-level1-screenshots/oddOne-320.jpg) |
+| Vị trí | ![Vị trí 320px](tuduy-level1-screenshots/position-320.jpg) |
+| Trong và ngoài | ![Trong và ngoài 320px](tuduy-level1-screenshots/insideOut-320.jpg) |
+| Nối cùng kết quả | ![Nối cùng kết quả 320px](tuduy-level1-screenshots/match-320.jpg) |
+| Đoàn tàu phép tính | ![Đoàn tàu phép tính 320px](tuduy-level1-screenshots/chain-320.jpg) |
+| Ô trống cân bằng | ![Ô trống cân bằng 320px](tuduy-level1-screenshots/balance-320.jpg) |
+| Sudoku nhí | ![Sudoku nhí 320px](tuduy-level1-screenshots/latin-320.jpg) |
+
+Ảnh 390×844 trong bảng phía trên cũng đã chụp lại sau khi sửa. Chưa push, merge hoặc deploy; chờ Claude review/G3.

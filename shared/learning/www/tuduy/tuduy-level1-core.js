@@ -32,8 +32,9 @@
     const symbols = shuffle(rng, ['🔵', '🟠', '🔺', '🟣']).slice(0, 2);
     const rule = pick(rng, type === 'sequence' ? ['AB', 'ABB'] : ['AB', 'AAB', 'ABB']);
     const repeats = rule.split('').map((letter) => symbols[letter === 'A' ? 0 : 1]);
-    const shown = Array.from({ length: 5 }, (_, i) => repeats[i % repeats.length]);
-    const expected = repeats[5 % repeats.length];
+    const shownLength = ri(rng, 4, 6);
+    const shown = Array.from({ length: shownLength }, (_, i) => repeats[i % repeats.length]);
+    const expected = repeats[shownLength % repeats.length];
     return choice(type, 'Hình nào tiếp theo?', { kind: 'l1Pattern', shown, rule }, symbols,
       expected, 'Nhìn xem các hình lặp lại thế nào.', `Hình tiếp theo là ${expected}.`, rng);
   }
@@ -67,7 +68,9 @@
         'Nhìn các chấm và đếm thêm hoặc bớt một.', `${direction === 'after' ? 'Sau' : 'Trước'} ${number} là ${answer}.`);
     },
     sequence(rng) {
-      if (rng() < .5) return pattern(rng, 'sequence');
+      // The first xorshift draw clusters for nearby seeds; use the next draw for the 70/30 split.
+      rng();
+      if (rng() >= .7) return pattern(rng, 'sequence');
       const start = ri(rng, 0, 7), answer = start + 3;
       return numeric('sequence', 'Số nào tiếp theo?',
         { kind: 'l1Sequence', values: [start, start + 1, start + 2, null] }, answer,
@@ -75,19 +78,21 @@
     },
     shapePattern(rng) { return pattern(rng, 'shapePattern'); },
     oddOne(rng) {
-      const one = ri(rng, 0, 3), mode = pick(rng, ['color', 'shape']);
+      const one = ri(rng, 0, 3), mode = pick(rng, ['color', 'shape', 'kind']);
+      const kinds = pick(rng, [['🍎', '🐱'], ['🐱', '🚗']]);
       const pictures = Array.from({ length: 4 }, (_, i) => mode === 'color'
-        ? i === one ? '🟠' : '🔵' : i === one ? '🔷' : '🔵');
+        ? i === one ? '🟠' : '🔵' : mode === 'shape' ? i === one ? '🔷' : '🔵'
+          : i === one ? kinds[1] : kinds[0]);
       return pictureChoice('oddOne', 'Hình nào khác các hình còn lại?', { kind: 'l1Odd', pictures },
-        one, 'Tìm một hình khác màu hoặc dáng.', `Hình ${one + 1} khác các hình kia.`);
+        one, 'Tìm một hình khác màu, dáng hoặc loại.', `Hình ${one + 1} khác các hình kia.`);
     },
     position(rng) {
       const pictures = shuffle(rng, ['🐱', '🐶', '🐰']);
-      const direction = pick(rng, ['trái', 'phải', 'giữa', 'trên', 'dưới']);
-      const index = direction === 'phải' || direction === 'dưới' ? 2 : direction === 'giữa' ? 1 : 0;
+      const direction = pick(rng, ['bên trái', 'bên phải', 'giữa', 'trên cùng', 'dưới cùng']);
+      const index = direction === 'bên phải' || direction === 'dưới cùng' ? 2 : direction === 'giữa' ? 1 : 0;
       return pictureChoice('position', `Con nào ở ${direction}?`,
-        { kind: 'l1Position', pictures, vertical: direction === 'trên' || direction === 'dưới' },
-        index, 'Nhìn vị trí của từng con.', `Con số ${index + 1} ở ${direction}.`);
+        { kind: 'l1Position', pictures, vertical: direction === 'trên cùng' || direction === 'dưới cùng' },
+        index, 'Nhìn vị trí của từng con.', `${pictures[index]} ở ${direction}.`);
     },
     insideOut(rng) {
       const inside = ri(rng, 1, 5), outside = ri(rng, 1, 3), icon = pick(rng, icons);

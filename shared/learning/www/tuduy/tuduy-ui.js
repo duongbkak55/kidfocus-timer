@@ -110,19 +110,19 @@
   }
 
   function renderLevel1(item) {
-    const v = item.visual, dots = (count, icon) => `<span class="td-l1-dots" aria-label="${count} hình">${Array.from({ length: count }, () => `<span>${esc(icon)}</span>`).join('')}</span>`;
+    const v = item.visual, dots = (count, icon) => `<span class="td-l1-dots" style="--td-l1-columns:${Math.min(count, 5)}" aria-label="${count} hình">${Array.from({ length: count }, () => `<span>${esc(icon)}</span>`).join('')}</span>`;
     const answer = () => `<div class="td-l1-answer">${blankBox(item.blanks[0].id)}</div>`;
     if (v.kind === 'l1Shapes') return dots(v.count, v.icon) + answer();
     if (v.kind === 'l1Compare') return `<div class="td-l1-groups"><div><b>Trái</b>${dots(v.left, v.icon)}</div><div><b>Phải</b>${dots(v.right, v.icon)}</div></div>`;
-    if (v.kind === 'l1Order') return `<div class="td-l1-row">${v.values.map((n) => `<span class="td-l1-number">${n == null ? '?' : n}</span>`).join('<span>→</span>')}</div>${dots(v.dots, '●')}`;
-    if (v.kind === 'l1Neighbor') return `<div class="td-l1-row">${v.direction === 'before' ? `<span class="td-l1-number">?</span><span>←</span><span class="td-l1-number">${v.number}</span>` : `<span class="td-l1-number">${v.number}</span><span>→</span><span class="td-l1-number">?</span>`}</div>${dots(v.number, '●')}${answer()}`;
+    if (v.kind === 'l1Order') return `<div class="td-l1-row">${v.values.map((n) => `<span class="td-l1-number">${n == null ? '?' : n}</span>`).join('<span class="td-l1-arrow">→</span>')}</div>${dots(v.dots, '●')}`;
+    if (v.kind === 'l1Neighbor') return `<div class="td-l1-row">${v.direction === 'before' ? `<span class="td-l1-number">?</span><span class="td-l1-arrow">←</span><span class="td-l1-number">${v.number}</span>` : `<span class="td-l1-number">${v.number}</span><span class="td-l1-arrow">→</span><span class="td-l1-number">?</span>`}</div>${dots(v.number, '●')}${answer()}`;
     if (v.kind === 'l1Sequence') return `<div class="td-l1-row">${v.values.map((n) => `<span class="td-l1-number">${n == null ? '?' : n}</span>`).join('')}</div>${answer()}`;
     if (v.kind === 'l1Pattern') return `<div class="td-l1-row">${v.shown.map((s) => `<span class="td-l1-symbol">${esc(s)}</span>`).join('')}<span class="td-l1-symbol">?</span></div>`;
     if (v.kind === 'l1Odd') return `<div class="td-l1-row">${v.pictures.map((s, i) => `<button class="td-l1-symbol td-choice" data-choice="${i}" aria-label="Hình ${i + 1}">${esc(s)}<small>${i + 1}</small></button>`).join('')}</div>`;
     if (v.kind === 'l1Position') return `<div class="td-l1-row${v.vertical ? ' vertical' : ''}">${v.pictures.map((s, i) => `<button class="td-l1-symbol td-choice" data-choice="${i}" aria-label="Con ${i + 1}">${esc(s)}<small>${i + 1}</small></button>`).join('')}</div>`;
     if (v.kind === 'l1Inside') return `<div class="td-l1-inside"><div class="td-l1-circle">${dots(v.inside, v.icon)}</div>${dots(v.outside, v.icon)}</div>${answer()}`;
-    if (v.kind === 'l1Match') return `<div class="td-l1-match">${v.pairs.map((pair) => `<div>${dots(pair.count, '●')}<span>↔</span>${pair.number == null ? blankBox(item.blanks[0].id) : `<span class="td-l1-number">${pair.number}</span>`}</div>`).join('')}</div>`;
-    if (v.kind === 'l1Chain') return `<div class="td-l1-row"><span>🚂</span>${v.values.map((n, i) => `${i ? `<span>+${v.steps[i - 1]} →</span>` : ''}${n == null ? blankBox(item.blanks[0].id) : `<span class="td-l1-number">${n}</span>`}`).join('')}</div>`;
+    if (v.kind === 'l1Match') return `<div class="td-l1-match">${v.pairs.map((pair) => `<div>${dots(pair.count, '●')}<span class="td-l1-arrow">↔</span>${pair.number == null ? blankBox(item.blanks[0].id) : `<span class="td-l1-number">${pair.number}</span>`}</div>`).join('')}</div>`;
+    if (v.kind === 'l1Chain') return `<div class="td-l1-row"><span>🚂</span>${v.values.map((n, i) => `${i ? `<span class="td-l1-arrow">+${v.steps[i - 1]} →</span>` : ''}${n == null ? blankBox(item.blanks[0].id) : `<span class="td-l1-number">${n}</span>`}`).join('')}</div>`;
     if (v.kind === 'l1Balance') return `<div class="td-l1-row">${dots(v.a, v.icon)}<span>+</span>${dots(v.b, v.icon)}<span>=</span>${blankBox(item.blanks[0].id)}</div>`;
     if (v.kind === 'l1Latin') return `<div class="td-l1-latin" role="group" aria-label="Bảng ba hàng ba cột">${v.cells.map((s) => `<span>${s == null ? '?' : esc(s)}</span>`).join('')}</div>`;
     return '';
@@ -362,6 +362,7 @@
     }
     pad.hidden = false;
     pad.classList.add('td-choice-pad');
+    if (item.level === 1 && (item.visual.kind === 'l1Pattern' || item.visual.kind === 'l1Latin')) pad.classList.add('td-l1-picture-pad');
     const labels = item.input === 'sign' ? ['>', '<', '='] : item.choices;
     labels.forEach((choice, i) => {
       const b = document.createElement('button');

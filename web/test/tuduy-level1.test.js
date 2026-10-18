@@ -51,6 +51,17 @@ test('4–5 page plays five questions per type without external requests or over
         .filter((button) => button.getBoundingClientRect().width < 64 || button.getBoundingClientRect().height < 64)
         .map((button) => `${button.textContent}: ${Math.round(button.getBoundingClientRect().width)}×${Math.round(button.getBoundingClientRect().height)}`));
       assert.deepEqual(tooSmall, [], `${type} targets at ${width}px`);
+      const smallPictures = await page.evaluate(() => [...document.querySelectorAll(
+        '#tdVisual .td-l1-dots>span,#tdVisual .td-l1-symbol,#tdVisual .td-l1-latin span,#tdPad.td-l1-picture-pad .td-key')]
+        .filter((el) => el.getClientRects().length)
+        .filter((el) => Number.parseFloat(getComputedStyle(el).fontSize) < 40 ||
+          el.getBoundingClientRect().width < 48 || el.getBoundingClientRect().height < 48)
+        .map((el) => `${el.textContent}: ${getComputedStyle(el).fontSize}, ${Math.round(el.getBoundingClientRect().width)}×${Math.round(el.getBoundingClientRect().height)}`));
+      assert.deepEqual(smallPictures, [], `${type} pictures at ${width}px`);
+      const smallArrows = await page.evaluate(() => [...document.querySelectorAll('#tdVisual .td-l1-arrow')]
+        .filter((el) => Number.parseFloat(getComputedStyle(el).fontSize) < 28)
+        .map((el) => `${el.textContent}: ${getComputedStyle(el).fontSize}`));
+      assert.deepEqual(smallArrows, [], `${type} arrows at ${width}px`);
       if (width === 320) {
         for (let i = 0; i < 5; i++) {
           assert.match(await page.locator('#tdCount').innerText(), new RegExp(`Câu ${i + 1}/5`));
@@ -66,6 +77,16 @@ test('4–5 page plays five questions per type without external requests or over
       await page.evaluate(() => window.TuDuyUI.open());
     }
   }
+  await page.setViewportSize({ width: 320, height: 640 });
+  await page.evaluate(() => { Math.random = window.TuDuy.mkRng(14336); window.TuDuyUI.start('compare'); });
+  const tenFrame = await page.evaluate(() => {
+    const dots = [...document.querySelectorAll('#tdVisual .td-l1-groups>div:first-child .td-l1-dots>span')];
+    return { count: dots.length, firstRow: dots.slice(0, 5).every((dot) => dot.offsetTop === dots[0].offsetTop),
+      secondRow: dots.slice(5).every((dot) => dot.offsetTop === dots[5].offsetTop),
+      differentRows: dots[5].offsetTop > dots[0].offsetTop, overflow: document.documentElement.scrollWidth - innerWidth };
+  });
+  assert.deepEqual(tenFrame, { count: 10, firstRow: true, secondRow: true, differentRows: true, overflow: 0 });
+  await page.evaluate(() => window.TuDuyUI.open());
   const progress = await page.evaluate(() => JSON.parse(localStorage.getItem('tuduy.web.v1')));
   for (const type of types) {
     assert.equal(progress.stats[`l1:${type}`].level, 1, `${type} promoted out of level 1`);
