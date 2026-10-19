@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#3858d6">
 <title>Cho bé thử Luyện tư duy — KidFocus</title>
+<script defer src="/analytics.js"></script>
 <meta name="description" content="Trò chơi tư duy cho bé 4–7 tuổi: quan sát, tìm quy luật, so sánh và suy luận. Mỗi lượt 5 câu, có gợi ý và giải thích.">
 <meta property="og:title" content="Cho bé thử Luyện tư duy — KidFocus">
 <meta property="og:description" content="Cùng bé chơi 5 câu tư duy ngay trên web, có gợi ý và cách làm sau mỗi câu.">
@@ -97,17 +98,17 @@
 </head>
 <body>
 <div class="wrap">
-  <nav class="topbar" aria-label="Điều hướng Luyện tư duy"><a class="brand" href="/tu-duy/" aria-label="KidFocus, trang chơi thử Luyện tư duy"><span class="mark" aria-hidden="true">K</span><span class="brand-name">KidFocus</span></a><div class="top-actions"><a class="install-top" id="webInstallTop" href="/cai-app/"><span aria-hidden="true">📲</span>Cài app</a><a class="app-return" id="webAppBack" href="/app/">← Về KidFocus</a></div></nav>
-  <header class="hero"><p class="eyebrow">Chơi mà nghĩ, nghĩ mà chơi</p><h1>Cho bé thử Luyện tư duy</h1><p>Trò chơi tư duy cho bé 4–7 tuổi, mỗi lượt 5 câu, có giải thích.</p><a class="hero-cta" id="webInstallHero" href="/cai-app/"><span aria-hidden="true">📲</span>Cài app trên Android</a></header>
+  <nav class="topbar" aria-label="Điều hướng Luyện tư duy"><a class="brand" href="/tu-duy/" aria-label="KidFocus, trang chơi thử Luyện tư duy"><span class="mark" aria-hidden="true">K</span><span class="brand-name">KidFocus</span></a><div class="top-actions"><a class="install-top" id="webInstallTop" href="/cai-app/" data-umami-event="install_click"><span aria-hidden="true">📲</span>Cài app</a><a class="app-return" id="webAppBack" href="/app/">← Về KidFocus</a></div></nav>
+  <header class="hero"><p class="eyebrow">Chơi mà nghĩ, nghĩ mà chơi</p><h1>Cho bé thử Luyện tư duy</h1><p>Trò chơi tư duy cho bé 4–7 tuổi, mỗi lượt 5 câu, có giải thích.</p><a class="hero-cta" id="webInstallHero" href="/cai-app/" data-umami-event="install_click"><span aria-hidden="true">📲</span>Cài app trên Android</a></header>
   <div class="controls"><div class="bands" role="group" aria-label="Chọn độ tuổi"><button id="webBand45" type="button" aria-pressed="false">4–5 tuổi</button><button id="webBand56" type="button" aria-pressed="true">5–6 tuổi</button><button id="webBandL1" type="button" aria-pressed="false">Lớp 1</button></div><button id="webSound" type="button" class="sound" aria-pressed="true">🔊 Âm thanh</button></div>
   <p id="webSyncStatus" class="parent-note" role="status">Đang kết nối tiến bộ…</p>
   <main id="tuduy">
     <section class="card" id="tdChooser"><div class="qprompt">Hôm nay con muốn chơi dạng nào?</div><p class="play-note">Làm chưa đúng cũng được: con có gợi ý và cách làm.</p><div class="td-pickgrid" id="tdPick"></div></section>
     <section class="card" id="tdQuiz" hidden><button type="button" class="td-quiz-back" id="webBack">← Chọn dạng khác</button><div class="td-top"><span id="tdCount"></span><span id="tdStars"></span></div><div class="td-prompt"><span id="tdPrompt"></span><button class="td-say" id="webSpeak" type="button" aria-label="Nghe câu hỏi">🔊</button></div><div class="td-visual" id="tdVisual"></div><div class="td-pad" id="tdPad" role="group" aria-label="Bàn phím số"></div><div class="td-actions"><button type="button" class="rbtn next" id="tdCheck">✔ Xong rồi</button><button type="button" class="rbtn next" id="tdNext" hidden>Câu tiếp ▶</button></div><div class="fb" id="tdFb" role="status" aria-live="polite"></div><div class="td-explain" id="tdExplain" hidden></div></section>
-    <section class="card td-done" id="tdDone" hidden><div class="td-big" id="tdDoneStars"></div><div class="qprompt" id="tdDoneText"></div><div class="done-actions"><a class="rbtn" id="webInstall" href="/beta/">Tải KidFocus để luyện tiếp mỗi ngày</a><button type="button" class="rbtn prev" id="webAgain">Chơi thêm 5 câu</button></div><p class="parent-note">Trong app còn có <strong>lịch sinh hoạt và đồng hồ tập trung</strong>, theo dõi tiến bộ theo từng dạng và làm lại câu chưa đúng.</p></section>
+    <section class="card td-done" id="tdDone" hidden><div class="td-big" id="tdDoneStars"></div><div class="qprompt" id="tdDoneText"></div><div class="done-actions"><a class="rbtn" id="webInstall" href="/beta/" data-umami-event="install_click">Tải KidFocus để luyện tiếp mỗi ngày</a><button type="button" class="rbtn prev" id="webAgain">Chơi thêm 5 câu</button></div><p class="parent-note">Trong app còn có <strong>lịch sinh hoạt và đồng hồ tập trung</strong>, theo dõi tiến bộ theo từng dạng và làm lại câu chưa đúng.</p></section>
   </main>
   <aside class="about"><p>Cho bé quan sát, tìm quy luật, so sánh và suy luận qua trò chơi. Đây không phải luyện thi.</p></aside>
-  <footer><a href="/cai-app/">Cài app</a><span>·</span><a href="privacy.html">Quyền riêng tư</a><span>·</span><a href="terms.html">Điều khoản</a><span>·</span><a href="mailto:kidfocusstudio@gmail.com">kidfocusstudio@gmail.com</a></footer>
+  <footer><a href="/cai-app/" data-umami-event="install_click">Cài app</a><span>·</span><a href="privacy.html">Quyền riêng tư</a><span>·</span><a href="terms.html">Điều khoản</a><span>·</span><a href="mailto:kidfocusstudio@gmail.com">kidfocusstudio@gmail.com</a></footer>
 </div>
 <div id="webConfetti" aria-hidden="true"></div>
 <script>
@@ -178,8 +179,17 @@ window.TuDuyPageOptions = { storageKey: 'tuduy.web.v1' + ((new URLSearchParams(l
     $('webBandL1').setAttribute('aria-pressed', String(value === 'l1'));
     window.TuDuyUI.open();
   }
+  window.recordLearningResult = (gameId) => {
+    if (gameId === 'tuduy') window.kidfocusTrack?.('tuduy_done');
+  };
+  $('tdPick').addEventListener('click', (event) => {
+    if (event.target instanceof Element && event.target.closest('button.td-pick') && !$('tdQuiz').hidden) window.kidfocusTrack?.('tuduy_start');
+  });
   window.KidFocusTuDuySetBand = band;
-  $('webBand45').onclick = () => band('4-5');
+  $('webBand45').onclick = () => {
+    if (ageBand !== '4-5') window.kidfocusTrack?.('band_45');
+    band('4-5');
+  };
   $('webBand56').onclick = () => band('5-6');
   $('webBandL1').onclick = () => band('l1');
   $('webSound').onclick = () => {
@@ -192,7 +202,10 @@ window.TuDuyPageOptions = { storageKey: 'tuduy.web.v1' + ((new URLSearchParams(l
   $('webSpeak').onclick = () => window.TuDuyUI.speakPrompt();
   $('tdCheck').onclick = () => window.TuDuyUI.check();
   $('tdNext').onclick = () => window.TuDuyUI.next();
-  $('webAgain').onclick = () => window.TuDuyUI.start('mix');
+  $('webAgain').onclick = () => {
+    window.TuDuyUI.start('mix');
+    if (!$('tdQuiz').hidden) window.kidfocusTrack?.('tuduy_start');
+  };
   band(ageBand);
 })();
 </script>
