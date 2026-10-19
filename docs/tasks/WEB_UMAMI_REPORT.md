@@ -1,6 +1,6 @@
 # Umami web statistics — implementation report
 
-Status: ready for Claude review. Firebase Hosting has **not** been deployed.
+Status: deployed to Firebase Hosting `demo` on 19 October 2026; ready for Claude review.
 
 ## OCI
 
@@ -23,6 +23,10 @@ Status: ready for Claude review. Firebase Hosting has **not** been deployed.
 - `git diff --check`: passed.
 - HTTPS checks: Umami dashboard, `/script.js`, and pre-existing KidFocus OCI site each returned HTTP 200 with valid TLS.
 
-## Release boundary
+## Release verification
 
-No Firebase Hosting deploy or git push was performed. Tracking on `kidfocus.web.app` remains unchanged until the reviewed web build and updated privacy page are published together.
+- Feature follow-up: `dd35b5d` changes referrer to its origin and uses `allowed.toString()` for the UTM allowlist. `npm --prefix web test` passed 22/22 after that change.
+- Merged into `main` as `35f9a18` and pushed to GitHub through SSH. Built `web/dist` from that exact `main` worktree; `firebase deploy --only hosting:demo --project kid-focus-app --non-interactive` succeeded after refreshing the existing Firebase CLI sign-in.
+- Production `https://kidfocus.web.app/analytics.js` contains `allowed.toString()` and `referrer.origin`; `/tu-duy/?band=4-5&utm_source=test` returned HTTP 200 and selected the 4–5 band.
+- After one browser visit to that URL, Umami's dashboard API reported `utm_source=test` with **1 view** and `band_45` with **1 event** for `/tu-duy/` in the verification window.
+- The updated privacy copy is served at `/tu-duy/privacy.html` by `hosting:demo`. The separate `kidfocus-studio.web.app` legal site was not part of this deploy target and needs its own publish to show the same revised notice.
