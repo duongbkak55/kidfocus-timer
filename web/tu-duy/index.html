@@ -207,6 +207,9 @@ window.TuDuyPageOptions = { storageKey: 'tuduy.web.v1' + ((new URLSearchParams(l
     if (!$('tdQuiz').hidden) window.kidfocusTrack?.('tuduy_start');
   };
   band(ageBand);
+  if (new URLSearchParams(location.search).get('band') === '4-5') {
+    window.addEventListener('DOMContentLoaded', () => window.kidfocusTrack?.('band_45'), { once: true });
+  }
 })();
 </script>
 <script type="module" src="/tu-duy/learning-sync.mjs"></script>

@@ -93,6 +93,9 @@ test('real Chromium completes five questions in each band without external reque
   const errors = [], requests = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('request', (request) => requests.push(request.url()));
+  await page.goto(origin + '/tu-duy/?band=4-5&profile=child-private', { waitUntil: 'networkidle' });
+  assert.equal(await page.locator('#webBand45').getAttribute('aria-pressed'), 'true');
+  assert.deepEqual(await page.evaluate(() => window.__analyticsEvents), ['band_45']);
   await page.goto(origin + '/tu-duy/', { waitUntil: 'networkidle' });
   assert.equal(await page.title(), 'Cho bé thử Luyện tư duy — KidFocus');
   assert.equal(await page.locator('#webAppBack').getAttribute('href'), '/app/');

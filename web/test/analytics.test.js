@@ -14,7 +14,9 @@ function load(hostname) {
     head: { append: (script) => appended.push(script) },
     createElement: () => ({ dataset: {}, addEventListener(name, callback) { this[name] = callback; } }),
   };
-  vm.runInNewContext(source, { window, document, location: { hostname }, Set });
+  vm.runInNewContext(source, {
+    window, document, location: { hostname, origin: `https://${hostname}` }, Set, URL, URLSearchParams,
+  });
   return { appended, sent, window };
 }
 
@@ -28,7 +30,7 @@ test('tracker loads on KidFocus production hosts only and sends only allowlisted
   assert.equal(script.referrerPolicy, 'no-referrer');
   assert.equal(script.dataset.beforeSend, 'kidfocusUmamiBeforeSend');
   assert.equal(script.dataset.doNotTrack, 'true');
-  assert.equal(script.dataset.excludeSearch, 'true');
+  assert.equal(script.dataset.excludeSearch, undefined, 'query must reach beforeSend for UTM filtering');
   assert.equal(script.dataset.excludeHash, 'true');
   production.window.kidfocusTrack('tuduy_start');
   production.window.kidfocusTrack('profile_123');
@@ -38,14 +40,20 @@ test('tracker loads on KidFocus production hosts only and sends only allowlisted
   assert.deepEqual(production.sent, ['tuduy_start', 'install_click']);
 });
 
-test('tracker removes URL parameters and referrer before sending', () => {
+test('tracker keeps only campaign UTM parameters and referrer hostname', () => {
   const { window } = load('kidfocus.web.app');
   const safe = window.kidfocusUmamiBeforeSend('event', {
-    url: '/app/?email=private@example.com#child-name',
-    referrer: 'https://example.com/person',
+    url: '/tu-duy/?profile=child-123&band=4-5&utm_source=facebook&utm_medium=social&utm_campaign=beta&email=private@example.com#child-name',
+    referrer: 'https://www.example.com/person?email=private@example.com#fragment',
     name: 'guest_start',
   });
-  assert.equal(safe.url, '/app/');
-  assert.equal(safe.referrer, undefined);
+  assert.equal(safe.url, '/tu-duy/?utm_source=facebook&utm_medium=social&utm_campaign=beta');
+  assert.equal(safe.referrer, 'www.example.com');
   assert.equal(safe.name, 'guest_start');
+  const privateOnly = window.kidfocusUmamiBeforeSend('pageview', {
+    url: 'https://kidfocus.web.app/app/?profile=child-123&email=private@example.com#secret',
+    referrer: 'file:///private/family.html',
+  });
+  assert.equal(privateOnly.url, '/app/');
+  assert.equal(privateOnly.referrer, undefined);
 });

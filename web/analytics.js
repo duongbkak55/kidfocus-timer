@@ -22,8 +22,28 @@
   window.kidfocusUmamiBeforeSend = (_type, payload) => {
     if (!payload || typeof payload !== "object") return false;
     const safe = { ...payload };
-    if (typeof safe.url === "string") safe.url = safe.url.split(/[?#]/, 1)[0];
-    delete safe.referrer;
+    if (typeof safe.url === "string") {
+      try {
+        const url = new URL(safe.url, location.origin);
+        const allowed = new URLSearchParams();
+        for (const key of ["utm_source", "utm_medium", "utm_campaign"]) {
+          const value = url.searchParams.get(key);
+          if (value !== null) allowed.set(key, value);
+        }
+        safe.url = url.pathname + (allowed.size ? `?${allowed}` : "");
+      } catch (_) {
+        safe.url = safe.url.split(/[?#]/, 1)[0];
+      }
+    }
+    if (typeof safe.referrer === "string") {
+      try {
+        const referrer = new URL(safe.referrer);
+        if (/^https?:$/.test(referrer.protocol)) safe.referrer = referrer.hostname;
+        else delete safe.referrer;
+      } catch (_) {
+        delete safe.referrer;
+      }
+    } else delete safe.referrer;
     return safe;
   };
 
@@ -33,7 +53,6 @@
   script.src = "https://stats.kidfocus.134-185-83-168.sslip.io/script.js";
   script.dataset.websiteId = "f5ea3996-ba9a-4a7e-8b29-846364770b3a";
   script.dataset.domains = [...hosts].join(",");
-  script.dataset.excludeSearch = "true";
   script.dataset.excludeHash = "true";
   script.dataset.doNotTrack = "true";
   script.dataset.beforeSend = "kidfocusUmamiBeforeSend";

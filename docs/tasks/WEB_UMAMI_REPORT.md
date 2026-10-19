@@ -12,8 +12,8 @@ Status: ready for Claude review. Firebase Hosting has **not** been deployed.
 ## Web code
 
 - `/tu-duy/`, `/app/`, `/cai-app/`, `/beta/` load the self-hosted Umami tracker only on production KidFocus hosts. Local tests and preview hosts send no analytics.
-- Events: `tuduy_start` when a round opens; `tuduy_done` on completion; `band_45` on selecting 4–5 years; `install_click` on install CTAs; `guest_start` after a guest session starts successfully. No event properties containing user or child data are sent.
-- Tracker respects Do Not Track, strips URL search/hash and referrer, and sends no referrer on script fetch. Android code is untouched.
+- Events: `tuduy_start` when a round opens; `tuduy_done` on completion; `band_45` on selecting 4–5 years or opening `/tu-duy/?band=4-5`; `install_click` on install CTAs; `guest_start` after a guest session starts successfully. No event properties containing user or child data are sent.
+- Tracker respects Do Not Track, retains only `utm_source`, `utm_medium` and `utm_campaign` in tracked URLs, strips other parameters (including `profile`) and hash, and reduces referrer to hostname. The tracker script fetch sends no referrer. Android code is untouched.
 - Vietnamese and English privacy notices now describe self-hosted, cookie-free website statistics and their scope.
 
 ## Validation
