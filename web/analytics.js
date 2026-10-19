@@ -30,7 +30,7 @@
           const value = url.searchParams.get(key);
           if (value !== null) allowed.set(key, value);
         }
-        safe.url = url.pathname + (allowed.size ? `?${allowed}` : "");
+        safe.url = url.pathname + (allowed.toString() ? `?${allowed}` : "");
       } catch (_) {
         safe.url = safe.url.split(/[?#]/, 1)[0];
       }
@@ -38,7 +38,7 @@
     if (typeof safe.referrer === "string") {
       try {
         const referrer = new URL(safe.referrer);
-        if (/^https?:$/.test(referrer.protocol)) safe.referrer = referrer.hostname;
+        if (/^https?:$/.test(referrer.protocol)) safe.referrer = referrer.origin;
         else delete safe.referrer;
       } catch (_) {
         delete safe.referrer;

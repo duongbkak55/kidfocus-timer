@@ -40,15 +40,15 @@ test('tracker loads on KidFocus production hosts only and sends only allowlisted
   assert.deepEqual(production.sent, ['tuduy_start', 'install_click']);
 });
 
-test('tracker keeps only campaign UTM parameters and referrer hostname', () => {
+test('tracker keeps only campaign UTM parameters and referrer origin', () => {
   const { window } = load('kidfocus.web.app');
   const safe = window.kidfocusUmamiBeforeSend('event', {
     url: '/tu-duy/?profile=child-123&band=4-5&utm_source=facebook&utm_medium=social&utm_campaign=beta&email=private@example.com#child-name',
-    referrer: 'https://www.example.com/person?email=private@example.com#fragment',
+    referrer: 'https://www.example.com:8443/person?email=private@example.com#fragment',
     name: 'guest_start',
   });
   assert.equal(safe.url, '/tu-duy/?utm_source=facebook&utm_medium=social&utm_campaign=beta');
-  assert.equal(safe.referrer, 'www.example.com');
+  assert.equal(safe.referrer, 'https://www.example.com:8443');
   assert.equal(safe.name, 'guest_start');
   const privateOnly = window.kidfocusUmamiBeforeSend('pageview', {
     url: 'https://kidfocus.web.app/app/?profile=child-123&email=private@example.com#secret',
