@@ -11,6 +11,7 @@ if [[ ! -f "$repo_root/web/tu-duy/og.png" ]]; then
 fi
 
 mkdir -p "$dist_root"
+cp "$repo_root/web/analytics.js" "$dist_root/analytics.js"
 rm -rf "$page_out" "$dist_root/beta"
 mkdir -p "$page_out" "$dist_root/beta"
 cp "$repo_root/web/tu-duy/index.html" "$page_out/index.html"

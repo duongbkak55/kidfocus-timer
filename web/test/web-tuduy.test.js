@@ -38,15 +38,15 @@ test('installation guide is built and reachable from the short beta page', () =>
   assert.match(read(guide), /href="https:\/\/groups\.google\.com\/g\/kidfocus-beta"/);
   assert.match(read(guide), /href="https:\/\/play\.google\.com\/apps\/testing\/com\.kidfocusstudio\.timer"/);
   const beta = read(path.join(dist, 'beta/index.html'));
-  assert.match(beta, /href="\/cai-app\/">Hướng dẫn chi tiết/);
+  assert.match(beta, /href="\/cai-app\/" data-umami-event="install_click">Hướng dẫn chi tiết/);
   assert.doesNotMatch(beta, /href="https:\/\/(?:groups\.google\.com|play\.google\.com)/);
-  assert.match(read(path.join(pageDir, 'index.html')), /<footer><a href="\/cai-app\/">Cài app<\/a>/);
+  assert.match(read(path.join(pageDir, 'index.html')), /<footer><a href="\/cai-app\/" data-umami-event="install_click">Cài app<\/a>/);
   const demo = JSON.parse(read(path.join(root, 'firebase.json'))).hosting.find((site) => site.target === 'demo');
   assert(demo);
   assert(!demo.redirects.some((redirect) => redirect.source === '/cai-app' || redirect.source.startsWith('/cai-app/')));
 });
 
-test('page is Vietnamese, private and free of third-party requests or exam framing', () => {
+test('page is Vietnamese, privacy-aware and free of external scripts in local preview', () => {
   const html = read(path.join(pageDir, 'index.html'));
   assert.match(html, /<html lang="vi">/);
   assert.match(html, /tuduy\.web\.v1/);
@@ -65,7 +65,7 @@ test('page is Vietnamese, private and free of third-party requests or exam frami
   assert(scripts.join('\n').split('\n').length < 150, 'web glue exceeds 150 JS lines');
 });
 
-test('real Chromium completes five questions in each band without external requests', async (t) => {
+test('real Chromium completes five questions in each band without external requests in local preview', async (t) => {
   const executablePath = process.env.CHROMIUM_PATH || '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser';
   if (!fs.existsSync(executablePath)) return t.skip('Set CHROMIUM_PATH to a local Chromium executable');
   const server = http.createServer((req, res) => {
@@ -85,10 +85,17 @@ test('real Chromium completes five questions in each band without external reque
   const browser = await chromium.launch({ executablePath, headless: true, args: ['--no-sandbox', '--disable-gpu'] });
   t.after(() => browser.close());
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+  await page.addInitScript(() => {
+    window.__analyticsEvents = [];
+    window.kidfocusTrack = (name) => window.__analyticsEvents.push(name);
+  });
   const origin = `http://127.0.0.1:${server.address().port}`;
   const errors = [], requests = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('request', (request) => requests.push(request.url()));
+  await page.goto(origin + '/tu-duy/?band=4-5&profile=child-private', { waitUntil: 'networkidle' });
+  assert.equal(await page.locator('#webBand45').getAttribute('aria-pressed'), 'true');
+  assert.deepEqual(await page.evaluate(() => window.__analyticsEvents), ['band_45']);
   await page.goto(origin + '/tu-duy/', { waitUntil: 'networkidle' });
   assert.equal(await page.title(), 'Cho bé thử Luyện tư duy — KidFocus');
   assert.equal(await page.locator('#webAppBack').getAttribute('href'), '/app/');
@@ -101,6 +108,7 @@ test('real Chromium completes five questions in each band without external reque
     assert.deepEqual(tooSmall, []);
   }
   await checkTargets();
+  await page.locator('#webBand45').click();
 
   for (const [band, hasGradeOne] of [['webBand56', false], ['webBandL1', true]]) {
     await page.locator('#' + band).click();
@@ -124,6 +132,9 @@ test('real Chromium completes five questions in each band without external reque
     assert.equal(await page.evaluate(() => localStorage.getItem('tuduy.v1')), null);
     assert.notEqual(await page.evaluate(() => localStorage.getItem('tuduy.web.v1')), null);
   }
+  assert.deepEqual(await page.evaluate(() => window.__analyticsEvents), [
+    'band_45', 'tuduy_start', 'tuduy_done', 'tuduy_start', 'tuduy_done',
+  ]);
   for (const width of [360, 412]) {
     await page.setViewportSize({ width, height: 844 });
     for (const [band, age] of [['webBand56', '5-6'], ['webBandL1', 'l1']]) {

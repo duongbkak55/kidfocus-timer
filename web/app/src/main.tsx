@@ -34,6 +34,10 @@ import {
 import "./style.css";
 import { DayLogs, LearningLink, Profiles, Settings } from "./w2";
 
+declare global {
+  interface Window { kidfocusTrack?: (name: string) => void; }
+}
+
 type Tab =
   | "today"
   | "week"
@@ -223,6 +227,7 @@ function App() {
       setStore(null);
       setData(emptyData());
       setGuestMode(true);
+      window.kidfocusTrack?.("guest_start");
       setNotice("");
       setTab("today");
     } catch (error) { report(error); }
@@ -428,7 +433,7 @@ function App() {
           <span class="brand-name">KidFocus</span>
         </div>
         <div class="header-actions">
-          <a class="install-pill" href="/cai-app/"><span aria-hidden="true">📲</span> Cài app</a>
+          <a class="install-pill" href="/cai-app/" data-umami-event="install_click"><span aria-hidden="true">📲</span> Cài app</a>
           <button
             aria-expanded={menuOpen}
             aria-controls="more-menu"
@@ -754,7 +759,7 @@ function Login({
         <div class="brand">
           <span class="mark">K</span> KidFocus
         </div>
-        <a class="install-pill" href="/cai-app/"><span aria-hidden="true">📲</span> Cài app</a>
+        <a class="install-pill" href="/cai-app/" data-umami-event="install_click"><span aria-hidden="true">📲</span> Cài app</a>
       </div>
       <section class="login-card">
         <div class="eyebrow">CÙNG CON BẮT ĐẦU</div>

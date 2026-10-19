@@ -113,6 +113,10 @@ test("guest can create a schedule offline and resume it after reopening", async 
   const browser = await chromium.launch({ executablePath, headless: true, args: ["--no-sandbox"] });
   t.after(() => browser.close());
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  await page.addInitScript(() => {
+    window.__analyticsEvents = [];
+    window.kidfocusTrack = (name) => window.__analyticsEvents.push(name);
+  });
   const origin = `http://127.0.0.1:${server.address().port}`;
   const errors = [];
   const external = [];
@@ -123,6 +127,7 @@ test("guest can create a schedule offline and resume it after reopening", async 
   await page.goto(origin + "/app/");
   await page.getByRole("button", { name: "Dùng thử không cần đăng nhập" }).click();
   await page.getByText("Chế độ khách.").waitFor();
+  assert.deepEqual(await page.evaluate(() => window.__analyticsEvents), ["guest_start"]);
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   await page.locator(".bottom-nav").getByRole("button", { name: "Lịch" }).click();
   await page.getByRole("button", { name: "+ Hoạt động" }).click();
