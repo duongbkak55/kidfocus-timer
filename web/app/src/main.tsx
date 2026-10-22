@@ -110,9 +110,14 @@ function App() {
   const [selectedTask, setSelectedTask] = useState<Entity | null>(null);
   const [focusMinutes, setFocusMinutes] = useState(25);
   const [run, setRun] = useState<FocusRun | null>(null);
+  const [pendingFocus, setPendingFocus] = useState<{ task: Entity; minutes: number } | "account" | "stop" | null>(null);
+  const [savingFocus, setSavingFocus] = useState(false);
+  const [focusSaveError, setFocusSaveError] = useState("");
+  const focusDialog = useRef<HTMLDivElement>(null);
   const [tick, setTick] = useState(Date.now());
   const runRef = useRef<FocusRun | null>(null);
   const finishing = useRef(false);
+  const focusSessionId = useRef<number | null>(null);
   const wakeLock = useRef<WakeLockSentinel | null>(null);
   const audioRef = useRef<AudioContext | null>(null);
 
@@ -250,19 +255,33 @@ function App() {
     entity: Entity,
     deleted = false,
   ) {
-    if (!store) return;
+    if (!store) return false;
     try {
       await store.write(name, entity, deleted);
       setNotice(deleted ? "Đã xoá mục." : guestMode ? "Đã lưu trên máy này." : "Đã lưu và đồng bộ.");
+      return true;
     } catch (error) {
       report(error);
+      return false;
     }
   }
   function startFocus(
     task: Entity,
     minutes = numberValue(task.focusDurationMinutes),
   ) {
+    const current = runRef.current;
+    if (current) {
+      setTab("focus");
+      if (current.task.id !== task.id || current.task.childProfileId !== task.childProfileId)
+        setPendingFocus({ task, minutes });
+      return;
+    }
+    beginFocus(task, minutes);
+  }
+  function beginFocus(task: Entity, minutes: number) {
     finishing.current = false;
+    focusSessionId.current = reference.newId();
+    setFocusSaveError("");
     try {
       audioRef.current = new AudioContext();
       audioRef.current.resume().catch(() => {});
@@ -270,13 +289,11 @@ function App() {
       audioRef.current = null;
     }
     setSelectedTask(task);
-    setRun({
-      task,
-      startedAt: Date.now(),
-      elapsedBefore: 0,
-      totalSeconds: minutes * 60,
-      paused: false,
-    });
+    const now = Date.now();
+    const next = { task, startedAt: now, elapsedBefore: 0, totalSeconds: minutes * 60, paused: false };
+    runRef.current = next;
+    setTick(now);
+    setRun(next);
     setTab("focus");
   }
   function pauseFocus() {
@@ -317,15 +334,17 @@ function App() {
       /* sound is optional */
     }
   }
-  async function finishFocus(completed: boolean) {
+  async function finishFocus(completed: boolean, showHistory = true): Promise<boolean> {
     const current = runRef.current;
-    if (!current || finishing.current) return;
+    if (!current || finishing.current) return false;
     finishing.current = true;
+    setSavingFocus(true);
+    setFocusSaveError("");
     const elapsed =
       current.elapsedBefore +
       (current.paused ? 0 : (Date.now() - current.startedAt) / 1000);
     const session: Entity = {
-      id: reference.newId(),
+      id: focusSessionId.current ?? reference.newId(),
       durationSeconds: Math.min(
         current.totalSeconds,
         Math.max(0, Math.floor(elapsed)),
@@ -337,30 +356,76 @@ function App() {
       taskTitle: stringValue(current.task.name),
       completed,
     };
+    // Keep a paused, retryable session until storage accepts the result.
+    const paused = { ...current, paused: true, elapsedBefore: elapsed };
+    runRef.current = paused;
+    setRun(paused);
+    const saved = await write("sessions", session);
+    setSavingFocus(false);
+    finishing.current = false;
+    if (!saved) {
+      setFocusSaveError("Chưa lưu được phiên. Phiên đã tạm dừng; hãy thử lại.");
+      return false;
+    }
+    setPendingFocus(null);
     setRun(null);
     runRef.current = null;
     if (completed) {
       playDone();
-      if ("Notification" in window && Notification.permission === "granted")
-        new Notification("KidFocus", {
-          body: `Hoàn thành ${session.taskTitle}`,
-        });
+      if ("Notification" in window && Notification.permission === "granted") {
+        try { new Notification("KidFocus", { body: `Hoàn thành ${session.taskTitle}` }); }
+        catch { /* optional notification must not hide a saved session */ }
+      }
     } else {
       audioRef.current?.close().catch(() => {});
       audioRef.current = null;
     }
-    await write("sessions", session);
-    setTab("history");
+    if (showHistory) setTab("history");
+    return true;
   }
+  function requestAccountExit() {
+    if (runRef.current) setPendingFocus("account");
+    else exitAccount();
+  }
+  function exitAccount() {
+    if (guestMode) leaveGuest();
+    else if (auth) logout(auth, db ?? undefined).then(() => location.reload()).catch(report);
+  }
+  async function confirmFocusExit() {
+    const action = pendingFocus;
+    if (!action || !await finishFocus(false, action === "stop")) return;
+    setPendingFocus(null);
+    if (action === "account") exitAccount();
+    else if (action !== "stop") beginFocus(action.task, action.minutes);
+  }
+  useEffect(() => {
+    if (!pendingFocus) return;
+    const previous = document.activeElement as HTMLElement | null;
+    focusDialog.current?.querySelector<HTMLButtonElement>("button")?.focus();
+    return () => { if (previous?.isConnected) previous.focus(); };
+  }, [!!pendingFocus]);
+  useEffect(() => {
+    if (!run) return;
+    const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [!!run]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement;
+      if (pendingFocus && event.key === "Tab") {
+        const buttons = Array.from(focusDialog.current?.querySelectorAll<HTMLButtonElement>("button:not(:disabled)") ?? []);
+        const first = buttons[0], last = buttons[buttons.length - 1];
+        if (event.shiftKey && document.activeElement === first) { last?.focus(); event.preventDefault(); }
+        else if (!event.shiftKey && document.activeElement === last) { first?.focus(); event.preventDefault(); }
+        return;
+      }
       if (event.key === "Escape") {
-        const close = document.querySelector<HTMLElement>("[role='dialog'] button[aria-label='Đóng']");
+        const close = document.querySelector<HTMLElement>("[role='dialog'] button[data-dismiss-dialog], [role='dialog'] button[aria-label='Đóng']");
         if (close) { close.click(); event.preventDefault(); }
       }
-      if (tab !== "focus" || event.code !== "Space" || event.repeat ||
+      if (pendingFocus || savingFocus || tab !== "focus" || event.code !== "Space" || event.repeat ||
           target.closest("button, input, select, textarea, a, [role='dialog']")) return;
       event.preventDefault();
       if (run) { if (run.paused) resumeFocus(); else pauseFocus(); }
@@ -368,7 +433,7 @@ function App() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [tab, run, selectedTask, focusMinutes]);
+  }, [tab, run, selectedTask, focusMinutes, pendingFocus, savingFocus]);
 
   if (startupError && !guestMode)
     return (
@@ -443,7 +508,7 @@ function App() {
           </button>
           <button
             class="text-button"
-            onClick={() => guestMode ? leaveGuest() : auth && logout(auth, db ?? undefined).then(() => location.reload()).catch(report)}
+            onClick={requestAccountExit}
           >
             {guestMode ? "Đăng nhập" : "Đăng xuất"}
           </button>
@@ -507,7 +572,7 @@ function App() {
       {guestMode && (
         <aside class="guest-banner">
           <span><strong>Chế độ khách.</strong> Dữ liệu chỉ ở trình duyệt này; ai dùng chung máy cũng có thể xem. Xóa dữ liệu trình duyệt sẽ mất dữ liệu khách. Đăng nhập không tự chuyển dữ liệu khách.</span>
-          <button onClick={leaveGuest}>Đăng nhập</button>
+          <button onClick={requestAccountExit}>Đăng nhập</button>
         </aside>
       )}
       {data.warning && (
@@ -527,6 +592,26 @@ function App() {
             ×
           </button>
         </div>
+      )}
+      {run && tab !== "focus" && (
+        <section class="active-focus card" aria-label="Phiên tập trung đang chạy">
+          <strong>{stringValue(run.task.name)}</strong>
+          <span>{run.paused ? "Đã tạm dừng" : "Đang tập trung"}</span>
+          <button class="primary" onClick={() => setTab("focus")}>Quay lại phiên tập trung</button>
+        </section>
+      )}
+      {pendingFocus && (
+        <section class="modal-backdrop">
+          <div ref={focusDialog} class="modal focus-confirm" role="dialog" aria-modal="true" aria-label="Kết thúc phiên đang chạy?">
+            <h2>Kết thúc phiên đang chạy?</h2>
+            <p>Phiên “{stringValue(run?.task.name)}” sẽ được lưu là dừng sớm trước khi {pendingFocus === "account" ? "rời tài khoản" : pendingFocus === "stop" ? "kết thúc lượt" : "chuyển hoạt động"}.</p>
+            {focusSaveError && <p role="alert">{focusSaveError}</p>}
+            <button disabled={savingFocus} data-dismiss-dialog="true" onClick={() => setPendingFocus(null)}>Giữ phiên hiện tại</button>
+            <button class="danger" disabled={savingFocus} onClick={confirmFocusExit}>
+              {savingFocus ? "Đang lưu…" : "Lưu và kết thúc phiên"}
+            </button>
+          </div>
+        </section>
       )}
       <main>
         {tab === "today" && (
@@ -569,13 +654,13 @@ function App() {
                 </p>
                 <div class="actions center">
                   {run.paused ? (
-                    <button class="primary" onClick={resumeFocus}>
+                    <button class="primary" disabled={savingFocus} onClick={resumeFocus}>
                       Tiếp tục
                     </button>
                   ) : (
-                    <button onClick={pauseFocus}>Tạm dừng</button>
+                    <button disabled={savingFocus} onClick={pauseFocus}>Tạm dừng</button>
                   )}
-                  <button class="danger" onClick={() => finishFocus(false)}>
+                  <button class="danger" disabled={savingFocus} onClick={() => setPendingFocus("stop")}>
                     Dừng sớm
                   </button>
                 </div>
@@ -950,7 +1035,7 @@ function Today({
                   </div>
                   {item.type === "task" ? (
                     <button class="primary" onClick={() => onFocus(e)}>
-                      Bắt đầu tập trung
+                      {run?.task.id === e.id && run?.task.childProfileId === e.childProfileId ? "Quay lại phiên tập trung" : "Bắt đầu tập trung"}
                     </button>
                   ) : (
                     !completion && (

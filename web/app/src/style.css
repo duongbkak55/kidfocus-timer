@@ -803,3 +803,8 @@ h2 {
   .app-shell .topbar .brand-name { display: none; }
   .header-actions .install-pill { padding-inline: 10px; }
 }
+
+.active-focus { margin: 16px 0; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.active-focus strong { overflow-wrap: anywhere; }
+.focus-confirm { display: grid; gap: 16px; }
+.focus-confirm p { overflow-wrap: anywhere; }

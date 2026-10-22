@@ -502,6 +502,7 @@ private fun EmptySlotItem(hour: Int, minute: Int, onAdd: () -> Unit) {
         OutlinedCard(
             modifier = Modifier
                 .weight(1f)
+                .testTag("daily_gap_add")
                 .clickable { onAdd() },
             shape = RoundedCornerShape(12.dp),
             border = BorderStroke(1.dp, colors.primary.copy(alpha = 0.25f)),

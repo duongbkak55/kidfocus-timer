@@ -725,4 +725,11 @@
     <string name="advise_rule_task_overrun">Actual task overrun</string>
     <string name="advise_rule_often_skipped">Often skipped activities</string>
     <string name="log_empty">No entries to save. Add what happened and when.</string>
+    <string name="activity_scope_title">Add an activity</string>
+    <string name="activity_scope_today">This session today only</string>
+    <string name="activity_scope_today_help">Start focusing now. This session does not change the weekly schedule.</string>
+    <string name="activity_scope_start">Start today’s session</string>
+    <string name="activity_scope_weekly_help">Want to set a time and repeat every week? A parent must enter their PIN before editing the schedule.</string>
+    <string name="activity_scope_weekly">Repeat weekly (parent)</string>
+    <string name="activity_scope_plan_help">This schedule repeats every week. For a single session, choose “This session today only”.</string>
 </resources>

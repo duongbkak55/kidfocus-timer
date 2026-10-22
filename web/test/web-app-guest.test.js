@@ -140,7 +140,9 @@ test("guest can create a schedule offline and resume it after reopening", async 
   await page.getByRole("button", { name: "Tạm dừng" }).waitFor();
   await page.waitForTimeout(1100);
   await page.getByRole("button", { name: "Dừng sớm" }).click();
-  await page.getByText("Dừng sớm").last().waitFor();
+  await page.getByRole("dialog").getByRole("button", { name: "Lưu và kết thúc phiên" }).click();
+  await page.getByRole("heading", { name: "Đã hoàn thành", exact: true }).waitFor();
+  await page.getByText(/phút · Dừng sớm/).waitFor();
   assert.deepEqual(await page.evaluate(() => {
     const saved = JSON.parse(localStorage.getItem("kidfocus-web-guest-data-v1"));
     return [Object.keys(saved.docs.tasks).length, Object.keys(saved.docs.sessions).length];
