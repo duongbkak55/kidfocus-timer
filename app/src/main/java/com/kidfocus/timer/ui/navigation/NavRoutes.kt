@@ -38,7 +38,7 @@ sealed class NavRoutes(val route: String) {
      * The [destination] argument encodes where to navigate on success.
      */
     data object PinEntry : NavRoutes("pin_entry/{$ARG_DESTINATION}") {
-        fun buildRoute(destination: String) = "pin_entry/$destination"
+        fun buildRoute(destination: String) = "pin_entry/${java.net.URLEncoder.encode(destination, "UTF-8").replace("+", "%20")}"
     }
 
     /** Parent-only settings screen, accessible after PIN verification. */
@@ -60,6 +60,8 @@ sealed class NavRoutes(val route: String) {
 
     /** Daily timeline view showing today's (or any day's) tasks. */
     data object DailySchedule : NavRoutes("daily_schedule")
+
+    data object TodayActivity : NavRoutes("today_activity")
 
     /** Task edit/create screen. Receives task id (0=new), type, and optional pre-filled hour/minute. */
     data object TaskEdit : NavRoutes("task_edit/{$ARG_TASK_ID}/{$ARG_TASK_TYPE}/{$ARG_HOUR}/{$ARG_MINUTE}") {

@@ -751,4 +751,11 @@
     <string name="advise_rule_task_overrun">Thực tế quá thời lượng</string>
     <string name="advise_rule_often_skipped">Hay bỏ lỡ việc</string>
     <string name="log_empty">Chưa có mục để lưu. Bổ sung việc đã làm và giờ thực tế.</string>
+    <string name="activity_scope_title">Thêm hoạt động</string>
+    <string name="activity_scope_today">Chỉ phiên hôm nay</string>
+    <string name="activity_scope_today_help">Bắt đầu tập trung ngay. Phiên này không thêm vào lịch tuần.</string>
+    <string name="activity_scope_start">Bắt đầu phiên hôm nay</string>
+    <string name="activity_scope_weekly_help">Muốn đặt giờ và lặp lại mỗi tuần? Phụ huynh cần nhập PIN trước khi sửa lịch.</string>
+    <string name="activity_scope_weekly">Lặp hằng tuần (phụ huynh)</string>
+    <string name="activity_scope_plan_help">Lịch này lặp lại mỗi tuần. Nếu chỉ làm một phiên hôm nay, hãy dùng “Chỉ phiên hôm nay”.</string>
 </resources>

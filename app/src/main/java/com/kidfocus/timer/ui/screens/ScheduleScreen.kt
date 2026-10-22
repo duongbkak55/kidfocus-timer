@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -103,15 +104,15 @@ fun ScheduleScreen(
                         CategoryHeader(category)
                         Spacer(modifier = Modifier.height(8.dp))
                     }
-                    items(types) { type ->
-                        val existing = tasks.find { !it.isCustom && it.taskType == type }
-                        PredefinedTaskCard(
-                            type = type,
-                            existingTask = existing,
-                            onAdd = { onNewTask(type) },
-                            onEdit = { existing?.let { onEditTask(it) } },
-                            onToggle = { existing?.let { viewModel.toggleEnabled(it) } },
-                        )
+                    items(tasks.filter { !it.isCustom && it.taskType in types }.sortedWith(
+                        compareBy({ it.hour }, { it.minute }, { it.id })
+                    ), key = { "task:${it.id}" }) { task ->
+                        ScheduledTaskCard(task, onEdit = { onEditTask(task) },
+                            onToggle = { viewModel.toggleEnabled(task) })
+                    }
+                    items(types, key = { "template:${it.name}" }) { type ->
+                        PredefinedTaskCard(type = type, existingTask = null,
+                            onAdd = { onNewTask(type) }, onEdit = {}, onToggle = {})
                     }
                 }
 
@@ -123,7 +124,7 @@ fun ScheduleScreen(
                         CategoryHeader(label = stringResource(R.string.schedule_custom_header))
                         Spacer(modifier = Modifier.height(8.dp))
                     }
-                    items(customTasks) { task ->
+                    items(customTasks, key = { "task:${it.id}" }) { task ->
                         ScheduledTaskCard(
                             task = task,
                             onEdit = { onEditTask(task) },
@@ -207,7 +208,7 @@ private fun PredefinedTaskCard(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = typeLabel,
+                    text = if (hasTask) typeLabel else "${stringResource(R.string.schedule_add)} $typeLabel",
                     style = MaterialTheme.typography.bodyMedium,
                     color = colors.onBackground,
                     fontWeight = FontWeight.SemiBold,
@@ -317,7 +318,7 @@ private fun ScheduledTaskCard(
                     color = colors.onBackground.copy(alpha = 0.55f),
                 )
             }
-            IconButton(onClick = onEdit, modifier = Modifier.size(36.dp)) {
+            IconButton(onClick = onEdit, modifier = Modifier.size(48.dp).testTag("edit_task_${task.id}")) {
                 Icon(
                     Icons.Default.Edit,
                     contentDescription = stringResource(R.string.schedule_edit_description, task.name),
@@ -326,6 +327,7 @@ private fun ScheduledTaskCard(
                 )
             }
             Switch(
+                modifier = Modifier.testTag("toggle_task_${task.id}"),
                 checked = task.enabled,
                 onCheckedChange = { onToggle() },
                 colors = SwitchDefaults.colors(

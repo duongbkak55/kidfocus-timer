@@ -21,7 +21,6 @@ import com.kidfocus.timer.BuildConfig
 import com.kidfocus.timer.ui.screens.AiChatScreen
 import com.kidfocus.timer.ui.screens.BreakScreen
 import com.kidfocus.timer.ui.screens.CelebrationScreen
-import com.kidfocus.timer.ui.screens.CloudSyncScreen
 import com.kidfocus.timer.ui.screens.FocusScreen
 import com.kidfocus.timer.ui.screens.FocusHistoryScreen
 import com.kidfocus.timer.ui.screens.HomeScreen
@@ -30,13 +29,11 @@ import com.kidfocus.timer.ui.screens.LearningProgressScreen
 import com.kidfocus.timer.ui.screens.OnboardingScreen
 import com.kidfocus.timer.ui.screens.ParentSettingsScreen
 import com.kidfocus.timer.ui.screens.PinEntryScreen
-import com.kidfocus.timer.ui.screens.DailyScheduleScreen
 import com.kidfocus.timer.ui.screens.DayLogsScreen
 import com.kidfocus.timer.ui.screens.ChildQuickLogScreen
 import com.kidfocus.timer.ui.viewmodel.ChildQuickLogViewModel
 import com.kidfocus.timer.ui.screens.SmartScheduleScreen
 import com.kidfocus.timer.ui.screens.ScheduleScreen
-import com.kidfocus.timer.ui.screens.TaskEditScreen
 import com.kidfocus.timer.ui.screens.SubscriptionScreen
 import com.kidfocus.timer.ui.screens.ThemeScreen
 import com.kidfocus.timer.ui.screens.RoutineEditorScreen
@@ -75,7 +72,9 @@ fun AppNavigation(
 ) {
     ParentSessionLifecycle(settingsViewModel)
     val navController = rememberNavController()
+    ParentSessionNavigation(navController, settingsViewModel)
     val settings by settingsViewModel.settings.collectAsState()
+    val parentUnlocked by settingsViewModel.parentUnlocked.collectAsState()
 
     val startDestination = if (settings?.onboardingCompleted == true) {
         NavRoutes.Home.route
@@ -283,12 +282,7 @@ fun AppNavigation(
                 onDeleteOne = historyViewModel::deleteOne, onDeleteAll = historyViewModel::deleteAll)
         }
 
-        composable(NavRoutes.CloudSync.route) {
-            CloudSyncScreen(
-                viewModel = cloudSyncViewModel,
-                onBack = { navController.popBackStack() },
-            )
-        }
+        parentAccountDestination(navController, settingsViewModel, cloudSyncViewModel)
 
         composable(NavRoutes.Subscription.route) {
             SubscriptionScreen(
@@ -311,7 +305,7 @@ fun AppNavigation(
         )
 
         // ---- Schedule ------------------------------------------------------------------------
-        composable(NavRoutes.Schedule.route) {
+        parentScheduleDestination(NavRoutes.Schedule.route, navController, settingsViewModel) {
             ScheduleScreen(
                 viewModel = scheduleViewModel,
                 onBack = { navController.popBackStack() },
@@ -325,35 +319,8 @@ fun AppNavigation(
         }
 
         // ---- Daily Schedule ------------------------------------------------------------------
-        composable(NavRoutes.DailySchedule.route) {
-            val dayLogData by dayLogs.data.collectAsState()
-            DailyScheduleScreen(
-                viewModel = scheduleViewModel,
-                actualEntries = dayLogData.entries,
-                onChildQuickLog = { navController.navigate(NavRoutes.ChildQuickLog.route) },
-                onActualAndComparison = { date ->
-                    dayLogs.selectDate(date)
-                    navController.navigate(parentGateRoute(settings?.hasPinSet == true, NavRoutes.DayLogs.route))
-                },
-                alarmPermission = alarmPermission,
-                quickEntryEnabled = scheduleConfig.scheduleEnabled,
-                onQuickEntry = { navController.navigate(parentGateRoute(settings?.hasPinSet == true, NavRoutes.QuickSchedule.route)) },
-                onBack = { navController.popBackStack() },
-                onStartTask = { task ->
-                    if (task.taskType == TaskType.LEARNING_GAMES) {
-                        navController.navigate(NavRoutes.LearningHub.route)
-                    } else {
-                        timerViewModel.startFocusForTask(task)
-                        navController.navigate(NavRoutes.Focus.route)
-                    }
-                },
-                onSkipTask = dayLogs::skipTaskToday,
-                onUndoSkip = dayLogs::undoSkip,
-                onAddTaskAtTime = { hour, minute ->
-                    navController.navigate(NavRoutes.TaskEdit.buildRoute(0L, TaskType.CUSTOM.name, hour, minute))
-                },
-            )
-        }
+        childDailyScheduleDestinations(navController, scheduleViewModel, dayLogs, timerViewModel,
+            settingsViewModel, alarmPermission, scheduleConfig.scheduleEnabled)
 
         // Child-only quick log deliberately bypasses the parent PIN gate.
         composable(NavRoutes.ChildQuickLog.route) {
@@ -400,30 +367,7 @@ fun AppNavigation(
         }
 
         // ---- Task Edit -----------------------------------------------------------------------
-        composable(
-            route = NavRoutes.TaskEdit.route,
-            arguments = listOf(
-                navArgument(NavRoutes.ARG_TASK_ID) { type = NavType.LongType },
-                navArgument(NavRoutes.ARG_TASK_TYPE) { type = NavType.StringType },
-                navArgument(NavRoutes.ARG_HOUR) { type = NavType.IntType; defaultValue = -1 },
-                navArgument(NavRoutes.ARG_MINUTE) { type = NavType.IntType; defaultValue = -1 },
-            ),
-        ) { backStack ->
-            val taskId = backStack.arguments?.getLong(NavRoutes.ARG_TASK_ID) ?: 0L
-            val taskTypeName = backStack.arguments?.getString(NavRoutes.ARG_TASK_TYPE) ?: TaskType.CUSTOM.name
-            val preHour = backStack.arguments?.getInt(NavRoutes.ARG_HOUR) ?: -1
-            val preMinute = backStack.arguments?.getInt(NavRoutes.ARG_MINUTE) ?: -1
-            val taskType = runCatching { TaskType.valueOf(taskTypeName) }.getOrDefault(TaskType.CUSTOM)
-            val tasks by scheduleViewModel.tasks.collectAsState()
-            val existing = tasks.find { it.id == taskId }
-            val base = existing ?: scheduleViewModel.taskFromType(taskType)
-            val task = if (preHour >= 0) base.copy(hour = preHour, minute = preMinute.coerceAtLeast(0)) else base
-            TaskEditScreen(
-                task = task,
-                viewModel = scheduleViewModel,
-                onBack = { navController.popBackStack() },
-            )
-        }
+        parentTaskEditorDestination(navController, settingsViewModel, scheduleViewModel)
 
         // ---- Routines -------------------------------------------------------------------------
         composable(NavRoutes.RoutineSettings.route) {
@@ -489,7 +433,7 @@ fun AppNavigation(
             )
         }
     }
-    if (guestChoicePending) {
+    if (guestChoicePending && parentUnlocked && settings?.hasPinSet == true) {
         AlertDialog(onDismissRequest = {}, title = { Text("Dữ liệu trên máy") },
             text = { Text("Bạn muốn đưa lịch và nhật ký trên máy vào tài khoản này, hay chỉ dùng dữ liệu của tài khoản?") },
             confirmButton = { TextButton(onClick = { cloudSyncViewModel.chooseGuestData(true) }) {

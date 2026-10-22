@@ -47,6 +47,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -74,6 +75,7 @@ fun TaskEditScreen(
     task: ScheduledTask,
     viewModel: ScheduleViewModel,
     onBack: () -> Unit,
+    onTodaySession: (() -> Unit)? = null,
 ) {
     val colors = KidFocusTheme.colors
     val context = LocalContext.current
@@ -141,6 +143,16 @@ fun TaskEditScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            Text(stringResource(R.string.activity_scope_weekly), style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.activity_scope_plan_help))
+            if (isNew && onTodaySession != null) {
+                OutlinedButton(onClick = onTodaySession,
+                    modifier = Modifier.fillMaxWidth().testTag("task_choose_today_session")) {
+                    Text(stringResource(R.string.activity_scope_today))
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+
             OutlinedButton(
                 onClick = { showTemplatePicker = true },
                 modifier = Modifier.fillMaxWidth().height(48.dp),
@@ -167,7 +179,7 @@ fun TaskEditScreen(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text(stringResource(R.string.schedule_activity_name)) },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f).testTag("task_edit_name"),
                     singleLine = true,
                 )
             }
@@ -293,7 +305,7 @@ fun TaskEditScreen(
                             daysOfWeek = daysOfWeek.ifEmpty { TaskType.WEEKDAYS },
                             focusDurationMinutes = focusMinutes,
                             breakDurationMinutes = breakMinutes,
-                            enabled = true,
+                            enabled = task.enabled,
                             isCustom = selectedType == TaskType.CUSTOM,
                             photoUri = photoUri,
                         )
